@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-ink-900 text-zinc-200 font-sans antialiased;
+    /* faint scanline grid for the terminal-ops feel */
+    background-image:
+      linear-gradient(rgba(57, 255, 139, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57, 255, 139, 0.025) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-lg border border-ink-500/70 bg-ink-800/80 backdrop-blur;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm
+      font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-phosphor/90 text-ink-900 hover:bg-phosphor;
+  }
+  .btn-ghost {
+    @apply btn border border-ink-500 text-zinc-300 hover:border-phosphor/50 hover:text-phosphor;
+  }
+  .input {
+    @apply w-full rounded-md border border-ink-500 bg-ink-900/80 px-3 py-2 text-sm
+      text-zinc-100 placeholder:text-zinc-600 focus:border-phosphor/60 focus:outline-none
+      focus:ring-1 focus:ring-phosphor/40;
+  }
+  .label {
+    @apply mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500;
+  }
+  .mono {
+    @apply font-mono;
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.vite/
+*.local
+*.tsbuildinfo
+# emitted by the composite tsconfig.node build
+vite.config.js
+vite.config.d.ts
