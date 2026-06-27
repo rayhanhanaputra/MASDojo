@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.local
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+master.key
+
+# Build artifacts
+apps/**/build/
+apps/**/.gradle/
+*.apk
+!tasks/**/app/target.apk
+*.idsig
+*.keystore
+
+# Android / emulator
+.android/
+avd/
+*.avd
+
+# Runner artifacts
+runner/artifacts/
+runner/captures/
+*.flow
+
+# Logs / db
+*.log
+*.sqlite3
+postgres-data/
+redis-data/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp

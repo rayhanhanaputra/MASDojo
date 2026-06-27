@@ -1,0 +1,98 @@
+# MASDojo — one-command bring-up.
+#
+#   cp .env.example .env && docker compose up --build
+#
+# NOTE: the `runner` service boots an Android emulator and needs a KVM-enabled
+# host. It maps /dev/kvm into the container. On hosts without /dev/kvm, comment
+# out the runner service here and run it on bare metal (see docs/architecture.md).
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-masdojo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-masdojo}
+      POSTGRES_DB: ${POSTGRES_DB:-masdojo}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-masdojo}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+      REDIS_HOST: redis
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./tasks:/app/tasks:ro
+    command: >
+      sh -c "python -m app.db.init_db &&
+             python -m app.services.seeder &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+
+  # Requires a KVM-enabled host. Comment out if /dev/kvm is unavailable and run
+  # the runner on bare metal instead (docs/architecture.md#runner-on-bare-metal).
+  runner:
+    build:
+      context: ./runner
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      REDIS_HOST: redis
+      POSTGRES_HOST: db
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    volumes:
+      - ./tasks:/app/tasks:ro
+      - runner-artifacts:/app/artifacts
+    devices:
+      - "/dev/kvm:/dev/kvm"
+    # Emulator needs more shared memory than the default 64MB.
+    shm_size: "2gb"
+
+volumes:
+  postgres-data:
+  redis-data:
+  runner-artifacts:
