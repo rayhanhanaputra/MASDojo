@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from app.api import auth, stats, submissions, tasks
+from app.api import auth, mentor, pathway, settings as settings_api, stats, submissions, tasks
 from app.core.config import settings
 from app.core.logging import configure_logging
 
@@ -46,5 +46,6 @@ app.include_router(auth.router)
 app.include_router(tasks.router)
 app.include_router(submissions.router)
 app.include_router(stats.router)
-
-# Pathway, BYOK settings, and AI mentor routers are registered in milestone 5.
+app.include_router(pathway.router)
+app.include_router(settings_api.router)
+app.include_router(mentor.router)
