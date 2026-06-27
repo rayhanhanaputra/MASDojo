@@ -1,0 +1,21 @@
+id: 012-patch-rebuild-resign
+title: Patch, Rebuild & Resign
+module: '1'
+order_index: 3
+domain: static-re
+masvs:
+- MASVS-CODE
+- MASVS-RESILIENCE-1
+mastg_refs:
+- MASTG-TECH-0018
+difficulty: 2
+prereqs:
+- 011-hidden-endpoint-smali
+objective: Modify the smali to unlock a disabled feature, repack the APK with apktool,
+  resign it, install it, and capture the flag the unlocked feature reveals.
+success_type: flag
+submission_schema:
+  flag: string
+time_estimate_min: 30
+is_reference: false
+grader_status: todo

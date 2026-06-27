@@ -1,0 +1,27 @@
+id: 101-full-chain
+title: Full Chain Capstone
+module: '10'
+order_index: 1
+domain: capstone
+masvs:
+- MASVS-STORAGE-1
+- MASVS-NETWORK-2
+- MASVS-AUTH-1
+- MASVS-RESILIENCE-1
+mastg_refs:
+- MASTG-TECH-0035
+difficulty: 5
+prereqs:
+- 012-patch-rebuild-resign
+- 021-secrets-in-prefs
+- 061-bypass-ssl-pinning
+- 071-idor-backend
+objective: 'One app, the whole kill chain: reverse-engineer it, recover a stored secret,
+  bypass its certificate pinning, then exploit an IDOR on the backend to capture the
+  final flag. Unlocks only after the module leads.'
+success_type: flag
+submission_schema:
+  flag: string
+time_estimate_min: 45
+is_reference: false
+grader_status: todo

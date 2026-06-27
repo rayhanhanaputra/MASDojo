@@ -1,0 +1,20 @@
+id: 071-idor-backend
+title: IDOR on the Backend
+module: '7'
+order_index: 1
+domain: api-dynamic
+masvs:
+- MASVS-AUTH-1
+mastg_refs:
+- MASTG-TECH-0035
+difficulty: 4
+prereqs:
+- 005-intercept-api-call
+objective: Tamper with an object id in an intercepted request to read another user's
+  data, and submit the value you weren't supposed to see.
+success_type: network_assert
+submission_schema:
+  value: string
+time_estimate_min: 40
+is_reference: false
+grader_status: todo

@@ -1,0 +1,21 @@
+id: 051-cleartext-traffic-leak
+title: Cleartext Traffic Leak
+module: '5'
+order_index: 2
+domain: network
+masvs:
+- MASVS-NETWORK-1
+- MASVS-NETWORK-2
+mastg_refs:
+- MASTG-TECH-0035
+difficulty: 3
+prereqs:
+- 005-intercept-api-call
+objective: The app sends sensitive data over plain HTTP. Intercept the cleartext request
+  and submit the leaked value.
+success_type: network_assert
+submission_schema:
+  value: string
+time_estimate_min: 35
+is_reference: false
+grader_status: todo

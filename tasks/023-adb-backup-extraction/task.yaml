@@ -1,0 +1,21 @@
+id: 023-adb-backup-extraction
+title: adb Backup Extraction
+module: '2'
+order_index: 3
+domain: storage
+masvs:
+- MASVS-STORAGE-1
+- MASVS-STORAGE-2
+mastg_refs:
+- MASTG-TECH-0020
+difficulty: 2
+prereqs:
+- 021-secrets-in-prefs
+objective: The app is debuggable / backup-enabled. Pull its private data via adb backup
+  and recover the flag.
+success_type: flag
+submission_schema:
+  flag: string
+time_estimate_min: 30
+is_reference: false
+grader_status: todo

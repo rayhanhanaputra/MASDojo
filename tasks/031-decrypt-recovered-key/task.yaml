@@ -1,0 +1,21 @@
+id: 031-decrypt-recovered-key
+title: Decrypt with a Recovered Key
+module: '3'
+order_index: 1
+domain: crypto
+masvs:
+- MASVS-CRYPTO-1
+mastg_refs:
+- MASTG-TECH-0022
+difficulty: 3
+prereqs:
+- 001-find-hardcoded-secret
+- 021-secrets-in-prefs
+objective: Use the key you recovered in earlier modules to decrypt a blob the app
+  stores on disk, revealing the flag.
+success_type: flag
+submission_schema:
+  flag: string
+time_estimate_min: 35
+is_reference: false
+grader_status: todo

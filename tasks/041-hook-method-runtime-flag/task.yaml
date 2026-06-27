@@ -1,0 +1,20 @@
+id: 041-hook-method-runtime-flag
+title: Hook a Method to Reveal a Runtime Flag
+module: '4'
+order_index: 1
+domain: rasp-bypass
+masvs:
+- MASVS-RESILIENCE-1
+mastg_refs:
+- MASTG-TECH-0028
+difficulty: 3
+prereqs:
+- 000-apk-anatomy-recon
+objective: Write a Frida hook that reads a value computed at runtime and never shown
+  in the UI. The runner verifies your hook observed the value.
+success_type: frida_assert
+submission_schema:
+  script: string
+time_estimate_min: 35
+is_reference: false
+grader_status: todo

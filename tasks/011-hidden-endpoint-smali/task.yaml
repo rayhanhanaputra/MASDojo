@@ -1,0 +1,20 @@
+id: 011-hidden-endpoint-smali
+title: Hidden Endpoint in smali
+module: '1'
+order_index: 2
+domain: static-re
+masvs:
+- MASVS-CODE
+mastg_refs:
+- MASTG-TECH-0017
+difficulty: 2
+prereqs:
+- 001-find-hardcoded-secret
+objective: A debug-only admin endpoint never appears in the UI but is referenced in
+  the disassembly. Recover the endpoint path from the smali.
+success_type: static_assert
+submission_schema:
+  value: string
+time_estimate_min: 30
+is_reference: false
+grader_status: todo

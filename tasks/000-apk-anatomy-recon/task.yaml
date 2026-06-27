@@ -1,0 +1,19 @@
+id: 000-apk-anatomy-recon
+title: APK Anatomy & Recon
+module: '0'
+order_index: 1
+domain: foundations
+masvs:
+- MASVS-CODE
+mastg_refs:
+- MASTG-TECH-0007
+difficulty: 1
+prereqs: []
+objective: Unpack the APK with apktool, read AndroidManifest.xml, enumerate the app's
+  components and permissions, and recover the flag stashed in the app resources.
+success_type: static_assert
+submission_schema:
+  value: string
+time_estimate_min: 25
+is_reference: false
+grader_status: todo

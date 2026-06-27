@@ -8,6 +8,7 @@ That live, evidence-backed grading loop is the heart of the platform.
 
 <!-- SCREENSHOT/GIF SLOT: docs/assets/demo.gif -->
 <!-- Add a demo GIF of the task view → submit → live PASS verdict here before submission. -->
+<!-- A full stage walkthrough lives in docs/demo.md. -->
 
 ---
 

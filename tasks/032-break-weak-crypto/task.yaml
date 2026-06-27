@@ -1,0 +1,21 @@
+id: 032-break-weak-crypto
+title: Break Weak Crypto
+module: '3'
+order_index: 2
+domain: crypto
+masvs:
+- MASVS-CRYPTO-1
+- MASVS-CRYPTO-2
+mastg_refs:
+- MASTG-TECH-0023
+difficulty: 3
+prereqs:
+- 031-decrypt-recovered-key
+objective: The app encrypts data with ECB / a static IV / a predictable PRNG. Exploit
+  the weakness to recover the plaintext flag.
+success_type: flag
+submission_schema:
+  flag: string
+time_estimate_min: 35
+is_reference: false
+grader_status: todo

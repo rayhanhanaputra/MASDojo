@@ -1,0 +1,20 @@
+id: 081-exported-component-deeplink
+title: Exported Component / Deep Link Abuse
+module: '8'
+order_index: 1
+domain: platform
+masvs:
+- MASVS-PLATFORM-1
+mastg_refs:
+- MASTG-TECH-0029
+difficulty: 4
+prereqs:
+- 000-apk-anatomy-recon
+objective: An exported activity (or deep link) reaches a screen that should be protected.
+  Invoke it directly via adb to bypass the intended flow and read the flag.
+success_type: flag
+submission_schema:
+  flag: string
+time_estimate_min: 40
+is_reference: false
+grader_status: todo

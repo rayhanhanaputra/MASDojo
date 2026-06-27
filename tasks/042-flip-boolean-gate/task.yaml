@@ -1,0 +1,20 @@
+id: 042-flip-boolean-gate
+title: Flip a Boolean Gate
+module: '4'
+order_index: 2
+domain: rasp-bypass
+masvs:
+- MASVS-RESILIENCE-1
+mastg_refs:
+- MASTG-TECH-0028
+difficulty: 3
+prereqs:
+- 041-hook-method-runtime-flag
+objective: A boolean check gates a hidden screen. Hook it to return true and unlock
+  the UI; the runner verifies the gate was flipped.
+success_type: frida_assert
+submission_schema:
+  script: string
+time_estimate_min: 35
+is_reference: false
+grader_status: todo

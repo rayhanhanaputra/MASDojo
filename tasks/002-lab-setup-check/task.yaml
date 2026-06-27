@@ -1,0 +1,21 @@
+id: 002-lab-setup-check
+title: Lab Setup Check
+module: '0'
+order_index: 2
+domain: foundations
+masvs:
+- MASVS-CODE
+mastg_refs:
+- MASTG-TECH-0001
+difficulty: 1
+prereqs:
+- 000-apk-anatomy-recon
+objective: 'Confirm your lab is wired up: adb sees the emulator, frida-server responds,
+  and your proxy is reachable. Submit the value the sanity app prints once all three
+  checks pass.'
+success_type: static_assert
+submission_schema:
+  value: string
+time_estimate_min: 25
+is_reference: false
+grader_status: todo

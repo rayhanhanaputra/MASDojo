@@ -1,0 +1,21 @@
+id: 072-broken-auth-token-forgery
+title: Broken Auth / Token Forgery
+module: '7'
+order_index: 2
+domain: api-dynamic
+masvs:
+- MASVS-AUTH-1
+- MASVS-AUTH-2
+mastg_refs:
+- MASTG-TECH-0035
+difficulty: 4
+prereqs:
+- 071-idor-backend
+objective: The app's session/JWT handling is weak. Forge or tamper with a token to
+  access a protected resource and capture the flag it returns.
+success_type: network_assert
+submission_schema:
+  value: string
+time_estimate_min: 40
+is_reference: false
+grader_status: todo

@@ -1,0 +1,20 @@
+id: 083-leaky-content-provider
+title: Leaky Content Provider
+module: '8'
+order_index: 3
+domain: platform
+masvs:
+- MASVS-PLATFORM-3
+mastg_refs:
+- MASTG-TECH-0031
+difficulty: 4
+prereqs:
+- 000-apk-anatomy-recon
+objective: An exported content provider returns data it shouldn't. Query it via adb
+  and submit the flag.
+success_type: flag
+submission_schema:
+  flag: string
+time_estimate_min: 40
+is_reference: false
+grader_status: todo
