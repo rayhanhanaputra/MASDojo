@@ -28,11 +28,25 @@ That live, evidence-backed grading loop is the heart of the platform.
 
 ```bash
 git clone <your-fork-url> masdojo && cd masdojo
-cp .env.example .env          # then edit secrets (JWT secret, master key)
-docker compose up --build     # db, redis, backend, frontend, runner
+make env                      # writes .env with fresh JWT + master-key secrets
+make apps                     # build the vulnerable target APKs (Docker, no host SDK)
+make up                       # full stack: db, redis, backend, frontend, runner
 ```
 
 Then open <http://localhost:5173>, register a local account, and start at **Module 0 — Foundations**.
+
+**No KVM host (e.g. on a Mac)?** The emulator-backed runner needs `/dev/kvm`, but
+everything else runs anywhere:
+
+```bash
+make up-core                  # db, redis, backend, frontend — skips the runner
+```
+
+You can still browse the whole UI and use the AI mentor. To watch the grading
+loop work without an emulator, run the runner in **dry-run** mode — it grades
+`flag` and `static_assert` tasks (which compare against server-side expected
+values). For the full emulator path on a real KVM box, see
+[`docs/deploy-kvm.md`](docs/deploy-kvm.md).
 
 To enable the AI mentor, go to **Settings → AI Key**, paste your Anthropic or OpenAI key, and click **Test & Save**.
 

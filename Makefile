@@ -1,0 +1,46 @@
+# MASDojo convenience targets. See docs/deploy-kvm.md for the full KVM deploy.
+.PHONY: help env apps up up-core runner-dryrun down logs ps test test-backend test-runner clean
+
+ANDROID_BUILD_IMAGE ?= mingc/android-build-box:latest
+
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
+
+env: ## Create .env with fresh secrets if missing
+	@test -f .env || (cp .env.example .env && \
+		sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=$$(openssl rand -hex 32)|" .env && \
+		sed -i.bak "s|^MASTER_KEY=.*|MASTER_KEY=$$(python3 -c 'from cryptography.fernet import Fernet;print(Fernet.generate_key().decode())')|" .env && \
+		rm -f .env.bak && echo "wrote .env")
+
+apps: ## Build the vulnerable target APKs (needs Docker; no host Android SDK)
+	docker run --rm -v "$$PWD":/work -w /work $(ANDROID_BUILD_IMAGE) bash infra/build-apps.sh
+
+up: env ## Build + start the FULL stack (requires a KVM host for the runner)
+	docker compose up --build -d
+
+up-core: env ## Start everything EXCEPT the runner (works without KVM, e.g. on macOS)
+	docker compose up --build -d db redis backend frontend
+
+runner-dryrun: ## Start a no-emulator grader (grades flag/static_assert tasks; macOS-friendly)
+	docker compose --profile dryrun up --build -d runner-dryrun
+
+down: ## Stop the stack
+	docker compose down
+
+logs: ## Tail all logs
+	docker compose logs -f
+
+ps: ## Show service status
+	docker compose ps
+
+test: test-backend test-runner ## Run all test suites
+
+test-backend: ## Run backend tests
+	cd backend && python -m pytest -q
+
+test-runner: ## Run runner tests (dry-run)
+	cd runner && RUNNER_DRY_RUN=true python -m pytest -q
+
+clean: ## Stop the stack and remove volumes (wipes the database)
+	docker compose down -v

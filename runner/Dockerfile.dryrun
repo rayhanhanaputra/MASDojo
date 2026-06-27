@@ -1,0 +1,20 @@
+# Lightweight dry-run grader for hosts WITHOUT KVM (e.g. macOS).
+#
+# Grades flag/static_assert tasks only — these compare the submission against the
+# task's server-side expected values and never touch a device, so this image
+# skips the Android SDK, emulator, frida, and mitmproxy entirely. It's small and
+# builds in seconds.
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    RUNNER_DRY_RUN=true
+
+WORKDIR /app
+COPY runner/pyproject.toml ./
+# Base install only — no device extra.
+RUN pip install --upgrade pip && pip install .
+COPY runner/runner ./runner
+
+CMD ["python", "-m", "runner.worker"]

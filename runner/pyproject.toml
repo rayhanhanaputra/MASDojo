@@ -11,12 +11,17 @@ dependencies = [
     "redis>=5.0",
     "loguru>=0.7",
     "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# Heavy native deps only needed to drive a real device. The dry-run grader
+# (flag/static_assert) does not import them, so they stay optional and the
+# dry-run image installs the base package alone.
+device = [
     "frida>=16.4",
     "frida-tools>=12.4",
     "mitmproxy>=10.3",
 ]
-
-[project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "ruff>=0.4",

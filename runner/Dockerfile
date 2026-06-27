@@ -38,7 +38,8 @@ RUN bash /tmp/create-avd.sh "${SYSTEM_IMAGE}" "masdojo_avd"
 
 WORKDIR /app
 COPY runner/pyproject.toml ./
-RUN pip install --upgrade pip && pip install .
+# Install with the device extra (frida + mitmproxy) for real emulator grading.
+RUN pip install --upgrade pip && pip install ".[device]"
 COPY runner/runner ./runner
 
 # frida-server is fetched during the SDK setup and pushed to the device on boot.

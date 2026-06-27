@@ -93,6 +93,28 @@ services:
     # Emulator needs more shared memory than the default 64MB.
     shm_size: "2gb"
 
+  # Lightweight dry-run grader for hosts WITHOUT KVM (e.g. macOS). Grades
+  # flag/static_assert tasks only. Not started by default — opt in with:
+  #   docker compose --profile dryrun up -d runner-dryrun   (or: make runner-dryrun)
+  runner-dryrun:
+    build:
+      context: .
+      dockerfile: runner/Dockerfile.dryrun
+    profiles: ["dryrun"]
+    env_file: .env
+    environment:
+      RUNNER_DRY_RUN: "true"
+      REDIS_HOST: redis
+      POSTGRES_HOST: db
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    volumes:
+      - ./tasks:/app/tasks:ro
+      - runner-artifacts:/app/artifacts
+
 volumes:
   postgres-data:
   redis-data:
