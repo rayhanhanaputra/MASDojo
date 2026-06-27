@@ -17,10 +17,12 @@ from __future__ import annotations
 import json
 import signal as _signal
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
 import redis
+import redis.exceptions
 from loguru import logger
 
 from runner.config import config
@@ -112,20 +114,38 @@ class Worker:
         self._start_device()
         try:
             while self._running:
-                item = self._redis.blpop(config.grading_queue, timeout=5)
-                if item is None:
-                    continue
-                _, raw = item
-                try:
-                    job = json.loads(raw)
-                except json.JSONDecodeError:
-                    logger.error("dropping malformed job: {}", raw)
+                job = self._pop_job()
+                if job is None:
                     continue
                 logger.info("picked up job {} (submission {})", job.get("job_id"), job.get("submission_id"))
                 self._handle(job)
         finally:
             self._stop_device()
             logger.info("runner stopped")
+
+    def _pop_job(self) -> dict[str, Any] | None:
+        """Block for the next job, tolerating idle timeouts and blips.
+
+        redis-py's blocking BLPOP raises a socket TimeoutError when the server
+        timeout elapses on an empty queue; that's normal idling, not a failure,
+        and must not kill the worker loop.
+        """
+        try:
+            item = self._redis.blpop(config.grading_queue, timeout=5)
+        except redis.exceptions.TimeoutError:
+            return None
+        except redis.exceptions.ConnectionError as exc:
+            logger.warning("redis connection issue, retrying: {}", exc)
+            time.sleep(1)
+            return None
+        if item is None:
+            return None
+        _, raw = item
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError:
+            logger.error("dropping malformed job: {}", raw)
+            return None
 
     def _install_signal_handlers(self) -> None:
         def _stop(signum, frame):  # noqa: ANN001, ARG001
