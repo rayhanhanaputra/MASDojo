@@ -30,9 +30,8 @@ apps/**/.gradle/
 *.idsig
 *.keystore
 
-# Android / emulator
+# Android / emulator (runtime AVD storage lives under .android/)
 .android/
-avd/
 *.avd
 
 # Runner artifacts

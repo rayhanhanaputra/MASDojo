@@ -16,7 +16,7 @@ detail) entries so the learner sees exactly which condition passed or failed.
 
 from __future__ import annotations
 
-from runner.runner.grader_api import Check, GradeResult, GradingContext
+from runner.grader_api import Check, GradeResult, GradingContext
 
 
 def grade(ctx: GradingContext) -> GradeResult:

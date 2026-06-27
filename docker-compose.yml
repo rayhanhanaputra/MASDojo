@@ -73,8 +73,9 @@ services:
   # the runner on bare metal instead (docs/architecture.md#runner-on-bare-metal).
   runner:
     build:
-      context: ./runner
-      dockerfile: Dockerfile
+      # Context is the repo root so the image can copy runner/ + infra/avd/.
+      context: .
+      dockerfile: runner/Dockerfile
     env_file: .env
     environment:
       REDIS_HOST: redis
