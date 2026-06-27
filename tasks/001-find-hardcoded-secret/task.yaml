@@ -1,0 +1,23 @@
+id: "001-find-hardcoded-secret"
+title: "Find the Hardcoded API Secret"
+module: "1"
+order_index: 1
+domain: "static-re"
+masvs: ["MASVS-STORAGE-1"]
+# Verify against the live MASTG before publishing — technique name kept as a
+# fallback in case the id has been renumbered.
+mastg_refs: ["MASTG-TECH-0011"]  # "Reviewing decompiled Java/Kotlin code"
+difficulty: 1
+prereqs: ["000-apk-anatomy-recon"]
+objective: >
+  The SecureNotes app talks to a backend using an API key that the developers
+  hardcoded into the app. Decompile the APK with jadx, find the embedded key,
+  and submit it to prove you recovered it.
+success_type: "static_assert"
+submission_schema:
+  value: "string"   # the recovered API key, e.g. msd_live_sk_xxxxxxxx
+time_estimate_min: 20
+is_reference: true
+grader_status: "implemented"
+app_package: "org.masdojo.securenotes"
+launch_activity: ".MainActivity"

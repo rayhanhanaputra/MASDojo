@@ -1,0 +1,4 @@
+{
+  "secret": "msd_live_sk_8f3c1d77a94b42e0b6c5e9f0a1d2c3b4",
+  "note": "This value is the API key embedded in apps/securenotes (BuildConfig + a string constant). It is server-side only and never sent to the frontend."
+}

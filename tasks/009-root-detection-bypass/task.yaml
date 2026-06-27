@@ -1,0 +1,23 @@
+id: "009-root-detection-bypass"
+title: "Root Detection Bypass"
+module: "9"
+order_index: 1
+domain: "rasp-bypass"
+masvs: ["MASVS-RESILIENCE-1"]
+mastg_refs: ["MASTG-TECH-0048"]  # "Bypassing Root Detection" — verify against live MASTG
+difficulty: 4
+prereqs: ["041-hook-method-runtime-flag", "042-flip-boolean-gate"]
+objective: >
+  The VaultGuard app refuses to reveal its premium vault on a rooted device — and
+  it considers the emulator rooted. Write a Frida script that defeats the root
+  check so the gated feature unlocks. The runner injects your script at app
+  startup and verifies the vault was unlocked.
+success_type: "frida_assert"
+submission_schema:
+  script: "string"   # a Frida JavaScript payload
+time_estimate_min: 35
+is_reference: true
+grader_status: "implemented"
+app_package: "org.masdojo.vaultguard"
+launch_activity: ".MainActivity"
+interaction_wait_sec: 8

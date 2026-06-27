@@ -136,12 +136,14 @@ class GradingContext:
         frida: Any = None,
         network: Any = None,
     ) -> "GradingContext":
+        # Use explicit None checks: a live facet can be legitimately falsy (an
+        # empty NetworkCapture has len 0) and must not be replaced by a null stub.
         return cls(
             submission=submission,
             package_dir=package_dir,
             artifacts=Artifacts(package_dir),
             log=log,
-            adb=adb or _NullDevice("adb"),
-            frida=frida or _NullDevice("frida"),
-            network=network or _NullDevice("network"),
+            adb=adb if adb is not None else _NullDevice("adb"),
+            frida=frida if frida is not None else _NullDevice("frida"),
+            network=network if network is not None else _NullDevice("network"),
         )

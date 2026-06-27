@@ -49,6 +49,37 @@ def _read_meta(package_dir: Path) -> dict[str, Any]:
     return yaml.safe_load((package_dir / "task.yaml").read_text(encoding="utf-8")) or {}
 
 
+class _BundledBackend:
+    """Run a task's bundled mock backend (`backend/server.py`) for the duration
+    of a network interaction, if one exists. A no-op when absent."""
+
+    def __init__(self, package_dir: Path) -> None:
+        self._server = package_dir / "backend" / "server.py"
+        self._proc = None
+
+    def __enter__(self) -> "_BundledBackend":
+        if self._server.is_file():
+            import subprocess
+            import sys
+
+            self._proc = subprocess.Popen(
+                [sys.executable, str(self._server)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            logger.info("started bundled mock backend for {}", self._server.parent.parent.name)
+            time.sleep(1)  # let it bind before the app calls it
+        return self
+
+    def __exit__(self, *exc) -> None:
+        if self._proc is not None:
+            self._proc.terminate()
+            try:
+                self._proc.wait(timeout=5)
+            except Exception:  # pragma: no cover - cleanup
+                self._proc.kill()
+
+
 class GradeRunner:
     """Orchestrates a single grading job against a (possibly mocked) device."""
 
@@ -102,7 +133,7 @@ class GradeRunner:
         wait_sec = int(meta.get("interaction_wait_sec", 15))
         flow_path = config.artifacts_dir / f"{package_dir.name}.flows"
 
-        with MitmProxyRecorder(config.mitm_port, flow_path) as recorder:
+        with _BundledBackend(package_dir), MitmProxyRecorder(config.mitm_port, flow_path) as recorder:
             # Route the device's HTTP(S) traffic through mitmproxy.
             adb.shell(f"settings put global http_proxy 10.0.2.2:{config.mitm_port}")
             if package:

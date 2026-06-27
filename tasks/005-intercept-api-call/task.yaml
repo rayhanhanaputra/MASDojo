@@ -1,0 +1,23 @@
+id: "005-intercept-api-call"
+title: "Intercept & Capture the API Call"
+module: "5"
+order_index: 1
+domain: "network"
+masvs: ["MASVS-NETWORK-1"]
+mastg_refs: ["MASTG-TECH-0035"]  # "Intercepting Network Traffic" — verify against live MASTG
+difficulty: 3
+prereqs: ["000-apk-anatomy-recon"]
+objective: >
+  On startup the Pulse app phones home, sending a device token to its telemetry
+  endpoint. Stand up an intercepting proxy, capture that request, and submit the
+  device token you observed. The runner proxies the emulator through mitmproxy,
+  triggers the call, and verifies you captured the real value.
+success_type: "network_assert"
+submission_schema:
+  value: "string"   # the device_token observed in the intercepted request
+time_estimate_min: 30
+is_reference: true
+grader_status: "implemented"
+app_package: "org.masdojo.pulse"
+launch_activity: ".MainActivity"
+interaction_wait_sec: 15

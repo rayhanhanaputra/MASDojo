@@ -1,0 +1,6 @@
+{
+  "endpoint_path": "/api/v1/telemetry",
+  "param_name": "device_token",
+  "device_token": "FLAG{n3tw0rk_1nt3rc3pt3d}",
+  "note": "Pulse POSTs device_token=FLAG{...} to http://10.0.2.2:8090/api/v1/telemetry on startup. The runner proxies this through mitmproxy and the bundled mock backend (backend/server.py) accepts it."
+}

@@ -1,0 +1,7 @@
+{
+  "flag": "FLAG{r00t_ch3ck_bypass3d}",
+  "unlock_marker": "MASDOJO_UNLOCK",
+  "denied_marker": "MASDOJO_DENIED",
+  "logcat_tag": "VaultGuard",
+  "note": "VaultGuard logs 'VaultGuard: MASDOJO_UNLOCK:<flag>' only when RootChecker.isDeviceRooted() returns false. On the emulator it returns true unless the learner's Frida hook flips it."
+}
