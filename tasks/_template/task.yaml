@@ -1,0 +1,21 @@
+# MASDojo task package template. Copy this directory to tasks/NNN-slug/ and fill in.
+# Verify the MASVS v2 control and the exact current MASTG-TECH/MASTG-TEST ids
+# against the official MASTG before publishing (ids were renumbered in v1.7+).
+
+id: "NNN-slug"                      # unique slug; also the directory name
+title: "Human-readable Task Title"
+module: "0"                          # module label for grouping/ordering
+order_index: 0                       # order within the module
+domain: "foundations"                # foundations | static-re | storage | crypto |
+                                     # network | api-dynamic | platform | rasp-bypass | capstone
+masvs: ["MASVS-CODE"]                # one or more MASVS v2 controls
+mastg_refs: ["MASTG-TECH-XXXX"]      # verify exact ids against the live MASTG
+difficulty: 1                        # 1..5
+prereqs: []                          # list of task ids forming the DAG
+objective: "One or two sentences telling the learner exactly what to achieve."
+success_type: "flag"                 # flag | static_assert | frida_assert | network_assert
+submission_schema:                   # documents what the learner submits
+  flag: "string"
+time_estimate_min: 20
+is_reference: false                  # true only for the fully-implemented reference tasks
+grader_status: "todo"                # "todo" (scaffold) | "implemented"

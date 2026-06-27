@@ -1,0 +1,1 @@
+**Full solution (gated).** Replace this with the complete walkthrough, including the final flag/value or the exact Frida script. This file is never returned by the API until the learner has used hint tier 3 or made the configured number of failed attempts.
