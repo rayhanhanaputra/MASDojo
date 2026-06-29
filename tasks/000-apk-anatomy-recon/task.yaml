@@ -9,11 +9,14 @@ mastg_refs:
 - MASTG-TECH-0007
 difficulty: 1
 prereqs: []
-objective: Unpack the APK with apktool, read AndroidManifest.xml, enumerate the app's
-  components and permissions, and recover the flag stashed in the app resources.
+objective: >-
+  The decoded output of `apktool d` for the Recon app is provided in this task's
+  artifacts/ folder. Read AndroidManifest.xml (note the components and
+  permissions) and dig through the resources to recover the flag the developers
+  left behind. Submit the flag. No device needed — this is pure static analysis.
 success_type: static_assert
 submission_schema:
   value: string
-time_estimate_min: 25
+time_estimate_min: 20
 is_reference: false
-grader_status: todo
+grader_status: implemented

@@ -1,9 +1,18 @@
 # MASVS Coverage
 
 The full task → MASVS → MASTG mapping for the MASDojo curriculum. Three ⭐
-reference tasks are implemented end-to-end (one per dynamic grader type); the
-rest are scaffolded from `tasks/_template/` with complete metadata and tiered
-hints and a stubbed grader.
+reference tasks are implemented end-to-end (one per dynamic grader type); task
+`000` is also fully implemented as a device-free static-analysis task (solvable
+and gradeable in dry-run from committed decoded resources). The rest are
+scaffolded from `tasks/_template/` with complete metadata, tiered hints, and a
+stubbed grader.
+
+Authoring a new comparison-based (`flag`/`static_assert`) grader is a one-liner
+via the reusable helpers in `runner/runner/graders.py` (`grade_flag` /
+`grade_static`) plus a `grader/expected.json`. A CI integrity check
+(`runner/tests/test_curriculum_integrity.py`) fails the build if a task is
+marked `implemented` while still shipping the scaffold stub, is missing its
+`expected.json`, or the prerequisite DAG has a dangling id or cycle.
 
 > **MASTG ids:** the `MASTG-TECH-*` ids below are placeholders pending
 > verification against the **current official MASTG** — ids were renumbered in
@@ -12,7 +21,7 @@ hints and a stubbed grader.
 
 | Module | Task | id | Grader | MASVS v2 | MASTG (verify) | Status |
 |:------:|------|----|:------:|----------|----------------|:------:|
-| 0 | APK Anatomy & Recon | `000-apk-anatomy-recon` | static_assert | MASVS-CODE | MASTG-TECH-0007 | scaffold |
+| 0 | APK Anatomy & Recon | `000-apk-anatomy-recon` | static_assert | MASVS-CODE | MASTG-TECH-0007 | **implemented** |
 | 0 | Lab Setup Check | `002-lab-setup-check` | static_assert | MASVS-CODE | MASTG-TECH-0001 | scaffold |
 | 1 | ⭐ Find the Hardcoded API Secret | `001-find-hardcoded-secret` | static_assert | MASVS-STORAGE-1 | MASTG-TECH-0011 | **implemented** |
 | 1 | Hidden Endpoint in smali | `011-hidden-endpoint-smali` | static_assert | MASVS-CODE | MASTG-TECH-0017 | scaffold |
