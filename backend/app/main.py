@@ -16,6 +16,13 @@ from app.core.logging import configure_logging
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # noqa: ARG001
     configure_logging()
+    # Fail closed on placeholder secrets before serving any request.
+    settings.assert_secure()
+    if settings.insecure_defaults():
+        logger.warning(
+            "running with INSECURE default secrets ({}) — dev only",
+            ", ".join(settings.insecure_defaults()),
+        )
     logger.info("MASDojo backend starting up")
     yield
     logger.info("MASDojo backend shutting down")

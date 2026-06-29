@@ -42,9 +42,40 @@ class Settings(BaseSettings):
     # Where curriculum task packages live (mounted read-only in compose).
     tasks_dir: Path = Field(default=Path("tasks"))
 
+    # Escape hatch for local dev only: allow boot with the placeholder secrets.
+    allow_insecure_defaults: bool = False
+
+    # Per-user hourly cap on AI mentor calls (BYOK credit protection).
+    mentor_rate_limit_per_hour: int = 30
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    def insecure_defaults(self) -> list[str]:
+        """Return the names of any security secret still set to its placeholder."""
+        bad: list[str] = []
+        if self.jwt_secret == "change-me-to-a-long-random-hex-string":
+            bad.append("JWT_SECRET")
+        if self.master_key == "change-me-fernet-key":
+            bad.append("MASTER_KEY")
+        return bad
+
+    def assert_secure(self) -> None:
+        """Fail closed if shipped with placeholder secrets.
+
+        A default MASTER_KEY makes 'encrypted at rest' meaningless (the Fernet key
+        derives from a public string), and a default JWT_SECRET lets anyone forge
+        tokens. Refuse to boot unless the operator explicitly opts into insecure
+        defaults (ALLOW_INSECURE_DEFAULTS=true) for local development.
+        """
+        bad = self.insecure_defaults()
+        if bad and not self.allow_insecure_defaults:
+            raise RuntimeError(
+                "Refusing to start with placeholder secret(s): "
+                f"{', '.join(bad)}. Set them to strong random values in .env "
+                "(see `make env`), or set ALLOW_INSECURE_DEFAULTS=true for local dev only."
+            )
 
 
 @lru_cache

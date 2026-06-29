@@ -44,11 +44,14 @@ class AnthropicProvider(AIProvider):
             return False
         if resp.status_code == 200:
             return True
-        if resp.status_code in (401, 403):
-            return False
-        # Other errors (e.g. rate limit) don't prove the key is invalid.
+        # 429 = the key works but is rate-limited; treat as valid.
+        if resp.status_code == 429:
+            return True
+        # Anything else (401/403 auth, 404 bad model, 400 bad request, 5xx) is
+        # not a usable key for our purposes — reject so misconfig surfaces now
+        # rather than silently failing every later mentor call.
         logger.warning("anthropic key validation returned {}", resp.status_code)
-        return resp.status_code < 500
+        return False
 
     def complete(
         self,

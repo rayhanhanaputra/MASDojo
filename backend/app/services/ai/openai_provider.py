@@ -42,10 +42,13 @@ class OpenAIProvider(AIProvider):
             return False
         if resp.status_code == 200:
             return True
-        if resp.status_code in (401, 403):
-            return False
+        # 429 = key works but rate-limited; treat as valid.
+        if resp.status_code == 429:
+            return True
+        # 401/403 (auth), 404 (bad model), 400 (bad request), 5xx → reject so a
+        # misconfigured key/model surfaces at entry instead of failing later.
         logger.warning("openai key validation returned {}", resp.status_code)
-        return resp.status_code < 500
+        return False
 
     def complete(
         self,
