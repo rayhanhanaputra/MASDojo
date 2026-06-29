@@ -42,8 +42,17 @@ class OpenAIProvider(AIProvider):
             return False
         if resp.status_code == 200:
             return True
-        # 429 = key works but rate-limited; treat as valid.
+        # 429 covers BOTH transient rate-limiting (key is fine) and
+        # insufficient_quota (exhausted credits / billing off — key is unusable).
+        # Distinguish them so a dead-quota key is rejected at entry, not later.
         if resp.status_code == 429:
+            try:
+                err_type = resp.json().get("error", {}).get("type", "")
+            except Exception:  # noqa: BLE001
+                err_type = ""
+            if "insufficient_quota" in err_type or "billing" in err_type:
+                logger.warning("openai key rejected: {}", err_type)
+                return False
             return True
         # 401/403 (auth), 404 (bad model), 400 (bad request), 5xx → reject so a
         # misconfigured key/model surfaces at entry instead of failing later.

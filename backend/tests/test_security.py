@@ -57,6 +57,12 @@ class _FakeRedis:
     def __init__(self):
         self.store: dict[str, int] = {}
 
+    def set(self, key, val, ex=None, nx=False):
+        if nx and key in self.store:
+            return None
+        self.store[key] = int(val)
+        return True
+
     def incr(self, key):
         self.store[key] = self.store.get(key, 0) + 1
         return self.store[key]

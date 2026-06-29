@@ -36,8 +36,13 @@ class EventPublisher:
         self._channel = channel(submission_id)
         self._replay = replay_key(submission_id)
         try:
+            # Bounded timeouts so a black-holed Redis can never stall the
+            # grading thread on emit().
             self._redis: redis.Redis | None = redis.Redis.from_url(
-                config.redis_url, decode_responses=True
+                config.redis_url,
+                decode_responses=True,
+                socket_connect_timeout=1,
+                socket_timeout=1,
             )
         except Exception as exc:  # noqa: BLE001 - never let telemetry break grading
             logger.warning("event publisher disabled (redis error): {}", exc)
@@ -50,11 +55,18 @@ class EventPublisher:
         if self._redis is None:
             return
         try:
-            self._redis.publish(self._channel, data)
-            self._redis.rpush(self._replay, data)
-            self._redis.expire(self._replay, REPLAY_TTL_SEC)
+            # One round-trip for publish + replay-append + TTL.
+            (
+                self._redis.pipeline()
+                .publish(self._channel, data)
+                .rpush(self._replay, data)
+                .expire(self._replay, REPLAY_TTL_SEC)
+                .execute()
+            )
         except Exception as exc:  # noqa: BLE001
-            logger.debug("event publish failed: {}", exc)
+            # Disable after the first failure so we don't retry-stall every step.
+            logger.debug("event publish failed, disabling publisher: {}", exc)
+            self._redis = None
 
     def done(self, status: str) -> None:
         """Terminal marker so the stream can close cleanly."""

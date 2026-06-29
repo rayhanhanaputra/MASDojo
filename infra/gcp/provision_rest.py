@@ -11,7 +11,6 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 import time
 import urllib.error
 import urllib.request
@@ -22,11 +21,13 @@ BILLING_ACCOUNT = os.environ.get("BILLING_ACCOUNT", "")
 PROJECT_ID = os.environ["PROJECT_ID"]
 PROJECT_NAME = os.environ.get("PROJECT_NAME", "MASDojo")
 ZONE = os.environ.get("ZONE", "asia-southeast1-b")
-REGION = ZONE.rsplit("-", 1)[0]
 MACHINE = os.environ.get("MACHINE", "n2-standard-4")
 VM_NAME = os.environ.get("VM_NAME", "masdojo-runner")
 DISK_GB = int(os.environ.get("DISK_GB", "40"))
-SOURCE_CIDR = os.environ.get("SOURCE_CIDR", "0.0.0.0/0")
+# Required: the operator CIDR allowed to reach SSH + the app ports. No fail-open
+# default — opening 22/8000 (the key-holding API) to the whole internet must be
+# a deliberate choice. Set SOURCE_CIDR="$(curl -s ifconfig.me)/32" for just you.
+SOURCE_CIDR = os.environ.get("SOURCE_CIDR", "")
 
 
 def token() -> str:
@@ -41,6 +42,12 @@ if not BILLING_ACCOUNT:
         "BILLING_ACCOUNT is required, e.g. "
         "BILLING_ACCOUNT=billingAccounts/XXXXXX-XXXXXX-XXXXXX  (find via "
         "`gcloud billing accounts list` or the Cloud Console)."
+    )
+if not SOURCE_CIDR:
+    raise SystemExit(
+        "SOURCE_CIDR is required (who may reach SSH + the app ports). "
+        'Set your own IP only: SOURCE_CIDR="$(curl -s ifconfig.me)/32". '
+        "Use 0.0.0.0/0 only if you truly intend a fully public box."
     )
 
 TOKEN = token()
@@ -96,7 +103,7 @@ PROJECT_NUMBER = proj["projectNumber"]
 log(f"project number {PROJECT_NUMBER}")
 
 # ── 2. billing ────────────────────────────────────────────────────────────────
-log(f"linking billing {BILLING_ACCOUNT}")
+log(f"linking billing account …{BILLING_ACCOUNT[-7:]}")
 api("PUT", f"https://cloudbilling.googleapis.com/v1/projects/{PROJECT_ID}/billingInfo",
     {"billingAccountName": BILLING_ACCOUNT})
 

@@ -10,7 +10,8 @@ RUN npm ci
 
 COPY . .
 
-# Build-time API base URL can be overridden at build or run time.
+# Build-time ONLY: Vite inlines VITE_API_BASE_URL during `npm run build`, so a
+# runtime env has no effect — set it as a build arg (see docker-compose.yml).
 ARG VITE_API_BASE_URL=http://localhost:8000
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 

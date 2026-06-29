@@ -41,11 +41,14 @@ def _require_task(db: Session, task_id: str) -> Task:
 
 
 def _require_provider(db: Session, user: User):
-    """Enforce the per-user rate limit, then return the user's AI provider."""
-    enforce_mentor_rate_limit(user.id)
+    """Return the user's AI provider, enforcing the rate limit.
+
+    Resolve the provider first so a keyless caller gets an accurate 409 (and
+    doesn't burn their hourly budget on calls that can't reach the AI)."""
     provider = key_manager.get_provider(db, user)
     if provider is None:
         raise _NO_KEY
+    enforce_mentor_rate_limit(user.id)
     return provider
 
 

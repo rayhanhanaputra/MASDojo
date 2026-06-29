@@ -12,7 +12,7 @@ from runner.grader_api import Check, GradeResult, GradingContext, constant_time_
 
 
 def grade(ctx: GradingContext) -> GradeResult:
-    expected = ctx.artifacts.expected().get("flag", "")
+    expected = str(ctx.artifacts.expected().get("flag") or "")
     submitted = str(ctx.submission.get("value", "")).strip()
 
     matches = bool(expected) and constant_time_equals(submitted, expected)
@@ -25,7 +25,11 @@ def grade(ctx: GradingContext) -> GradeResult:
     ]
 
     strings_xml = ctx.package_dir / "artifacts" / "res" / "values" / "strings.xml"
-    present = strings_xml.is_file() and expected.encode() in strings_xml.read_bytes()
+    present = (
+        bool(expected)
+        and strings_xml.is_file()
+        and expected.encode() in strings_xml.read_bytes()
+    )
     checks.append(
         Check(
             name="flag is genuinely present in the extracted resources",

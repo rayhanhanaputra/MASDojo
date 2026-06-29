@@ -2,7 +2,12 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend:
@@ -67,8 +72,9 @@ jobs:
           fetch-depth: 0
       - name: No AI attribution in commit history
         run: |
-          if git log --format='%B%n%(trailers)' \
-              | grep -iE 'co-authored-by|generated with claude|🤖|claude code'; then
+          # Materialise the log first so a git failure trips set -e (no false green).
+          log="$(git log --format='%B%n%(trailers)')"
+          if printf '%s' "$log" | grep -iE 'co-authored-by|generated with claude|🤖|claude code'; then
             echo "::error::AI attribution found in commit history (project is sole-authored)."
             exit 1
           fi

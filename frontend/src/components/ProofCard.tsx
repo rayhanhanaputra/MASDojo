@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/endpoints";
 
-// Proof-of-Pwn: a signed, independently-verifiable PASS receipt. Renders on a
-// passed submission and self-verifies via the public /verify endpoint, so the
-// "how do I know it isn't faked?" question is answered on screen.
+// Proof-of-Pwn: a signed, server-verifiable PASS receipt (HMAC-signed by the
+// grader). Renders on a passed submission and self-verifies via the public
+// /verify endpoint — tamper-evident, answering "did THIS server issue this?".
 export function ProofCard({ submissionId }: { submissionId: number }) {
   const [token, setToken] = useState("");
   const [payload, setPayload] = useState<Record<string, unknown> | null>(null);

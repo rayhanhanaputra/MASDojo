@@ -1,15 +1,16 @@
-"""Proof-of-Pwn certificates: tamper-evident, verifiable PASS receipts.
+"""Proof-of-Pwn certificates: tamper-evident, server-verifiable PASS receipts.
 
 When a submission PASSes, the server issues a compact signed token binding the
 verdict to the task, the learner, the score, and a digest of the grading
-evidence. Anyone can POST the token to the public /verify endpoint to confirm it
-was genuinely issued by this server and read its claims — answering the security
-audience's first question about any auto-grader: "how do I know that PASS isn't
-faked?".
+evidence. Anyone can POST the token to the public /verify endpoint to confirm
+*this server* issued it (untampered) and read its claims — a tamper-evident
+receipt, not a self-justified one.
 
-Signed with HMAC-SHA256 keyed from the server's MASTER_KEY (the same secret that
-protects BYOK keys). Symmetric is sufficient because verification is done by the
-server's own /verify endpoint.
+Scope (be honest about what it proves): this is HMAC-SHA256 keyed from the
+server's MASTER_KEY, so it proves a holder of that key issued the token and the
+claims weren't altered. It is NOT third-party-verifiable without the server, and
+it does not by itself prove the server graded honestly — its integrity is only
+as strong as MASTER_KEY (which the startup guard refuses to leave at its default).
 """
 
 from __future__ import annotations
@@ -56,7 +57,7 @@ def verify_certificate(token: str) -> dict[str, Any] | None:
         body_b64, sig_b64 = token.strip().split(".")
         body = _unb64(body_b64)
         sig = _unb64(sig_b64)
-    except (ValueError, Exception):  # noqa: BLE001 - any malformed token -> invalid
+    except Exception:  # noqa: BLE001 - any malformed token -> invalid
         return None
     expected = hmac.new(_key(), body, hashlib.sha256).digest()
     if not hmac.compare_digest(expected, sig):

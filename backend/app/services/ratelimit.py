@@ -23,9 +23,10 @@ def enforce_mentor_rate_limit(user_id: int) -> None:
     key = f"masdojo:mentor:rl:{user_id}"
     try:
         client = get_redis()
+        # Establish the TTL atomically when the window opens, so a crash between
+        # INCR and EXPIRE can't leave a persistent key that locks the user out.
+        client.set(key, 0, ex=3600, nx=True)
         count = client.incr(key)
-        if count == 1:
-            client.expire(key, 3600)
     except Exception as exc:  # noqa: BLE001 - never let limiter outage block usage
         logger.warning("mentor rate-limit check skipped (redis error): {}", exc)
         return

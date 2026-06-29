@@ -26,7 +26,9 @@ submit_and_wait() {
   sid="$(curl -fsS -X POST "$API/submissions/$task" -H "Authorization: Bearer $TOK" \
     -H 'Content-Type: application/json' -d "{\"payload\":$payload}" | jq_get "['id']")"
   for _ in $(seq 1 80); do
-    status="$(curl -fsS "$API/submissions/$sid" -H "Authorization: Bearer $TOK" | jq_get "['status']")"
+    # Tolerate a transient blip in the poll; only a terminal status is authoritative.
+    status="$(curl -fsS "$API/submissions/$sid" -H "Authorization: Bearer $TOK" 2>/dev/null \
+      | jq_get "['status']" 2>/dev/null)" || { sleep 3; continue; }
     case "$status" in passed|failed|error) break;; esac
     sleep 3
   done

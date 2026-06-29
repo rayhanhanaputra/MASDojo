@@ -2,6 +2,11 @@
 
 > A self-hostable, open-source platform for learning **Android application penetration testing** through a guided, adaptive curriculum where every task is graded by a **real Android emulator**.
 
+<!-- CI badge slot: replace OWNER/REPO once pushed to GitHub. -->
+<!-- ![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg) -->
+<!-- ![KVM live-grade](https://github.com/OWNER/REPO/actions/workflows/kvm-live-grade.yml/badge.svg) -->
+
+
 MASDojo turns the OWASP **MASVS / MASTG** body of knowledge into a hands-on dojo. Each task ships with a deliberately vulnerable target app, a clear objective, and an **automated grader**. When you think you've solved a task, MASDojo boots a real Android AVD, installs the target APK, applies your submission — a recovered secret, a Frida script, or a captured request — runs the grader, and returns a **PASS or FAIL with concrete evidence** of exactly which check passed or failed.
 
 That live, evidence-backed grading loop is the heart of the platform.
@@ -15,6 +20,8 @@ That live, evidence-backed grading loop is the heart of the platform.
 ## Why MASDojo
 
 - **The emulator is the answer key.** No self-reported "I think I got it." A task is complete only when a real device run verifies your solution.
+- **Watch it grade.** A live **flight-recorder console** streams every step of the pipeline — AVD snapshot restore, `adb install`, Frida injection, mitmproxy capture, each check — so PASS/FAIL is the climax of a visible pipeline, not a boolean from nowhere.
+- **Proof-of-Pwn.** Every PASS issues a signed, independently-verifiable certificate (public `/verify`) binding the verdict to the task, the learner, and a digest of the evidence — so "how do I know that PASS isn't faked?" is answered on screen.
 - **Adaptive pathway.** Tasks form a prerequisite DAG across ten modules. A pathway engine recommends your next task based on mastery, hints used, and time-to-solve.
 - **AI mentor, bring-your-own-key.** Plug in your *own* Anthropic or OpenAI API key to unlock Socratic tiered hints, "explain this smali/Frida error," and post-task remediation reviews. Keys are encrypted at rest, used server-side only, and the platform is fully functional without them — so it stays free to host.
 - **MASVS-aligned.** Every task maps to a MASVS v2 control and references the relevant MASTG technique/test.

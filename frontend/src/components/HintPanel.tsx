@@ -105,6 +105,7 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
         placeholder="optional: what have you tried? (makes the ✦ AI hint adaptive to your attempt)"
         value={attempt}
         spellCheck={false}
+        maxLength={8000}
         onChange={(e) => setAttempt(e.target.value)}
       />
 
@@ -140,6 +141,7 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
           placeholder="paste a snippet…"
           value={snippet}
           spellCheck={false}
+          maxLength={12000}
           onChange={(e) => setSnippet(e.target.value)}
         />
         <button className="btn-ghost mt-2 w-full text-xs" onClick={explain} disabled={busy}>

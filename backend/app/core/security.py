@@ -43,6 +43,20 @@ def create_access_token(subject: str | int, extra: dict[str, Any] | None = None)
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
+def create_stream_token(user_id: int, submission_id: int, ttl_sec: int = 300) -> str:
+    """A short-lived, single-purpose token for the SSE stream (EventSource can't
+    send headers, so it travels in the URL — keep it narrow and short-lived)."""
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": str(user_id),
+        "scope": "stream",
+        "sid": submission_id,
+        "iat": int(now.timestamp()),
+        "exp": int((now + timedelta(seconds=ttl_sec)).timestamp()),
+    }
+    return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+
 def decode_access_token(token: str) -> dict[str, Any] | None:
     """Return the token payload, or None if invalid/expired."""
     try:

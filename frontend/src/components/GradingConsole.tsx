@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { API_BASE, getToken } from "../api/client";
+import { API_BASE } from "../api/client";
+import { api } from "../api/endpoints";
 
 interface Line {
   ts: number;
@@ -17,23 +18,33 @@ export function GradingConsole({ submissionId }: { submissionId: number }) {
   const boxRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return;
+    let es: EventSource | null = null;
+    let cancelled = false;
     setLines([]);
-    const es = new EventSource(
-      `${API_BASE}/submissions/${submissionId}/stream?token=${encodeURIComponent(token)}`,
-    );
-    es.onmessage = (e) => {
-      try {
-        const line = JSON.parse(e.data) as Line;
-        setLines((prev) => [...prev, line]);
-        if (line.level === "done") es.close();
-      } catch {
-        /* heartbeat / non-JSON line */
-      }
+    // Fetch a short-lived, stream-scoped token (don't put the account JWT in a URL).
+    api
+      .streamToken(submissionId)
+      .then(({ token }) => {
+        if (cancelled) return;
+        es = new EventSource(
+          `${API_BASE}/submissions/${submissionId}/stream?token=${encodeURIComponent(token)}`,
+        );
+        es.onmessage = (e) => {
+          try {
+            const line = JSON.parse(e.data) as Line;
+            setLines((prev) => [...prev, line]);
+            if (line.level === "done") es?.close();
+          } catch {
+            /* heartbeat / non-JSON line */
+          }
+        };
+        es.onerror = () => es?.close();
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+      es?.close();
     };
-    es.onerror = () => es.close();
-    return () => es.close();
   }, [submissionId]);
 
   useEffect(() => {

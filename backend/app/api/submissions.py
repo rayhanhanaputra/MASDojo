@@ -14,14 +14,21 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.security import decode_access_token
+from app.core.security import create_stream_token, decode_access_token
+from app.db.session import SessionLocal
 from app.services.queue import get_redis
 
 from app.api.deps import get_current_user
 from app.core.proof import CERT_VERSION, evidence_digest, issue_certificate
 from app.db.session import get_db
 from app.models.progress import Progress
-from app.models.submission import STATUS_PASSED, STATUS_QUEUED, Submission
+from app.models.submission import (
+    STATUS_ERROR,
+    STATUS_FAILED,
+    STATUS_PASSED,
+    STATUS_QUEUED,
+    Submission,
+)
 from app.models.task import Task
 from app.models.user import User
 from app.schemas.proof import Certificate
@@ -125,23 +132,51 @@ def get_submission(
     return submission
 
 
+@router.get("/{submission_id}/stream-token")
+def stream_token(
+    submission_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> dict[str, str]:
+    """Mint a short-lived, stream-scoped token for the SSE endpoint."""
+    submission = db.get(Submission, submission_id)
+    if not submission or submission.user_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
+    return {"token": create_stream_token(user.id, submission_id)}
+
+
+_TERMINAL = {STATUS_PASSED, STATUS_FAILED, STATUS_ERROR}
+
+
 @router.get("/{submission_id}/stream")
 def stream_grading_events(
     submission_id: int,
-    token: str = Query(..., description="JWT (EventSource cannot send headers)"),
-    db: Session = Depends(get_db),
+    token: str = Query(..., description="stream-scoped token from /stream-token"),
 ) -> StreamingResponse:
     """Server-Sent Events stream of live grading steps for a submission.
 
-    Replays any steps already emitted (so a late connector sees the start), then
-    streams new ones from Redis pub/sub until the terminal verdict event.
+    Auth and ownership are resolved up front in a short-lived session that closes
+    before streaming begins — the generator never holds a pooled DB connection.
+    Replays already-emitted steps, then follows Redis pub/sub until the verdict;
+    if the submission already finished it emits a synthetic done and closes.
     """
     payload = decode_access_token(token)
-    if not payload or "sub" not in payload:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token")
-    submission = db.get(Submission, submission_id)
-    if not submission or submission.user_id != int(payload["sub"]):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
+    if not payload or payload.get("scope") != "stream" or payload.get("sid") != submission_id:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid stream token")
+    try:
+        user_id = int(payload["sub"])
+    except (KeyError, TypeError, ValueError):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid stream token")
+
+    # Resolve ownership + active user in a session that closes immediately.
+    with SessionLocal() as db:
+        user = db.get(User, user_id)
+        submission = db.get(Submission, submission_id)
+        if user is None or not user.is_active:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid stream token")
+        if not submission or submission.user_id != user_id:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
+        already_terminal = submission.status in _TERMINAL
 
     channel = f"masdojo:events:{submission_id}"
     replay_key = f"masdojo:eventlog:{submission_id}"
@@ -154,12 +189,18 @@ def stream_grading_events(
 
     def event_gen() -> Iterator[str]:
         client = get_redis()
-        # Replay steps that already happened.
+        saw_done = False
         for raw in client.lrange(replay_key, 0, -1):
             yield f"data: {raw}\n\n"
             if _is_done(raw):
+                saw_done = True
                 return
-        # Then follow live.
+        # If the job already finished and the done marker wasn't in the replay
+        # (lost/expired), synthesize one so the client closes instead of idling.
+        if already_terminal and not saw_done:
+            yield 'data: {"level":"done","phase":"done","msg":"grading complete"}\n\n'
+            return
+
         pubsub = client.pubsub()
         pubsub.subscribe(channel)
         deadline = time.time() + settings.grading_job_timeout_sec + 30

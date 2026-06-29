@@ -12,7 +12,7 @@ class SubmitRequest(BaseModel):
 
     - flag / static_assert: {"flag": "..."} or {"value": "..."}
     - frida_assert:         {"script": "<frida js>"}
-    - network_assert:       {"note": "..."}  (the interaction is observed live)
+    - network_assert:       {"value": "..."}  (the intercepted value; interaction also observed live)
     """
 
     payload: dict = Field(default_factory=dict)

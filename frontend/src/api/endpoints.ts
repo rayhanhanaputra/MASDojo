@@ -73,6 +73,9 @@ export const api = {
       body: { token },
     }),
 
+  streamToken: (submissionId: number) =>
+    request<{ token: string }>(`/submissions/${submissionId}/stream-token`),
+
   // stats
   stats: () => request<ProfileStats>("/stats"),
 };

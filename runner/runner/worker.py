@@ -51,14 +51,26 @@ class Worker:
             sdk_root=config.android_sdk_root,
             serial=config.emulator_serial,
         )
+        # Only a failed BOOT is fatal (downgrade to dry-run). Frida/CA/snapshot
+        # failures must NOT null the emulator — that would silently grade
+        # device-dependent tasks against null facets and record generic errors.
         try:
             self._emulator.boot(cold=True)
-            self._emulator.start_frida_server()
-            self._emulator.install_mitm_ca()
-            self._emulator.save_snapshot()
         except Exception as exc:  # noqa: BLE001
             logger.exception("failed to boot AVD; falling back to dry-run: {}", exc)
             self._emulator = None
+            self._runner = GradeRunner(emulator=None)
+            return
+
+        for step_name, step in (
+            ("start frida-server", self._emulator.start_frida_server),
+            ("install mitmproxy CA", self._emulator.install_mitm_ca),
+            ("save clean snapshot", self._emulator.save_snapshot),
+        ):
+            try:
+                step()
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("AVD setup step '{}' failed (continuing live): {}", step_name, exc)
         self._runner = GradeRunner(emulator=self._emulator)
 
     def _stop_device(self) -> None:

@@ -16,9 +16,13 @@ fi
 HASH="$(openssl x509 -inform PEM -subject_hash_old -in "${CA}" | head -n1)"
 echo "[mitm-ca] installing CA as ${HASH}.0"
 
+# After `adb root` adbd restarts as root (shell is already root; `su` is absent
+# on google_apis images). Wait for it to come back before remounting /system.
 adb -s "${SERIAL}" root
+adb -s "${SERIAL}" wait-for-device
 adb -s "${SERIAL}" remount || true
-adb -s "${SERIAL}" push "${CA}" "/sdcard/${HASH}.0"
-adb -s "${SERIAL}" shell "su 0 mv /sdcard/${HASH}.0 /system/etc/security/cacerts/${HASH}.0"
-adb -s "${SERIAL}" shell "su 0 chmod 644 /system/etc/security/cacerts/${HASH}.0"
+DEST="/system/etc/security/cacerts/${HASH}.0"
+adb -s "${SERIAL}" push "${CA}" "${DEST}"
+adb -s "${SERIAL}" shell "chmod 644 ${DEST}"
+adb -s "${SERIAL}" shell "[ -f ${DEST} ]"
 echo "[mitm-ca] done — HTTPS is now interceptable on this device"

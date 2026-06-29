@@ -109,11 +109,14 @@ class EmulatorManager:
                 capture_output=True, text=True, check=True,
             ).stdout.splitlines()[0].strip()
             name = f"{digest}.0"
+            dest = f"/system/etc/security/cacerts/{name}"
+            # After `adb root` adbd restarts as root, so shell is already root —
+            # `su` is absent on google_apis images. Wait for adbd to come back.
             self.adb._run(["root"])  # noqa: SLF001
+            self.adb.wait_for_device(timeout=60)
             self.adb._run(["remount"])  # noqa: SLF001
-            self.adb._run(["push", ca, f"/sdcard/{name}"])  # noqa: SLF001
-            self.adb.shell(f"su 0 mv /sdcard/{name} /system/etc/security/cacerts/{name}")
-            self.adb.shell(f"su 0 chmod 644 /system/etc/security/cacerts/{name}")
+            self.adb._run(["push", ca, dest])  # noqa: SLF001
+            self.adb.shell(f"chmod 644 {dest}")
             logger.info("installed mitmproxy CA ({}) into the system store", name)
         except Exception as exc:  # noqa: BLE001
             logger.warning("could not install mitmproxy CA: {}", exc)
