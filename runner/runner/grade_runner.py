@@ -87,9 +87,11 @@ class GradeRunner:
         # `emulator` is an EmulatorManager when a live device is available.
         self._emulator = emulator
 
-    def grade(self, package_dir: Path, submission: dict[str, Any]) -> GradeResult:
+    def grade(self, package_dir: Path, submission: dict[str, Any], emit: Any = None) -> GradeResult:
+        emit = emit or (lambda *a, **k: None)
         meta = _read_meta(package_dir)
         success_type = meta.get("success_type", "flag")
+        emit(f"loading grader for {package_dir.name} ({success_type})", phase="setup")
         module = _load_grader_module(package_dir)
 
         adb = self._emulator.adb if self._emulator else None
@@ -97,24 +99,28 @@ class GradeRunner:
 
         if not live:
             logger.info("grading {} in dry-run (no live device)", package_dir.name)
+            emit("dry-run: no live device — comparing against expected values", phase="grade")
             ctx = GradingContext.build(
-                submission=submission, package_dir=package_dir, log=logger
+                submission=submission, package_dir=package_dir, log=logger, emit=emit
             )
             return self._call(module, ctx)
 
         # Live device path: restore a clean snapshot and install the target.
+        emit("restoring clean AVD snapshot", phase="device")
         self._emulator.restore_snapshot()
+        emit(f"adb install {package_dir.name}/app/target.apk", phase="device")
         adb.install(package_dir / "app" / "target.apk")
 
         if success_type == "network_assert":
-            return self._grade_network(module, meta, package_dir, submission, adb)
-        return self._grade_device(module, meta, package_dir, submission, adb)
+            return self._grade_network(module, meta, package_dir, submission, adb, emit)
+        return self._grade_device(module, meta, package_dir, submission, adb, emit)
 
-    def _grade_device(self, module, meta, package_dir, submission, adb) -> GradeResult:
+    def _grade_device(self, module, meta, package_dir, submission, adb, emit) -> GradeResult:
         from runner.frida_client import FridaClient
 
         frida = None
         if meta.get("success_type") == "frida_assert":
+            emit("attaching Frida to the target process", phase="frida")
             frida = FridaClient(config.emulator_serial)
         ctx = GradingContext.build(
             submission=submission,
@@ -122,10 +128,11 @@ class GradeRunner:
             log=logger,
             adb=adb,
             frida=frida,
+            emit=emit,
         )
         return self._call(module, ctx)
 
-    def _grade_network(self, module, meta, package_dir, submission, adb) -> GradeResult:
+    def _grade_network(self, module, meta, package_dir, submission, adb, emit) -> GradeResult:
         from runner.network import MitmProxyRecorder
 
         package = meta.get("app_package")
@@ -133,15 +140,19 @@ class GradeRunner:
         wait_sec = int(meta.get("interaction_wait_sec", 15))
         flow_path = config.artifacts_dir / f"{package_dir.name}.flows"
 
+        emit("starting mitmproxy + bundled mock backend", phase="network")
         with _BundledBackend(package_dir), MitmProxyRecorder(config.mitm_port, flow_path) as recorder:
             # Route the device's HTTP(S) traffic through mitmproxy.
             adb.shell(f"settings put global http_proxy 10.0.2.2:{config.mitm_port}")
             if package:
+                emit(f"launching {package} through the proxy", phase="network")
                 adb.launch_app(package, activity)
             logger.info("network interaction window: {}s", wait_sec)
+            emit(f"capturing traffic for {wait_sec}s", phase="network")
             time.sleep(wait_sec)
             adb.shell("settings put global http_proxy :0")
             capture = recorder.capture()
+        emit(f"captured {len(capture)} flow(s)", phase="network")
 
         ctx = GradingContext.build(
             submission=submission,
@@ -149,6 +160,7 @@ class GradeRunner:
             log=logger,
             adb=adb,
             network=capture,
+            emit=emit,
         )
         return self._call(module, ctx)
 

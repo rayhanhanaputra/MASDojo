@@ -3,6 +3,9 @@
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || "http://localhost:8000";
 const TOKEN_KEY = "masdojo.token";
 
+/** Public base URL, for non-fetch transports like EventSource. */
+export const API_BASE = BASE_URL;
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }

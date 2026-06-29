@@ -2,12 +2,20 @@
 
 from __future__ import annotations
 
+import json
+import time
+from collections.abc import Iterator
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.core.security import decode_access_token
+from app.services.queue import get_redis
 
 from app.api.deps import get_current_user
 from app.core.proof import CERT_VERSION, evidence_digest, issue_certificate
@@ -115,6 +123,67 @@ def get_submission(
     if not submission or submission.user_id != user.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
     return submission
+
+
+@router.get("/{submission_id}/stream")
+def stream_grading_events(
+    submission_id: int,
+    token: str = Query(..., description="JWT (EventSource cannot send headers)"),
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    """Server-Sent Events stream of live grading steps for a submission.
+
+    Replays any steps already emitted (so a late connector sees the start), then
+    streams new ones from Redis pub/sub until the terminal verdict event.
+    """
+    payload = decode_access_token(token)
+    if not payload or "sub" not in payload:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token")
+    submission = db.get(Submission, submission_id)
+    if not submission or submission.user_id != int(payload["sub"]):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
+
+    channel = f"masdojo:events:{submission_id}"
+    replay_key = f"masdojo:eventlog:{submission_id}"
+
+    def _is_done(raw: str) -> bool:
+        try:
+            return json.loads(raw).get("level") == "done"
+        except (ValueError, TypeError):
+            return False
+
+    def event_gen() -> Iterator[str]:
+        client = get_redis()
+        # Replay steps that already happened.
+        for raw in client.lrange(replay_key, 0, -1):
+            yield f"data: {raw}\n\n"
+            if _is_done(raw):
+                return
+        # Then follow live.
+        pubsub = client.pubsub()
+        pubsub.subscribe(channel)
+        deadline = time.time() + settings.grading_job_timeout_sec + 30
+        try:
+            while time.time() < deadline:
+                msg = pubsub.get_message(timeout=1.0, ignore_subscribe_messages=True)
+                if msg is None:
+                    yield ": keep-alive\n\n"  # heartbeat
+                    continue
+                raw = msg["data"]
+                yield f"data: {raw}\n\n"
+                if _is_done(raw):
+                    return
+        finally:
+            try:
+                pubsub.close()
+            except Exception:  # noqa: BLE001
+                pass
+
+    return StreamingResponse(
+        event_gen(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @router.get("/{submission_id}/certificate", response_model=Certificate)

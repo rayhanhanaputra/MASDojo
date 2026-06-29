@@ -115,6 +115,10 @@ class DeviceAdb(Protocol):  # pragma: no cover - structural typing only
     def pull(self, remote: str, local: str) -> Path: ...
 
 
+def _noop_emit(msg: str, **kwargs: Any) -> None:  # noqa: ARG001
+    return None
+
+
 @dataclass
 class GradingContext:
     submission: dict[str, Any]
@@ -124,6 +128,8 @@ class GradingContext:
     adb: "AdbClient | _NullDevice"
     frida: "FridaClient | _NullDevice"
     network: "NetworkCapture | _NullDevice"
+    # Narrate a step to the live grading console (no-op when not streaming).
+    emit: Any = _noop_emit
 
     @classmethod
     def build(
@@ -135,6 +141,7 @@ class GradingContext:
         adb: Any = None,
         frida: Any = None,
         network: Any = None,
+        emit: Any = None,
     ) -> "GradingContext":
         # Use explicit None checks: a live facet can be legitimately falsy (an
         # empty NetworkCapture has len 0) and must not be replaced by a null stub.
@@ -146,4 +153,5 @@ class GradingContext:
             adb=adb if adb is not None else _NullDevice("adb"),
             frida=frida if frida is not None else _NullDevice("frida"),
             network=network if network is not None else _NullDevice("network"),
+            emit=emit if emit is not None else _noop_emit,
         )

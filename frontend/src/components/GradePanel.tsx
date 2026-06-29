@@ -4,6 +4,7 @@ import { ApiError } from "../api/client";
 import type { Submission } from "../api/types";
 import { Panel, Spinner } from "./ui";
 import { ProofCard } from "./ProofCard";
+import { GradingConsole } from "./GradingConsole";
 
 // Live grading verdict, with per-check evidence and an optional post-task
 // AI review once the task passes.
@@ -33,6 +34,8 @@ export function GradePanel({
         <h2 className="label mb-0">Grading result</h2>
         <Verdict status={submission.status} score={submission.score} />
       </div>
+
+      <GradingConsole submissionId={submission.id} />
 
       {running && (
         <div className="flex items-center gap-3 py-2">

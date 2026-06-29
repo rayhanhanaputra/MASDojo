@@ -78,21 +78,37 @@ class Worker:
 
     # ── job handling ──────────────────────────────────────────────────────
     def _handle(self, job: dict[str, Any]) -> None:
+        from runner.events import EventPublisher
+
         submission_id = job["submission_id"]
         task_id = job["task_id"]
         timeout = int(job.get("timeout_sec", config.job_timeout_sec))
+        events = EventPublisher(submission_id)
+        events.emit(f"job picked up for {task_id}", phase="queue")
         self._results.mark_running(submission_id)
         try:
             package_dir = self._resolve_package(job["package_path"])
             submission = self._fetch_submission_payload(submission_id)
             with hard_timeout(timeout):
-                result = self._runner.grade(package_dir, submission)
+                result = self._runner.grade(package_dir, submission, emit=events.emit)
+            for check in result.checks:
+                events.emit(
+                    f"{'PASS' if check.passed else 'FAIL'} · {check.name}"
+                    + (f" — {check.detail}" if check.detail else ""),
+                    level="check",
+                    phase="grade",
+                )
             self._results.record_result(submission_id, task_id, result)
+            events.done("passed" if result.passed else "failed")
         except JobTimeout as exc:
             self._results.record_error(submission_id, str(exc))
+            events.emit(str(exc), level="error", phase="error")
+            events.done("error")
         except Exception as exc:  # noqa: BLE001 - never let one job kill the loop
             logger.exception("grading job {} failed", submission_id)
             self._results.record_error(submission_id, f"{type(exc).__name__}: {exc}")
+            events.emit(f"{type(exc).__name__}: {exc}", level="error", phase="error")
+            events.done("error")
 
     def _fetch_submission_payload(self, submission_id: int) -> dict[str, Any]:
         from sqlalchemy import create_engine, text
