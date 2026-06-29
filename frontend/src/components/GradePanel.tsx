@@ -3,6 +3,7 @@ import { api } from "../api/endpoints";
 import { ApiError } from "../api/client";
 import type { Submission } from "../api/types";
 import { Panel, Spinner } from "./ui";
+import { ProofCard } from "./ProofCard";
 
 // Live grading verdict, with per-check evidence and an optional post-task
 // AI review once the task passes.
@@ -64,6 +65,8 @@ export function GradePanel({
       {submission.error && (
         <p className="mt-3 font-mono text-xs text-signal-amber">{submission.error}</p>
       )}
+
+      {submission.status === "passed" && <ProofCard submissionId={submission.id} />}
 
       {submission.status === "passed" && graderImplemented && (
         <ReviewBlock taskId={taskId} />

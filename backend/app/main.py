@@ -8,7 +8,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from app.api import auth, mentor, pathway, settings as settings_api, stats, submissions, tasks
+from app.api import (
+    auth,
+    mentor,
+    pathway,
+    proof,
+    settings as settings_api,
+    stats,
+    submissions,
+    tasks,
+)
 from app.core.config import settings
 from app.core.logging import configure_logging
 
@@ -56,3 +65,4 @@ app.include_router(stats.router)
 app.include_router(pathway.router)
 app.include_router(settings_api.router)
 app.include_router(mentor.router)
+app.include_router(proof.router)
