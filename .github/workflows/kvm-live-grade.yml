@@ -1,0 +1,41 @@
+# Field-verification: grade the three reference tasks on a REAL Android emulator.
+#
+# GitHub-hosted runners have no /dev/kvm, so this targets a SELF-HOSTED runner
+# labelled `kvm` (a nested-virt host — see docs/deploy-kvm.md). It is the job
+# that turns "logic-verified" into "field-verified": it builds the APKs, boots
+# the AVD, and asserts both PASS and FAIL on the live device for 001/005/009.
+name: KVM live-grade
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1" # weekly smoke on the self-hosted KVM runner
+
+jobs:
+  live-grade:
+    name: Grade 001 / 005 / 009 on a real emulator
+    runs-on: [self-hosted, kvm]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confirm KVM is available
+        run: |
+          ls -l /dev/kvm
+          egrep -c '(vmx|svm)' /proc/cpuinfo
+
+      - name: Build the vulnerable target APKs
+        run: make apps
+
+      - name: Bring up the full stack (incl. emulator runner)
+        run: |
+          make env
+          docker compose up -d --build db redis backend runner
+          # wait for the runner to cold-boot the AVD and snapshot it
+          timeout 600 bash -c 'until docker compose logs runner | grep -q "saved AVD snapshot"; do sleep 5; done'
+
+      - name: Live PASS/FAIL assertions
+        run: ./infra/ci/live_grade.sh
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

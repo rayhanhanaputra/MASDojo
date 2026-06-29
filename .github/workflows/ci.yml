@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Test
+        working-directory: backend
+        env:
+          JWT_SECRET: ci-not-the-default-secret
+          MASTER_KEY: ci-not-the-default-key
+        run: python -m pytest -q
+
+  runner:
+    name: Runner tests (dry-run) + curriculum integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install (base only — no heavy device extra)
+        working-directory: runner
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Test
+        working-directory: runner
+        env:
+          RUNNER_DRY_RUN: "true"
+        run: python -m pytest -q
+
+  frontend:
+    name: Frontend build (strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+  authorship:
+    name: Authorship guard (sole author, no AI attribution)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: No AI attribution in commit history
+        run: |
+          if git log --format='%B%n%(trailers)' \
+              | grep -iE 'co-authored-by|generated with claude|🤖|claude code'; then
+            echo "::error::AI attribution found in commit history (project is sole-authored)."
+            exit 1
+          fi
+          echo "clean: no AI attribution"

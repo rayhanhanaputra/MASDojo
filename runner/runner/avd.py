@@ -50,12 +50,13 @@ class EmulatorManager:
             "-no-boot-anim",
             "-gpu",
             "swiftshader_indirect",
-            "-read-only",
         ]
         if cold:
-            args.append("-no-snapshot-load")
+            # Cold boot writable so we can install the mitmproxy CA into the
+            # system trust store before snapshotting (enables HTTPS intercept).
+            args += ["-no-snapshot-load", "-writable-system"]
         else:
-            args += ["-snapshot", self._snapshot]
+            args += ["-read-only", "-snapshot", self._snapshot]
         logger.info("booting AVD {} (cold={})", self._avd, cold)
         self._proc = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         self.adb.wait_for_device(timeout=boot_timeout)
@@ -87,6 +88,35 @@ class EmulatorManager:
             logger.info("frida-server started on {}", self._serial)
         except Exception as exc:  # noqa: BLE001
             logger.warning("could not start frida-server: {}", exc)
+
+    def install_mitm_ca(self, ca_path: str = "") -> None:
+        """Install the mitmproxy CA into the system trust store (HTTPS intercept).
+
+        Best-effort: requires a cold boot with -writable-system. Skipped quietly
+        if the CA file or openssl isn't available. Run once before snapshotting.
+        """
+        import os
+        import shutil
+        import subprocess as sp
+
+        ca = ca_path or os.path.expanduser("~/.mitmproxy/mitmproxy-ca-cert.cer")
+        if not Path(ca).is_file() or shutil.which("openssl") is None:
+            logger.warning("mitmproxy CA not installed (missing CA file or openssl)")
+            return
+        try:
+            digest = sp.run(
+                ["openssl", "x509", "-inform", "PEM", "-subject_hash_old", "-in", ca],
+                capture_output=True, text=True, check=True,
+            ).stdout.splitlines()[0].strip()
+            name = f"{digest}.0"
+            self.adb._run(["root"])  # noqa: SLF001
+            self.adb._run(["remount"])  # noqa: SLF001
+            self.adb._run(["push", ca, f"/sdcard/{name}"])  # noqa: SLF001
+            self.adb.shell(f"su 0 mv /sdcard/{name} /system/etc/security/cacerts/{name}")
+            self.adb.shell(f"su 0 chmod 644 /system/etc/security/cacerts/{name}")
+            logger.info("installed mitmproxy CA ({}) into the system store", name)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("could not install mitmproxy CA: {}", exc)
 
     def save_snapshot(self) -> None:
         """Persist the current device state as the clean snapshot."""

@@ -30,11 +30,13 @@ build_one() {
   echo "==> building ${app}"
   pushd "${APPS_DIR}/${app}" >/dev/null
 
-  if [[ -x ./gradlew ]]; then
-    ./gradlew --no-daemon :app:assembleDebug
-  else
-    gradle --no-daemon :app:assembleDebug
+  # Generate a committed-quality wrapper if one isn't present, so subsequent
+  # builds are pinned to a known Gradle version rather than the host's.
+  if [[ ! -x ./gradlew ]]; then
+    echo "    (no gradlew — generating wrapper)"
+    gradle --no-daemon wrapper --gradle-version "${GRADLE_VERSION:-8.7}"
   fi
+  ./gradlew --no-daemon :app:assembleDebug
 
   local apk
   apk="$(find app/build/outputs/apk/debug -name '*.apk' | head -n1)"

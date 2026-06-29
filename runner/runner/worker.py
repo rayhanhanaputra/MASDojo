@@ -54,6 +54,7 @@ class Worker:
         try:
             self._emulator.boot(cold=True)
             self._emulator.start_frida_server()
+            self._emulator.install_mitm_ca()
             self._emulator.save_snapshot()
         except Exception as exc:  # noqa: BLE001
             logger.exception("failed to boot AVD; falling back to dry-run: {}", exc)
