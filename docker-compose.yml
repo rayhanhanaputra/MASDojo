@@ -62,8 +62,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+      # Vite inlines VITE_API_BASE_URL at BUILD time, so it must be a build arg —
+      # a runtime env is ignored. For a remote host set this to the public URL,
+      # e.g. VITE_API_BASE_URL=http://<host-ip>:8000 before `docker compose build`.
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
     depends_on:
       - backend
     ports:

@@ -14,6 +14,7 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
   const [hints, setHints] = useState<RevealedHint[]>([]);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [attempt, setAttempt] = useState("");
   const [snippet, setSnippet] = useState("");
   const [explanation, setExplanation] = useState("");
 
@@ -37,7 +38,8 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
     setNote("");
     setBusy(true);
     try {
-      add(await api.mentorHint(task.id, "", ""), "ai");
+      // Pass the learner's own attempt/scratch so the mentor hint is adaptive.
+      add(await api.mentorHint(task.id, attempt, ""), "ai");
     } catch (e) {
       setNote(
         e instanceof ApiError && e.status === 409
@@ -97,6 +99,14 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
           ✦ AI hint
         </button>
       </div>
+
+      <textarea
+        className="input min-h-[56px] font-mono text-xs"
+        placeholder="optional: what have you tried? (makes the ✦ AI hint adaptive to your attempt)"
+        value={attempt}
+        spellCheck={false}
+        onChange={(e) => setAttempt(e.target.value)}
+      />
 
       {note && <p className="font-mono text-xs text-signal-amber">{note}</p>}
 

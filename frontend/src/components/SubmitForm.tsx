@@ -12,7 +12,7 @@ function buildPayload(task: TaskDetail, value: string): Record<string, unknown> 
     case "frida_assert":
       return { script: value };
     case "network_assert":
-      return { value, note: value };
+      return { value };
     default:
       return { value };
   }

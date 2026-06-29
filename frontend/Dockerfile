@@ -3,9 +3,10 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies first for layer caching.
-COPY package.json ./
-RUN npm install
+# Install dependencies first for layer caching. Use a reproducible, lockfile-
+# pinned install.
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . .
 
