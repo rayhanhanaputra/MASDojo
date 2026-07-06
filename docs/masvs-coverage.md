@@ -4,15 +4,25 @@ The full task → MASVS → MASTG mapping for the MASDojo curriculum. **Every on
 the 25 tasks is implemented with a real payload-detection grader** — the system
 that verifies the learner genuinely applied the technique, not just that they
 found the right shape. Three ⭐ reference tasks (`001`/`005`/`009`) additionally
-drive a live Android emulator; the rest are solvable and gradeable **now, in
-dry-run** from committed artifacts (decoded resources, prefs/log/backup dumps,
-encrypted blobs, captured traffic) — no emulator or APK build required.
+drive a live Android emulator; most others are solvable and gradeable **now, in
+dry-run** from committed artifacts (obfuscated code/resources, encoded prefs/log
+dumps, packed backups, real ciphertext, captured traffic), while the API-abuse
+and capstone tasks exploit the bundled live `vulnapi`.
+
+**No copy-paste.** The challenge files never contain the answer verbatim — the
+learner must *apply the technique* to derive it: base64/XOR-deobfuscate a value
+in decompiled code, reconstruct an obfuscated string in smali, unpack a
+gzip'd/tar backup, decrypt a real ciphertext, triage which third-party request
+leaks PII, or exploit the live `vulnapi` (IDOR / alg:none forge). Seeded tasks
+are also per-learner, so a derived answer can't be shared either.
 
 How each technique is detected:
 
 - **Static / storage / platform / network analysis** — the learner submits the
-  value they recovered; the grader confirms it matches AND genuinely appears in
-  the committed artifact (so the format alone can't be guessed).
+  value they *derived* (decoded, deobfuscated, unpacked, or triaged from the
+  challenge files); the grader constant-time compares it to the seed-specific
+  answer. The answer is never in the files verbatim, so guessing the format
+  doesn't help.
 - **Cryptography** — the learner submits the plaintext they decrypted; it can't
   be guessed, so a correct value *is* proof they performed the decryption. The
   committed ciphertext is real (CI decrypts it to the flag).
