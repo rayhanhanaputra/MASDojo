@@ -1,5 +1,0 @@
-POST http://api.masdojo.example/v1/login HTTP/1.1
-Host: api.masdojo.example
-Content-Type: application/json
-
-{"user":"alice","password":"FLAG{cl34rt3xt_cr3d}"}

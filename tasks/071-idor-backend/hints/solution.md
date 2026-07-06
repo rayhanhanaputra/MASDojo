@@ -1,3 +1,1 @@
-**Full solution.**
-
-Replaying `GET /v1/orders/1002` (someone else's id) returns the victim record whose secret is `FLAG{id0r_cr0ss_us3r}`. Submit it.
+**Full solution.** IDOR: the API returns any order id without an ownership check. Log in, then `GET /orders/1337` (a different customer's order) — its `note` is `FLAG{id0r_cr0ss_us3r}`. Submit it. There is no artifact with the flag; you had to exploit the running API.

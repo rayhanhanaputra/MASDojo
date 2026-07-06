@@ -16,9 +16,13 @@ prereqs:
 - 021-secrets-in-prefs
 - 061-bypass-ssl-pinning
 - 071-idor-backend
-objective: 'One app, the whole kill chain: reverse-engineer it, recover a stored secret,
-  bypass its certificate pinning, then exploit an IDOR on the backend to capture the
-  final flag. Unlocks only after the module leads.'
+objective: >
+  The capstone. Your client wants the VaultBank "master vault" reached. It sits
+  behind the live API (http://localhost:8091) at /admin/vault and is released only
+  to an admin. Chain the course — recon/RE, local storage & crypto, interception &
+  pinning bypass, and auth abuse — culminating in forging an alg:none admin token
+  to reach the vault. Recover the flag it holds. It is in no file; you must exploit.
+
 success_type: flag
 submission_schema:
   flag: string

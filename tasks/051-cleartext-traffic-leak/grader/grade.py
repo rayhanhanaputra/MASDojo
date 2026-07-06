@@ -1,12 +1,9 @@
-"""Grader for 051-cleartext-traffic-leak — payload detection (recovered value).
-
-Verifies the learner recovered the correct value by applying the technique, and
-(where artifacts are committed) that the value genuinely lives in them.
-"""
+"""Seeded grader — the credential is base64 in the one cleartext (http) request;
+the learner must find it and decode it, not read a plaintext flag."""
 from __future__ import annotations
 
-from runner.graders import grade_recovered
+from runner.graders import grade_seeded_recovered
 
 
 def grade(ctx):
-    return grade_recovered(ctx)
+    return grade_seeded_recovered(ctx)

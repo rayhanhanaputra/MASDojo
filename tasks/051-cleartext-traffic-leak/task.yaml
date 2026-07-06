@@ -11,8 +11,12 @@ mastg_refs:
 difficulty: 3
 prereqs:
 - 005-intercept-api-call
-objective: The app sends sensitive data over plain HTTP. Intercept the cleartext request
-  and submit the leaked value.
+objective: >
+  Assessing VaultBank's network traffic, you've captured its startup requests.
+  Most ride HTTPS, but one endpoint is served over plain HTTP — and it carries a
+  credential. Spot the cleartext request among the encrypted ones, extract the
+  credential, and decode it.
+
 success_type: network_assert
 submission_schema:
   value: string

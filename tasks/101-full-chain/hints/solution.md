@@ -1,3 +1,1 @@
-**Full solution.**
-
-Following the chain in `artifacts/chain.md` step by step yields the final flag `FLAG{full_ch41n_pwn3d}`. Submit it.
+**Full solution.** The capstone's final step is the alg:none forge against `/admin/vault`: build `{"alg":"none"}` . `{"role":"admin"}` . `` (empty sig) and send it. The vault returns `FLAG{full_ch41n_pwn3d}`. Submit it. The flag lives only on the live backend — reaching it required the chain, not a walkthrough.

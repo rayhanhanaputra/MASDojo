@@ -1,4 +1,14 @@
-GET http://api.masdojo.example/v1/orders/1001 HTTP/1.1
-Authorization: Bearer <your-session>
+# Captured from VaultBank's app through your proxy. The live API runs at
+# http://localhost:8091 (the bundled vulnapi). Log in first:
+#
+#   POST http://localhost:8091/login   {"username":"demo","password":"demo"}
+#     -> {"access_token":"<token>"}
+#
+# Then it fetches YOUR order:
+#
+GET http://localhost:8091/orders/1002 HTTP/1.1
+Authorization: Bearer <token>
+    -> {"id":1002,"owner":"u1001","item":"Notebook",...}   # mundane, your own
 
-(your order 1001 — ids look sequential)
+# The order id is a direct object reference and ids are NOT scoped to you.
+# Another customer's order isn't 1001/1002...

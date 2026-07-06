@@ -1,3 +1,1 @@
-**Full solution.**
-
-Forge `{"alg":"none"}` header + `{"sub":"alice","role":"admin"}` payload with an empty signature; the server (which accepts alg=none) grants admin and returns `FLAG{jwt_n0n3_f0rg3d}`. Submit it.
+**Full solution.** The verifier accepts `alg:none` (no signature checked). Forge `{"alg":"none"}` . `{"role":"admin"}` . `` (empty sig), send it to `/admin/ledger`, and read `FLAG{jwt_n0n3_f0rg3d}` from the response. Submit it. No file contains the flag — you forged the token and exploited the live API.

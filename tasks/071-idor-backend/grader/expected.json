@@ -1,6 +1,4 @@
 {
   "value": "FLAG{id0r_cr0ss_us3r}",
-  "present_in": [
-    "artifacts/orders_db.json"
-  ]
+  "note": "Recovered by exploiting IDOR on the live vulnapi (GET /orders/1337 with any valid token). Matches vulnapi's IDOR_FLAG; not present in any served artifact."
 }

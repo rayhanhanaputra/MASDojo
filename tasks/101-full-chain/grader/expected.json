@@ -1,6 +1,4 @@
 {
   "value": "FLAG{full_ch41n_pwn3d}",
-  "present_in": [
-    "artifacts/chain.md"
-  ]
+  "note": "Released only by vulnapi GET /admin/vault to an admin caller. The learner must chain the techniques (culminating in the alg:none admin forge, task 072) to reach it. Not in any served artifact."
 }

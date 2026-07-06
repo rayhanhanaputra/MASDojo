@@ -10,8 +10,12 @@ mastg_refs:
 difficulty: 4
 prereqs:
 - 005-intercept-api-call
-objective: Tamper with an object id in an intercepted request to read another user's
-  data, and submit the value you weren't supposed to see.
+objective: >
+  VaultBank's app talks to its live backend at http://localhost:8091. You've
+  captured the request that loads your own order — the order id is a direct object
+  reference, and the server never checks the order belongs to you. Log in, tamper
+  the id to read another customer's order, and recover the flag it holds. The flag
+  is not in any file — you must exploit the running API.
 success_type: network_assert
 submission_schema:
   value: string

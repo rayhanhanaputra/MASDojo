@@ -64,9 +64,19 @@ def test_admin_requires_forged_alg_none_token():
     assert resp.json()["flag"] == _expected("072-broken-auth-token-forgery")
 
 
+def test_capstone_vault_requires_forged_admin_token():
+    # Normal user -> 403; the capstone flag is released only to a forged admin.
+    assert client.get("/admin/vault", headers={"Authorization": f"Bearer {_token()}"}).status_code == 403
+    forged = {"Authorization": f"Bearer {_forge_alg_none({'sub': 'u1001', 'role': 'admin'})}"}
+    resp = client.get("/admin/vault", headers=forged)
+    assert resp.status_code == 200
+    assert resp.json()["flag"] == _expected("101-full-chain")
+
+
 def test_unauthenticated_is_rejected():
     assert client.get("/orders/1337").status_code == 401
     assert client.get("/admin/ledger").status_code == 401
+    assert client.get("/admin/vault").status_code == 401
 
 
 def test_a_correctly_signed_but_non_admin_token_cannot_reach_admin():

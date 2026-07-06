@@ -1,6 +1,4 @@
 {
   "value": "FLAG{jwt_n0n3_f0rg3d}",
-  "present_in": [
-    "artifacts/admin_area.json"
-  ]
+  "note": "Recovered by forging an alg:none admin JWT against the live vulnapi (GET /admin/ledger). Matches vulnapi's JWT_FLAG; not present in any served artifact."
 }

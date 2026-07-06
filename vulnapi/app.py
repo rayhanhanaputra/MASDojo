@@ -33,6 +33,7 @@ _SECRET = b"vaultbank-jwt-signing-secret"
 
 IDOR_FLAG = "FLAG{id0r_cr0ss_us3r}"
 JWT_FLAG = "FLAG{jwt_n0n3_f0rg3d}"
+CAPSTONE_FLAG = "FLAG{full_ch41n_pwn3d}"
 
 # Seeded so the learner's own orders are mundane and #1337 (another user's) holds
 # the flag — only reachable by tampering with the id.
@@ -121,3 +122,14 @@ def admin_ledger(authorization: str | None = Header(None)) -> dict[str, Any]:
         raise HTTPException(403, "admin role required")
     # Reached only by forging an alg:none token with role=admin (task 072).
     return {"ledger": "internal", "flag": JWT_FLAG}
+
+
+@app.get("/admin/vault")
+def admin_vault(authorization: str | None = Header(None)) -> dict[str, Any]:
+    # Capstone (task 101): the final flag is only released to an admin caller, so
+    # the learner must chain the earlier techniques (culminating in the alg:none
+    # admin-token forge from task 072) to reach it. It exists in no file.
+    claims = _claims(authorization)
+    if claims.get("role") != "admin":
+        raise HTTPException(403, "admin role required")
+    return {"vault": "master", "flag": CAPSTONE_FLAG}

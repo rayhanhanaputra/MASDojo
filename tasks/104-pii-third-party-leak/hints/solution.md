@@ -1,3 +1,5 @@
-**Full solution.**
-
-Intercept the startup traffic (or read `capture.txt`). The app posts analytics to `in.thirdparty-metrics.example/collect` with a JSON body like `{"event":"app_open","advertising_id":"...","user_email":"<name>@gmail.com",...}`. The `user_email` is PII shared with a third-party SDK — a data-minimization/privacy violation. Submit that `user_email` value. It is uniquely seeded to you, so there is no shared answer.
+**Full solution.** Of the startup requests, the one to `in.thirdparty-metrics.example` sends `"u":"<base64(email)>"` — PII shared with a third-party tracker (a data-minimization/privacy violation). Decode:
+```python
+import base64; print(base64.b64decode(U).decode())
+```
+Submit the email. Seeded per learner. The app's own `api.vaultbank.example` request and the ad SDK request are decoys — only the tracker leaks PII.

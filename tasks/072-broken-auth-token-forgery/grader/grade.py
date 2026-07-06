@@ -1,12 +1,10 @@
-"""Grader for 072-broken-auth-token-forgery — payload detection (recovered value).
-
-Verifies the learner recovered the correct value by applying the technique, and
-(where artifacts are committed) that the value genuinely lives in them.
-"""
+"""Grader for 072 — JWT alg:none forgery. The flag is not in any committed file:
+the learner forges an unsigned admin token against the live vulnapi and submits
+the value /admin/ledger returns."""
 from __future__ import annotations
 
-from runner.graders import grade_recovered
+from runner.graders import grade_flag
 
 
 def grade(ctx):
-    return grade_recovered(ctx)
+    return grade_flag(ctx)

@@ -11,8 +11,11 @@ mastg_refs:
 difficulty: 4
 prereqs:
 - 071-idor-backend
-objective: The app's session/JWT handling is weak. Forge or tamper with a token to
-  access a protected resource and capture the flag it returns.
+objective: >
+  VaultBank's live API (http://localhost:8091) issues you a normal user JWT, and
+  /admin returns 403. But the server's verifier trusts the token's header 'alg'.
+  Forge an unsigned admin token (alg:none, role=admin), use it to reach the admin
+  ledger, and recover its flag. The flag is not in any file — you forge and exploit.
 success_type: network_assert
 submission_schema:
   value: string

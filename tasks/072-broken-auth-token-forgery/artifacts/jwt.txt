@@ -1,2 +1,8 @@
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbGljZSIsInJvbGUiOiJ1c2VyIn0.c2lnbmF0dXJl
-(header alg=HS256, payload role=user — server also accepts alg=none)
+# A normal session token issued by the live API at http://localhost:8091
+#   POST /login  {"username":"demo","password":"demo"}  -> access_token below.
+# Decode it (jwt.io / base64) to see the structure:
+eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJzdWIiOiJ1MTAwMSIsInJvbGUiOiJ1c2VyIn0.<sig>
+#   header  = {"alg":"HS256","typ":"JWT"}
+#   payload = {"sub":"u1001","role":"user"}   <-- role=user, so /admin is 403
+#
+# The server's verifier trusts the header 'alg'. What happens if alg is "none"?
