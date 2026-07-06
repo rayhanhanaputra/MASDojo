@@ -28,6 +28,7 @@ from loguru import logger
 from runner.config import config
 from runner.grade_runner import GradeRunner
 from runner.results import ResultWriter
+from runner.seeds import derive_seed
 from runner.timeout import JobTimeout, hard_timeout
 
 
@@ -101,9 +102,10 @@ class Worker:
         self._results.mark_running(submission_id)
         try:
             package_dir = self._resolve_package(job["package_path"])
-            submission = self._fetch_submission_payload(submission_id)
+            submission, user_id = self._fetch_submission(submission_id)
+            seed = derive_seed(user_id, task_id) if user_id is not None else ""
             with hard_timeout(timeout):
-                result = self._runner.grade(package_dir, submission, emit=events.emit)
+                result = self._runner.grade(package_dir, submission, emit=events.emit, seed=seed)
             for check in result.checks:
                 events.emit(
                     f"{'PASS' if check.passed else 'FAIL'} · {check.name}"
@@ -123,18 +125,25 @@ class Worker:
             events.emit(f"{type(exc).__name__}: {exc}", level="error", phase="error")
             events.done("error")
 
-    def _fetch_submission_payload(self, submission_id: int) -> dict[str, Any]:
+    def _fetch_submission(self, submission_id: int) -> tuple[dict[str, Any], int | None]:
+        """Return (payload, user_id) for the submission.
+
+        user_id feeds the per-learner seed for seeded challenges, so the runner
+        regenerates the same target the backend served this learner.
+        """
         from sqlalchemy import create_engine, text
 
         engine = create_engine(config.database_url, future=True)
         with engine.connect() as conn:
             row = conn.execute(
-                text("SELECT payload FROM submissions WHERE id=:id"),
+                text("SELECT payload, user_id FROM submissions WHERE id=:id"),
                 {"id": submission_id},
-            ).scalar()
+            ).first()
         if row is None:
-            return {}
-        return row if isinstance(row, dict) else json.loads(row)
+            return {}, None
+        payload, user_id = row[0], row[1]
+        payload = payload if isinstance(payload, dict) else json.loads(payload)
+        return payload, user_id
 
     # ── main loop ─────────────────────────────────────────────────────────
     def run(self) -> None:

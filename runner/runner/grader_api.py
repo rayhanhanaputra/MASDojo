@@ -157,6 +157,9 @@ class GradingContext:
     network: "NetworkCapture | _NullDevice"
     # Narrate a step to the live grading console (no-op when not streaming).
     emit: Any = _noop_emit
+    # Per-(learner, task) seed for seeded challenges; "" for static tasks. A
+    # seeded grader regenerates this learner's answer from it.
+    seed: str = ""
 
     @classmethod
     def build(
@@ -169,6 +172,7 @@ class GradingContext:
         frida: Any = None,
         network: Any = None,
         emit: Any = None,
+        seed: str = "",
     ) -> "GradingContext":
         # Use explicit None checks: a live facet can be legitimately falsy (an
         # empty NetworkCapture has len 0) and must not be replaced by a null stub.
@@ -181,4 +185,5 @@ class GradingContext:
             frida=frida if frida is not None else _NullDevice("frida"),
             network=network if network is not None else _NullDevice("network"),
             emit=emit if emit is not None else _noop_emit,
+            seed=seed,
         )

@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.core.config import settings
+from app.core.seeds import derive_seed, generate_challenge
 from app.db.session import get_db
 from app.models.hint_usage import HintUsage
 from app.models.progress import Progress
@@ -49,10 +50,25 @@ def get_task(task_id: str, db: Session = Depends(get_db)) -> TaskDetail:
     )
 
 
+def _task_dir(task_id: str) -> Path:
+    return (Path(settings.tasks_dir) / task_id).resolve()
+
+
 def _artifacts_root(task_id: str) -> Path:
     """The task's committed challenge files. Only `artifacts/` is ever served —
-    never grader/, frida/, hints/ or expected.json (those are the answer key)."""
-    return (Path(settings.tasks_dir) / task_id / "artifacts").resolve()
+    never grader/, challenge/, frida/, hints/ (those are the answer key)."""
+    return (_task_dir(task_id) / "artifacts").resolve()
+
+
+def _seeded_files(task_id: str, user_id: int) -> dict[str, str] | None:
+    """This learner's generated challenge files, or None if the task is static.
+
+    For a seeded task the artifact content is unique per learner, so a value
+    lifted from one learner's files never solves another's."""
+    spec = generate_challenge(_task_dir(task_id), derive_seed(user_id, task_id))
+    if not spec:
+        return None
+    return {str(k): str(v) for k, v in (spec.get("files") or {}).items()}
 
 
 @router.get("/{task_id}/artifacts", response_model=list[ArtifactEntry])
@@ -64,6 +80,14 @@ def list_artifacts(
     """List the challenge files the learner can download/analyse for this task."""
     if not db.get(Task, task_id):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Task not found")
+
+    seeded = _seeded_files(task_id, user.id)
+    if seeded is not None:
+        return [
+            ArtifactEntry(path=path, size=len(content.encode()))
+            for path, content in sorted(seeded.items())
+        ]
+
     root = _artifacts_root(task_id)
     if not root.is_dir():
         return []
@@ -81,9 +105,18 @@ def get_artifact(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> Response:
-    """Serve one challenge file, confined to the task's artifacts/ directory."""
+    """Serve one challenge file (per-learner generated for seeded tasks,
+    otherwise confined to the task's artifacts/ directory)."""
     if not db.get(Task, task_id):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Task not found")
+
+    seeded = _seeded_files(task_id, user.id)
+    if seeded is not None:
+        content = seeded.get(artifact_path)
+        if content is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Artifact not found")
+        return Response(content=content, media_type="text/plain; charset=utf-8")
+
     root = _artifacts_root(task_id)
     target = (root / artifact_path).resolve()
     # Path-traversal guard: the resolved target must stay inside artifacts/.

@@ -45,6 +45,10 @@ def test_implemented_comparison_tasks_have_expected_json():
     problems = []
     for pkg in _packages():
         meta = _meta(pkg)
+        # Seeded tasks derive the answer from challenge/generate.py, not a static
+        # expected.json — exempt them.
+        if (pkg / "challenge" / "generate.py").is_file():
+            continue
         if meta.get("grader_status") == "implemented" and meta.get("success_type") in COMPARISON_TYPES:
             if not (pkg / "grader" / "expected.json").is_file():
                 problems.append(f"{pkg.name}: implemented {meta.get('success_type')} task missing grader/expected.json")

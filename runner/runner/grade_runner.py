@@ -86,9 +86,17 @@ class GradeRunner:
     def __init__(self, emulator: Any = None) -> None:
         # `emulator` is an EmulatorManager when a live device is available.
         self._emulator = emulator
+        self._seed = ""
 
-    def grade(self, package_dir: Path, submission: dict[str, Any], emit: Any = None) -> GradeResult:
+    def grade(
+        self,
+        package_dir: Path,
+        submission: dict[str, Any],
+        emit: Any = None,
+        seed: str = "",
+    ) -> GradeResult:
         emit = emit or (lambda *a, **k: None)
+        self._seed = seed
         meta = _read_meta(package_dir)
         success_type = meta.get("success_type", "flag")
         emit(f"loading grader for {package_dir.name} ({success_type})", phase="setup")
@@ -101,7 +109,7 @@ class GradeRunner:
             logger.info("grading {} in dry-run (no live device)", package_dir.name)
             emit("dry-run: no live device — comparing against expected values", phase="grade")
             ctx = GradingContext.build(
-                submission=submission, package_dir=package_dir, log=logger, emit=emit
+                submission=submission, package_dir=package_dir, log=logger, emit=emit, seed=seed
             )
             return self._call(module, ctx)
 
@@ -129,6 +137,7 @@ class GradeRunner:
             adb=adb,
             frida=frida,
             emit=emit,
+            seed=self._seed,
         )
         return self._call(module, ctx)
 
@@ -161,6 +170,7 @@ class GradeRunner:
             adb=adb,
             network=capture,
             emit=emit,
+            seed=self._seed,
         )
         return self._call(module, ctx)
 

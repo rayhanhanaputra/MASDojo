@@ -15,6 +15,10 @@ import yaml
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from runner.grade_runner import GradeRunner
+from runner.seeds import generate_challenge
+
+# A fixed seed for grading seeded tasks in the harness.
+_TEST_SEED = "test-seed-0123456789"
 
 REPO = Path(__file__).resolve().parents[2]
 TASKS = REPO / "tasks"
@@ -36,6 +40,10 @@ def _implemented():
 
 
 def _correct_submission(pkg: Path, meta: dict) -> dict:
+    # Seeded tasks have no static expected.json — regenerate the seed's answer.
+    seeded = generate_challenge(pkg, _TEST_SEED)
+    if seeded is not None:
+        return {"value": seeded["answer"]}
     expected = json.loads((pkg / "grader" / "expected.json").read_text())
     if "frida" in expected:
         spec = expected["frida"]
@@ -59,12 +67,12 @@ def test_every_implemented_task_grades_correct_and_wrong():
     assert len(tasks) >= 22, f"expected the full curriculum implemented, got {len(tasks)}"
     runner = GradeRunner(emulator=None)
     for pkg, meta in tasks:
-        ok = runner.grade(pkg, _correct_submission(pkg, meta))
+        ok = runner.grade(pkg, _correct_submission(pkg, meta), seed=_TEST_SEED)
         assert ok.passed, f"{pkg.name}: correct submission did not PASS ({ok.evidence})"
 
         wrong = {"script": "Java.perform(function(){});"} if meta["success_type"] == "frida_assert" \
             else {"value": "definitely-not-the-answer"}
-        bad = runner.grade(pkg, wrong)
+        bad = runner.grade(pkg, wrong, seed=_TEST_SEED)
         assert not bad.passed, f"{pkg.name}: a wrong submission incorrectly PASSED"
 
 

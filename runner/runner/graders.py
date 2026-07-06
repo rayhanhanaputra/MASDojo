@@ -144,6 +144,67 @@ def grade_recovered(ctx: GradingContext) -> GradeResult:
     )
 
 
+def grade_seeded_recovered(ctx: GradingContext) -> GradeResult:
+    """Grade a value recovered from a *per-learner seeded* artifact.
+
+    The task ships `challenge/generate.py`; the runner regenerates this learner's
+    challenge from `ctx.seed` (identical to what the backend served them) and
+    checks the submission against the seed-specific answer. Because every learner
+    has a different answer, a shared value is worthless — this turns the lab into
+    a real assessment. The answer is high-entropy, so a correct submission is
+    itself proof the learner extracted it from their own artifact.
+    """
+    from runner.seeds import generate_challenge
+
+    if not ctx.seed:
+        return GradeResult(
+            passed=False,
+            evidence="Seeded task graded without a learner seed (internal error).",
+            checks=[Check("seed available", False, "no per-learner seed was provided")],
+        )
+
+    spec = generate_challenge(ctx.package_dir, ctx.seed)
+    if not spec or not spec.get("answer"):
+        return GradeResult(
+            passed=False,
+            evidence="Task misconfigured: challenge/generate.py produced no answer.",
+            checks=[Check("configured", False, "seeded generator returned no answer")],
+        )
+
+    expected = str(spec["answer"])
+    submitted = _submitted(ctx)
+    matches = constant_time_equals(submitted, expected)
+    checks = [
+        Check(
+            "recovered value is correct (for your seeded target)",
+            matches,
+            "matches your target's value" if matches else "not the value in your artifact",
+        )
+    ]
+    files = spec.get("files", {}) or {}
+    for rel in spec.get("present_in", []) or []:
+        present = expected in str(files.get(rel, ""))
+        checks.append(
+            Check(f"value genuinely present in {rel}", present,
+                  f"found in {rel}" if present else f"not found in {rel}"))
+
+    passed = all(c.passed for c in checks)
+    return GradeResult.from_checks(
+        checks,
+        "Technique applied: you recovered your target's own secret."
+        if passed
+        else "That is not the secret embedded in your seeded artifact — extract it from your files.",
+        evidence_items=[
+            EvidenceItem(
+                "seeded target",
+                "note",
+                "This challenge is uniquely seeded to you; a value from another learner will not "
+                "pass. The grader regenerated your target from your seed and compared.",
+            )
+        ],
+    )
+
+
 def grade_frida_script(ctx: GradingContext) -> GradeResult:
     """Grade a submitted Frida script.
 
