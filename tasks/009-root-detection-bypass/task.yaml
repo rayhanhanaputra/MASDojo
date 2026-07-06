@@ -4,7 +4,7 @@ module: "9"
 order_index: 1
 domain: "rasp-bypass"
 masvs: ["MASVS-RESILIENCE-1"]
-mastg_refs: ["MASTG-TECH-0048"]  # "Bypassing Root Detection" — verify against live MASTG
+mastg_refs: ["MASTG-TECH-0144"]  
 difficulty: 4
 prereqs: ["041-hook-method-runtime-flag", "042-flip-boolean-gate"]
 objective: >

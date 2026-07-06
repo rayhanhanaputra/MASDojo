@@ -4,9 +4,8 @@ module: "1"
 order_index: 1
 domain: "static-re"
 masvs: ["MASVS-STORAGE-1"]
-# Verify against the live MASTG before publishing — technique name kept as a
-# fallback in case the id has been renumbered.
-mastg_refs: ["MASTG-TECH-0011"]  # "Reviewing decompiled Java/Kotlin code"
+
+mastg_refs: ["MASTG-TECH-0023"]  # "Reviewing decompiled Java/Kotlin code"
 difficulty: 1
 prereqs: ["000-apk-anatomy-recon"]
 objective: >

@@ -7,7 +7,7 @@ masvs:
 - MASVS-NETWORK-2
 - MASVS-RESILIENCE-1
 mastg_refs:
-- MASTG-TECH-0036
+- MASTG-TECH-0012
 difficulty: 4
 prereqs:
 - 041-hook-method-runtime-flag

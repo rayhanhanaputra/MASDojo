@@ -7,7 +7,7 @@ masvs:
 - MASVS-RESILIENCE-2
 - MASVS-RESILIENCE-3
 mastg_refs:
-- MASTG-TECH-0048
+- MASTG-TECH-0043
 difficulty: 5
 prereqs:
 - 009-root-detection-bypass

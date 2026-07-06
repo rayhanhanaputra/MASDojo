@@ -9,7 +9,7 @@ masvs:
 - MASVS-AUTH-1
 - MASVS-RESILIENCE-1
 mastg_refs:
-- MASTG-TECH-0035
+- MASTG-TECH-0011
 difficulty: 5
 prereqs:
 - 012-patch-rebuild-resign

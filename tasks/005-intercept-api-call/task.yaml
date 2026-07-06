@@ -4,7 +4,7 @@ module: "5"
 order_index: 1
 domain: "network"
 masvs: ["MASVS-NETWORK-1"]
-mastg_refs: ["MASTG-TECH-0035"]  # "Intercepting Network Traffic" — verify against live MASTG
+mastg_refs: ["MASTG-TECH-0011"]  
 difficulty: 3
 prereqs: ["000-apk-anatomy-recon"]
 objective: >

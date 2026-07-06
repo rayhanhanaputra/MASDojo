@@ -7,7 +7,7 @@ masvs:
 - MASVS-AUTH-1
 - MASVS-AUTH-2
 mastg_refs:
-- MASTG-TECH-0035
+- MASTG-TECH-0011
 difficulty: 4
 prereqs:
 - 071-idor-backend

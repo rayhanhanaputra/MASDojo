@@ -6,7 +6,7 @@ domain: api-dynamic
 masvs:
 - MASVS-AUTH-1
 mastg_refs:
-- MASTG-TECH-0035
+- MASTG-TECH-0011
 difficulty: 4
 prereqs:
 - 005-intercept-api-call

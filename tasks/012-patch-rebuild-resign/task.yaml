@@ -7,7 +7,7 @@ masvs:
 - MASVS-CODE
 - MASVS-RESILIENCE-1
 mastg_refs:
-- MASTG-TECH-0018
+- MASTG-TECH-0004
 difficulty: 2
 prereqs:
 - 011-hidden-endpoint-smali

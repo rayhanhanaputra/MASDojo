@@ -6,7 +6,7 @@ domain: rasp-bypass
 masvs:
 - MASVS-RESILIENCE-1
 mastg_refs:
-- MASTG-TECH-0028
+- MASTG-TECH-0043
 difficulty: 3
 prereqs:
 - 041-hook-method-runtime-flag

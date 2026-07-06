@@ -120,7 +120,7 @@ Full design notes: [`docs/architecture.md`](docs/architecture.md).
 
 ## Curriculum
 
-Ten modules, ordered so each builds the prerequisites for the next. Full mapping in [`docs/masvs-coverage.md`](docs/masvs-coverage.md).
+Eleven modules, ordered so each builds the prerequisites for the next, covering all eight MASVS v2 categories. Full mapping in [`docs/masvs-coverage.md`](docs/masvs-coverage.md).
 
 | Module | Domain | MASVS focus |
 |--------|--------|-------------|
@@ -134,9 +134,10 @@ Ten modules, ordered so each builds the prerequisites for the next. Full mapping
 | 7 · Auth & API Abuse | `api-dynamic` | MASVS-AUTH-1/2 |
 | 8 · Platform Interaction & IPC | `platform` | MASVS-PLATFORM-1/2/3 |
 | 9 · RASP & Anti-Tampering | `rasp-bypass` | MASVS-RESILIENCE-1..4 |
-| 10 · Capstone | `capstone` | Cross-MASVS |
+| 10 · Privacy & Data Sharing | `privacy` | MASVS-PRIVACY-1 |
+| 11 · Capstone | `capstone` | Cross-MASVS |
 
-**Every one of the 24 tasks has a real payload-detection grader** — the system that verifies you genuinely applied the technique, not just that you guessed a flag. That's what sets MASDojo apart from a bag of vulnerable apps: an automated per-technique mastery check. Tasks are **solvable and gradeable now, in dry-run**, from committed artifacts (decoded resources, prefs/log/backup dumps, real encrypted blobs, captured traffic) — no emulator or APK build required. The three ⭐ reference tasks (`001`/`005`/`009`) additionally run on a live Android emulator. New comparison graders are a one-liner via [`runner/runner/graders.py`](runner/runner/graders.py); see [`tasks/_template/`](tasks/_template/) and [`docs/authoring.md`](docs/authoring.md).
+**Every one of the 25 tasks has a real payload-detection grader** — the system that verifies you genuinely applied the technique, not just that you guessed a flag. That's what sets MASDojo apart from a bag of vulnerable apps: an automated per-technique mastery check. Tasks are **solvable and gradeable now, in dry-run**, from committed artifacts (decoded resources, prefs/log/backup dumps, real encrypted blobs, captured traffic) — no emulator or APK build required. The three ⭐ reference tasks (`001`/`005`/`009`) additionally run on a live Android emulator. New comparison graders are a one-liner via [`runner/runner/graders.py`](runner/runner/graders.py); see [`tasks/_template/`](tasks/_template/) and [`docs/authoring.md`](docs/authoring.md).
 
 ---
 

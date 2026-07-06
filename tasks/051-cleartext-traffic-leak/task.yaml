@@ -7,7 +7,7 @@ masvs:
 - MASVS-NETWORK-1
 - MASVS-NETWORK-2
 mastg_refs:
-- MASTG-TECH-0035
+- MASTG-TECH-0011
 difficulty: 3
 prereqs:
 - 005-intercept-api-call
