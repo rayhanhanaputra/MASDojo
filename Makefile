@@ -24,7 +24,8 @@ up-core: env ## Start everything EXCEPT the runner (works without KVM, e.g. on m
 	docker compose up --build -d db redis backend frontend
 
 solo: env ## Run for a single local participant: no login, straight to the curriculum
-	@grep -q '^SOLO_MODE=true' .env || (sed -i.bak 's|^SOLO_MODE=.*|SOLO_MODE=true|' .env && rm -f .env.bak)
+	@if grep -q '^SOLO_MODE=' .env; then sed -i.bak 's|^SOLO_MODE=.*|SOLO_MODE=true|' .env && rm -f .env.bak; else echo 'SOLO_MODE=true' >> .env; fi
+	@grep -qE '^INSTALL_SALT=.+' .env || (echo "INSTALL_SALT=$$(openssl rand -hex 16)" >> .env && sed -i.bak '/^INSTALL_SALT=$$/d' .env && rm -f .env.bak)
 	docker compose up --build -d db redis backend frontend vulnapi
 	@echo "MASDojo (solo) is up -> http://localhost:5173  (no login; Lab 3 API -> http://localhost:8091)"
 	@echo "For live Frida/RASP grading, run the runner on your host against a local AVD (see docs)."
