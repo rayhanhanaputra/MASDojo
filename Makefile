@@ -32,6 +32,19 @@ solo: env ## Run for a single local participant: no login, straight to the curri
 runner-dryrun: ## Start a no-emulator grader (grades flag/static_assert tasks; macOS-friendly)
 	docker compose --profile dryrun up --build -d runner-dryrun
 
+avd-up: ## Provision a local AVD (rooted + frida) for live Frida/RASP grading
+	bash infra/avd-up.sh
+
+avd-check: ## Pre-flight: confirm the local AVD is ready for live grading
+	bash infra/avd-check.sh
+
+runner-host: ## Run the grader on THIS host in attach mode against the local AVD (no KVM)
+	cd runner && RUNNER_ATTACH=true \
+		DATABASE_URL="postgresql+psycopg://masdojo:masdojo@localhost:5432/masdojo" \
+		REDIS_URL="redis://localhost:6379/0" \
+		TASKS_ROOT="$(CURDIR)/tasks" \
+		python -m runner.worker
+
 down: ## Stop the stack
 	docker compose down
 

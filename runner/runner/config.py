@@ -38,5 +38,11 @@ class RunnerConfig:
     # (flag/static_assert) still grade correctly.
     dry_run: bool = os.environ.get("RUNNER_DRY_RUN", "false").lower() in {"1", "true", "yes"}
 
+    # When true, the runner ATTACHES to an already-running AVD (provisioned by
+    # `make avd-up` on the participant's host) instead of booting + snapshotting
+    # its own. This is the local single-participant model: the emulator is owned
+    # by the participant, the runner just grades against it.
+    attach_mode: bool = os.environ.get("RUNNER_ATTACH", "false").lower() in {"1", "true", "yes"}
+
 
 config = RunnerConfig()

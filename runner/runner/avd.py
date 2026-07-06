@@ -33,7 +33,30 @@ class EmulatorManager:
         self._serial = serial
         self._snapshot = snapshot
         self._proc: subprocess.Popen | None = None
+        self._attached = False
         self.adb = AdbClient(serial)
+
+    @property
+    def attached(self) -> bool:
+        """True when we attached to a participant-owned AVD rather than booting."""
+        return self._attached
+
+    def attach(self, boot_timeout: int = 120) -> None:
+        """Attach to an already-running AVD (provisioned by `make avd-up`).
+
+        We do NOT boot, snapshot, or install a CA here — the participant's host
+        already prepared the device (rooted, frida-server running). We only
+        confirm it's reachable and booted, then grade against it.
+        """
+        self._attached = True
+        logger.info("attaching to running AVD on {}", self._serial)
+        self.adb.wait_for_device(timeout=boot_timeout)
+        self._wait_until_booted(boot_timeout)
+        try:
+            self.adb._run(["root"])  # noqa: SLF001 - idempotent; already rooted by avd-up
+        except Exception:  # noqa: BLE001 - already root / not permitted; carry on
+            pass
+        logger.info("attached to AVD {}", self._serial)
 
     @property
     def _emulator_bin(self) -> str:
@@ -123,11 +146,15 @@ class EmulatorManager:
 
     def save_snapshot(self) -> None:
         """Persist the current device state as the clean snapshot."""
+        if self._attached:
+            return  # the participant owns the device; don't snapshot it
         self._emu_console(f"avd snapshot save {self._snapshot}")
         logger.info("saved AVD snapshot '{}'", self._snapshot)
 
     def restore_snapshot(self) -> None:
         """Restore the clean snapshot, giving each job an identical device."""
+        if self._attached:
+            return  # no snapshot in attach mode — grade against live state
         self._emu_console(f"avd snapshot load {self._snapshot}")
         logger.info("restored AVD snapshot '{}'", self._snapshot)
 
@@ -142,6 +169,9 @@ class EmulatorManager:
             raise AvdError(f"emulator console command failed: {command}: {proc.stderr.strip()}")
 
     def shutdown(self) -> None:
+        if self._attached:
+            logger.info("attach mode: leaving participant-owned AVD running")
+            return
         try:
             self._emu_console("kill")
         except AvdError:

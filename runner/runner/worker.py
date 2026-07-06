@@ -52,6 +52,20 @@ class Worker:
             sdk_root=config.android_sdk_root,
             serial=config.emulator_serial,
         )
+
+        # Attach mode: the participant's host already booted + rooted the AVD and
+        # started frida-server (via `make avd-up`). Just attach and grade — no
+        # boot, no snapshot, no CA install, and never shut their device down.
+        if config.attach_mode:
+            try:
+                self._emulator.attach()
+                self._runner = GradeRunner(emulator=self._emulator)
+            except Exception as exc:  # noqa: BLE001
+                logger.exception("could not attach to the AVD; is `make avd-up` running? {}", exc)
+                self._emulator = None
+                self._runner = GradeRunner(emulator=None)
+            return
+
         # Only a failed BOOT is fatal (downgrade to dry-run). Frida/CA/snapshot
         # failures must NOT null the emulator — that would silently grade
         # device-dependent tasks against null facets and record generic errors.
