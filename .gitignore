@@ -22,11 +22,10 @@ frontend/.vite/
 *.key
 master.key
 
-# Build artifacts
+# Build artifacts — APKs are reproducible via `make apps`, never committed.
 apps/**/build/
 apps/**/.gradle/
 *.apk
-!tasks/**/app/target.apk
 *.idsig
 *.keystore
 
