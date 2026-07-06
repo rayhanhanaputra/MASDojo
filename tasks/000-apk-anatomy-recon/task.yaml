@@ -9,11 +9,12 @@ mastg_refs:
 - MASTG-TECH-0007
 difficulty: 1
 prereqs: []
-objective: >-
-  The decoded output of `apktool d` for the Recon app is provided in this task's
-  artifacts/ folder. Read AndroidManifest.xml (note the components and
-  permissions) and dig through the resources to recover the flag the developers
-  left behind. Submit the flag. No device needed — this is pure static analysis.
+objective: >
+  First contact with VaultBank's "Recon" build. You've decoded the APK
+  (`apktool d`) and have its manifest and resources. Go through them the way you
+  would on any engagement — note the components and permissions, then dig through
+  the strings. A leftover debug secret is hiding among them, but it's
+  base64-encoded, not plaintext. Find the odd one out and decode it.
 success_type: static_assert
 submission_schema:
   value: string

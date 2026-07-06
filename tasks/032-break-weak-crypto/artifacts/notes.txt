@@ -1,3 +1,0 @@
-The app encrypts with AES-ECB and a hardcoded key baked into the binary.
-Recovered static key: "masdojo_ecb_key!" (16 bytes ASCII).
-ECB has no IV and leaks structure — same plaintext block => same ciphertext block.

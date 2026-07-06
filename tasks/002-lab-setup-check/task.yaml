@@ -10,9 +10,11 @@ mastg_refs:
 difficulty: 1
 prereqs:
 - 000-apk-anatomy-recon
-objective: 'Confirm your lab is wired up: adb sees the emulator, frida-server responds,
-  and your proxy is reachable. Submit the value the sanity app prints once all three
-  checks pass.'
+objective: >
+  Before any real work, prove your lab is wired up: adb sees the emulator,
+  frida-server responds, and traffic routes through your proxy. Once the checks
+  are green the healthcheck prints a readiness token — base64-encoded. Decode it
+  and submit the result.
 success_type: static_assert
 submission_schema:
   value: string

@@ -1,4 +1,0 @@
-{
-  "flag": "FLAG{4pk_r3con_c0mpl3t3}",
-  "note": "The flag is embedded in artifacts/res/values/strings.xml (qa_unlock_note). Solvable purely by static analysis of the committed decoded resources — no device required."
-}

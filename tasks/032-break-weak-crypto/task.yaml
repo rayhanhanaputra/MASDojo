@@ -11,8 +11,12 @@ mastg_refs:
 difficulty: 3
 prereqs:
 - 031-decrypt-recovered-key
-objective: The app encrypts data with ECB / a static IV / a predictable PRNG. Exploit
-  the weakness to recover the plaintext flag.
+objective: >
+  VaultBank encrypts a value with AES — but in ECB mode with a key hardcoded in
+  the app (both are the flaw: ECB leaks structure, and a baked-in key means anyone
+  with the APK can decrypt). Recover the key from the decompiled crypto class (it's
+  XOR-obfuscated in the binary), then decrypt the base64 ciphertext in weak.enc to
+  reveal the plaintext.
 success_type: flag
 submission_schema:
   flag: string

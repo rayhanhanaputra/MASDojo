@@ -1,6 +1,4 @@
 {
   "value": "MASDOJO{l4b_r34dy}",
-  "present_in": [
-    "artifacts/setup_check.log"
-  ]
+  "note": "Base64-decoded from the readiness token in setup_check.log. The decoded value does not appear verbatim in any served file."
 }
