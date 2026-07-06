@@ -10,9 +10,12 @@ from sqlalchemy import select
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.progress import Progress
+from app.models.submission import Submission
 from app.models.task import Task
 from app.models.user import User
 from app.schemas.mentor import (
+    AttemptRequest,
+    AttemptResponse,
     ExplainRequest,
     ExplainResponse,
     HintRequest,
@@ -23,6 +26,7 @@ from app.schemas.mentor import (
 from app.services import key_manager
 from app.services.ai import mentor
 from app.services.ai.provider import AIError
+from app.services.queue import enqueue_grading_job
 from app.services.ratelimit import enforce_mentor_rate_limit
 
 router = APIRouter(prefix="/mentor", tags=["mentor"])
@@ -82,6 +86,56 @@ def explain(
     except AIError as exc:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, f"AI provider error: {exc}")
     return ExplainResponse(explanation=text)
+
+
+@router.post("/attempt", response_model=AttemptResponse)
+def attempt(
+    body: AttemptRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> AttemptResponse:
+    """AI-as-adversary: have the AI propose a solution and grade it for real.
+
+    The model gets only the task context — never the learner's seeded artifact or
+    the answer key — then its proposal is graded by the same emulator/oracle as a
+    human submission. On seeded or device-dependent tasks it usually fails, which
+    is the lesson: verify AI output, the grader is the source of truth. The
+    attempt is flagged ai_generated and never touches the learner's own progress.
+    """
+    task = _require_task(db, body.task_id)
+    if task.grader_status != "implemented":
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "This task's grader is not implemented yet."
+        )
+    provider = _require_provider(db, user)
+    try:
+        payload, _raw = mentor.propose_solution(task, provider)
+    except AIError as exc:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, f"AI provider error: {exc}")
+
+    field = "script" if task.success_type == "frida_assert" else "value"
+    submission = Submission(
+        user_id=user.id,
+        task_id=task.id,
+        success_type=task.success_type,
+        payload=payload,
+        ai_generated=True,
+    )
+    db.add(submission)
+    db.flush()  # assign submission.id
+    submission.job_id = enqueue_grading_job(submission.id, task.id, task.package_path)
+    db.commit()
+    db.refresh(submission)
+    return AttemptResponse(
+        submission_id=submission.id,
+        field=field,
+        candidate=str(payload.get(field, "")),
+        note=(
+            "The AI proposed this with no access to your artifact or the answer key. "
+            "The grader — running on the real target — decides if it actually works. "
+            "Watch the verdict: an unverified model answer is not a solution."
+        ),
+    )
 
 
 @router.post("/review", response_model=ReviewResponse)

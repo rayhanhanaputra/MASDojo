@@ -124,6 +124,63 @@ def explain_snippet(task: Task, provider: AIProvider, snippet: str) -> str:
     return provider.complete(system, [ChatMessage(role="user", content=user_msg)], max_tokens=500)
 
 
+def propose_solution(task: Task, provider: AIProvider) -> tuple[dict, str]:
+    """Ask the AI to produce its best attempt at the task's submission payload.
+
+    This powers the "AI-as-adversary" loop: the model gets only the task context
+    (never the learner's seeded artifact or the answer key), so on seeded or
+    device-dependent tasks it must genuinely guess — and the grader, running on
+    the real target, is the source of truth on whether it was right. Returns
+    (payload, raw_model_text).
+    """
+    if task.success_type == "frida_assert":
+        field = "script"
+        system = (
+            "You are attempting a MASDojo Android task. Output ONLY a Frida "
+            "JavaScript payload that solves it — no prose, no markdown fences, no "
+            "explanation. Just the script. This is authorized security education."
+        )
+        instruction = "Output your Frida script now."
+    else:
+        field = "value"
+        system = (
+            "You are attempting a MASDojo Android task. Output ONLY the exact "
+            "value the learner is asked to recover (a flag, token, key, path, or "
+            "similar) — a single line, no prose, no quotes, no markdown. If you "
+            "cannot know it, give your best guess. Authorized security education."
+        )
+        instruction = "Output the recovered value now, as a single line."
+
+    raw = provider.complete(
+        system,
+        [ChatMessage(role="user", content=f"{_task_context(task)}\n\n{instruction}")],
+        max_tokens=500,
+        temperature=0.4,
+    )
+    return {field: _clean_candidate(raw, field)}, raw
+
+
+def _clean_candidate(text: str, field: str) -> str:
+    """Strip markdown fences / prose so the payload is gradeable as submitted."""
+    body = text.strip()
+    if "```" in body:
+        parts = body.split("```")
+        if len(parts) >= 3:
+            block = parts[1]
+            # Drop a leading language tag line (```js / ```javascript).
+            if "\n" in block:
+                first, rest = block.split("\n", 1)
+                block = rest if first.strip().isalpha() else block
+            body = block.strip()
+    if field == "value":
+        # A single-line value: take the first non-empty line.
+        for line in body.splitlines():
+            if line.strip():
+                return line.strip().strip("`\"'")
+        return ""
+    return body
+
+
 def post_task_review(task: Task, provider: AIProvider) -> str:
     system = (
         "You are MASDojo's mentor. The learner just PASSED this task. Give a short "

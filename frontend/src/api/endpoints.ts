@@ -74,6 +74,12 @@ export const api = {
     }),
   mentorReview: (task_id: string) =>
     request<{ review: string }>("/mentor/review", { method: "POST", body: { task_id } }),
+  // AI-as-adversary: AI proposes a solution, graded for real by the emulator.
+  mentorAttempt: (task_id: string) =>
+    request<{ submission_id: number; field: string; candidate: string; note: string }>(
+      "/mentor/attempt",
+      { method: "POST", body: { task_id } },
+    ),
 
   // proof-of-pwn
   getCertificate: (submissionId: number) =>

@@ -36,3 +36,17 @@ class ReviewRequest(BaseModel):
 
 class ReviewResponse(BaseModel):
     review: str
+
+
+class AttemptRequest(BaseModel):
+    task_id: str
+
+
+class AttemptResponse(BaseModel):
+    """The AI's proposed attempt, submitted for real grading. Poll the returned
+    submission_id for the grader's verdict — the source of truth."""
+
+    submission_id: int
+    field: str  # "value" | "script"
+    candidate: str  # what the AI proposed
+    note: str

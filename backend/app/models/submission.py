@@ -49,6 +49,11 @@ class Submission(Base, TimestampMixin):
     score: Mapped[int] = mapped_column(Integer, default=0)
     error: Mapped[str | None] = mapped_column(Text)
 
+    # True when the payload was proposed by the AI mentor (the "AI-as-adversary"
+    # loop) rather than the learner. The grader adjudicates it identically, but
+    # it never affects the learner's own progress/score.
+    ai_generated: Mapped[bool] = mapped_column(default=False)
+
     # Redis job id assigned when enqueued.
     job_id: Mapped[str | None] = mapped_column(String(64), index=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

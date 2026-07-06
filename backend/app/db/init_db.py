@@ -38,6 +38,7 @@ def wait_for_db(max_attempts: int = 30, delay_sec: float = 1.0) -> None:
 # existing table). Each must be idempotent. Remove once Alembic is adopted.
 _COLUMN_PATCHES = (
     "ALTER TABLE submissions ADD COLUMN IF NOT EXISTS evidence_bundle JSON DEFAULT '[]'",
+    "ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ai_generated BOOLEAN DEFAULT FALSE",
 )
 
 

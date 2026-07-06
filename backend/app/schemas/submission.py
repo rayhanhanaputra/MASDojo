@@ -43,6 +43,7 @@ class SubmissionPublic(BaseModel):
     checks: list[CheckResult]
     evidence_bundle: list[EvidenceItem] = []
     score: int
+    ai_generated: bool = False
     error: str | None = None
     job_id: str | None = None
     created_at: datetime

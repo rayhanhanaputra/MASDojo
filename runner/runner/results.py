@@ -52,15 +52,20 @@ class ResultWriter:
         status = "passed" if result.passed else "failed"
         with self._engine.begin() as conn:
             row = conn.execute(
-                text("SELECT user_id FROM submissions WHERE id=:id"),
+                text("SELECT user_id, ai_generated FROM submissions WHERE id=:id"),
                 {"id": submission_id},
             ).first()
             if row is None:
                 logger.error("submission {} vanished before result write", submission_id)
                 return
-            user_id = row[0]
+            user_id, ai_generated = row[0], bool(row[1])
 
-            score = self._update_progress(conn, user_id, task_id, result.passed, now)
+            # AI-as-adversary attempts are graded identically but must never
+            # affect the learner's own progress or score.
+            if ai_generated:
+                score = 0
+            else:
+                score = self._update_progress(conn, user_id, task_id, result.passed, now)
 
             conn.execute(
                 text(

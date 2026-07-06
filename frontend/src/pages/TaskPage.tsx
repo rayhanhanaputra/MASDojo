@@ -14,6 +14,7 @@ import { SubmitForm } from "../components/SubmitForm";
 import { ChallengeFiles } from "../components/ChallengeFiles";
 import { GradePanel } from "../components/GradePanel";
 import { HintPanel } from "../components/HintPanel";
+import { AiAttemptPanel } from "../components/AiAttemptPanel";
 
 const TERMINAL = new Set(["passed", "failed", "error"]);
 
@@ -126,8 +127,16 @@ export function TaskPage() {
           )}
         </div>
 
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <HintPanel task={task} passed={passed} />
+          <Panel>
+            <h2 className="label">AI vs the grader</h2>
+            <p className="text-xs text-zinc-500">
+              Let the AI attempt this task with no access to your files, then watch the emulator
+              grader judge its answer. The grader is the source of truth — not the model.
+            </p>
+            <AiAttemptPanel taskId={taskId} />
+          </Panel>
         </div>
       </div>
     </div>

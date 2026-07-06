@@ -81,6 +81,7 @@ export interface Submission {
   checks: CheckResult[];
   evidence_bundle: EvidenceItem[];
   score: number;
+  ai_generated?: boolean;
   error: string | null;
   job_id: string | null;
   created_at: string;
