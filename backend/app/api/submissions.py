@@ -253,7 +253,9 @@ def get_certificate(
         "learner": user.display_name,
         "score": submission.score,
         "submission_id": submission.id,
-        "evidence_sha256": evidence_digest(submission.evidence, submission.checks),
+        "evidence_sha256": evidence_digest(
+            submission.evidence, submission.checks, submission.evidence_bundle
+        ),
         "issued_at": issued,
         "grader": "MASDojo emulator grader",
     }

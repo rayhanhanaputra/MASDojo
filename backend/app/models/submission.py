@@ -42,6 +42,10 @@ class Submission(Base, TimestampMixin):
     evidence: Mapped[str] = mapped_column(Text, default="")
     # Structured per-check results: [{"name","passed","detail"}].
     checks: Mapped[list] = mapped_column(JSON, default=list)
+    # Proof-of-technique evidence bundle: [{"label","kind","content"}] — the
+    # flight-recorder trail (baseline/hooked logcat, traces, timeline) backing
+    # the verdict. Empty for simple comparison graders.
+    evidence_bundle: Mapped[list] = mapped_column(JSON, default=list)
     score: Mapped[int] = mapped_column(Integer, default=0)
     error: Mapped[str | None] = mapped_column(Text)
 

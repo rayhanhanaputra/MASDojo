@@ -38,9 +38,18 @@ def _unb64(s: str) -> bytes:
     return base64.urlsafe_b64decode(s + "=" * (-len(s) % 4))
 
 
-def evidence_digest(evidence: str, checks: list[dict[str, Any]]) -> str:
-    """Stable SHA-256 over the grading evidence + per-check results."""
-    blob = json.dumps({"evidence": evidence, "checks": checks}, sort_keys=True).encode()
+def evidence_digest(
+    evidence: str,
+    checks: list[dict[str, Any]],
+    evidence_bundle: list[dict[str, Any]] | None = None,
+) -> str:
+    """Stable SHA-256 over the grading evidence, per-check results, and the
+    proof-of-technique evidence bundle — so the flight-recorder trail is covered
+    by the signed certificate and any tampering is detectable."""
+    blob = json.dumps(
+        {"evidence": evidence, "checks": checks, "evidence_bundle": evidence_bundle or []},
+        sort_keys=True,
+    ).encode()
     return hashlib.sha256(blob).hexdigest()
 
 

@@ -34,11 +34,21 @@ def wait_for_db(max_attempts: int = 30, delay_sec: float = 1.0) -> None:
     raise RuntimeError("database did not become available in time")
 
 
+# Additive column patches for existing databases (create_all won't ALTER an
+# existing table). Each must be idempotent. Remove once Alembic is adopted.
+_COLUMN_PATCHES = (
+    "ALTER TABLE submissions ADD COLUMN IF NOT EXISTS evidence_bundle JSON DEFAULT '[]'",
+)
+
+
 def init_db() -> None:
     configure_logging()
     wait_for_db()
     logger.info("creating database tables")
     Base.metadata.create_all(bind=engine)
+    with engine.begin() as conn:
+        for stmt in _COLUMN_PATCHES:
+            conn.execute(text(stmt))
     logger.info("database ready")
 
 

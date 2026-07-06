@@ -3,5 +3,14 @@
   "unlock_marker": "MASDOJO_UNLOCK",
   "denied_marker": "MASDOJO_DENIED",
   "logcat_tag": "VaultGuard",
-  "note": "VaultGuard logs 'VaultGuard: MASDOJO_UNLOCK:<flag>' only when RootChecker.isDeviceRooted() returns false. On the emulator it returns true unless the learner's Frida hook flips it."
+  "frida": {
+    "package": "org.masdojo.vaultguard",
+    "class": "org.masdojo.vaultguard.RootChecker",
+    "method": "isDeviceRooted",
+    "returns": "false",
+    "must_contain": ["implementation"],
+    "unlock_marker": "MASDOJO_UNLOCK",
+    "denied_marker": "MASDOJO_DENIED"
+  },
+  "note": "Behavioral grader: baseline run (no hook) must show MASDOJO_DENIED (app gates on the rooted emulator); the learner's hook run must show MASDOJO_UNLOCK:<flag>. Dry-run falls back to static validation using the frida spec above."
 }

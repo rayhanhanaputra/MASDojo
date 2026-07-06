@@ -16,7 +16,25 @@ task's expected values.
 
 from __future__ import annotations
 
-from runner.grader_api import Check, GradeResult, GradingContext, constant_time_equals
+import json
+
+from runner.grader_api import (
+    Check,
+    EvidenceItem,
+    GradeResult,
+    GradingContext,
+    constant_time_equals,
+)
+
+# A no-op Frida payload used for the baseline run: it spawns the app but hooks
+# nothing, so the app exhibits its natural (gated) behaviour.
+_NOOP_SCRIPT = "Java.perform(function(){});"
+
+
+def _tail(text: str, lines: int = 40) -> str:
+    """Keep the last N non-empty log lines so the evidence bundle stays compact."""
+    kept = [ln for ln in text.splitlines() if ln.strip()]
+    return "\n".join(kept[-lines:])
 
 # Submission fields we accept, in priority order, for a comparison grader.
 _SUBMIT_FIELDS = ("flag", "value", "secret")
@@ -184,12 +202,19 @@ def _grade_frida_static(spec: dict, script: str) -> GradeResult:
         checks.append(Check("script provided", True, "no static spec configured"))
 
     passed = all(c.passed for c in checks)
+    note = EvidenceItem(
+        "static analysis (no device)",
+        "note",
+        "Graded without an emulator: the script was checked for the required hook. "
+        "Run on a KVM host for the behavioral proof (baseline-locked → hook → unlocked).",
+    )
     return GradeResult.from_checks(
         checks,
         "Frida script statically validated — it hooks the right method and enforces the "
         "required behaviour. (Run on a KVM host for full live verification.)"
         if passed
         else "The Frida script does not correctly implement the required hook.",
+        evidence_items=[note],
     )
 
 
@@ -222,3 +247,125 @@ def _grade_frida_live(ctx: GradingContext, spec: dict, script: str) -> GradeResu
         checks,
         "Bypass verified live on the emulator." if passed else "The bypass did not take effect on the device.",
     )
+
+
+def grade_frida_behavioral(ctx: GradingContext) -> GradeResult:
+    """Behavioral (proof-of-technique) grader for a runtime-hook task.
+
+    This is the strongest grader in the platform. Rather than checking that a
+    success marker merely appears, it proves the learner's hook *caused* the
+    state change, by running the app twice:
+
+      1. **Baseline** — spawn the app with no hook and confirm the guard is
+         actually engaged (the app denies access on this device). This rules out
+         a false pass where the environment wasn't gating in the first place.
+      2. **Hooked** — spawn again with the learner's script and confirm the guard
+         is now defeated (access unlocked, the expected flag revealed).
+
+    A pass therefore means: locked at baseline → unlocked after your hook → the
+    bypass is *attributable to your script*. Every run is captured into a
+    structured evidence bundle (baseline logcat, post-hook logcat, Frida message
+    trace, timeline) that backs the verdict and is signed by the Proof-of-Pwn
+    certificate.
+
+    In dry-run (no device) it degrades to static validation of the script so the
+    task stays solvable for self-study; the behavioral proof needs a KVM host.
+
+    expected.json:
+        {"flag": "FLAG{...}",
+         "frida": {"package": "...", "class": "...", "method": "...",
+                   "returns": "false", "must_contain": ["..."],
+                   "unlock_marker": "MASDOJO_UNLOCK",
+                   "denied_marker": "MASDOJO_DENIED"}}
+    """
+    expected = ctx.artifacts.expected()
+    spec = expected.get("frida") or {}
+    script = str(ctx.submission.get("script", "")).strip()
+
+    if not script:
+        return GradeResult(
+            passed=False,
+            evidence="No Frida script was submitted.",
+            checks=[Check("script provided", False, "submission did not include a script")],
+        )
+
+    live = type(ctx.frida).__name__ != "_NullDevice" and spec.get("package") and spec.get("unlock_marker")
+    if not live:
+        return _grade_frida_static(spec, script)
+    return _grade_frida_delta(ctx, spec, expected, script)
+
+
+def _grade_frida_delta(ctx: GradingContext, spec: dict, expected: dict, script: str) -> GradeResult:
+    package = spec["package"]
+    unlock = spec["unlock_marker"]
+    denied = spec.get("denied_marker", "")
+    flag = spec.get("flag") or expected.get("flag", "")
+
+    def _run(source: str, note: str) -> tuple[str, list]:
+        ctx.emit(note, phase="frida")
+        ctx.adb.clear_logcat()
+        session, _pid = ctx.frida.spawn_and_inject(package, source)
+        try:
+            session.wait(6)
+            log = ctx.adb.logcat_dump()
+            payloads = session.payloads() if hasattr(session, "payloads") else []
+        finally:
+            session.unload()
+        return log, payloads
+
+    baseline_log, _ = _run(_NOOP_SCRIPT, "baseline run — launching the app unmodified to confirm it gates")
+    hooked_log, frida_msgs = _run(script, "injecting your Frida script and re-running")
+
+    baseline_gated = (denied in baseline_log if denied else True) and unlock not in baseline_log
+    hooked_unlocked = unlock in hooked_log and (denied not in hooked_log if denied else True)
+    flag_ok = bool(flag) and any(unlock in ln and flag in ln for ln in hooked_log.splitlines())
+
+    checks = [
+        Check(
+            "target genuinely gates on this device (baseline locked)",
+            baseline_gated,
+            "the app denied access before your hook — the guard is real"
+            if baseline_gated
+            else "the app did not gate at baseline, so a pass cannot be attributed to your hook",
+        ),
+        Check(
+            "your hook flipped the guard at runtime (locked → unlocked)",
+            hooked_unlocked,
+            "the unlock marker appeared only after your hook was injected"
+            if hooked_unlocked
+            else "the guard was not bypassed by your hook",
+        ),
+    ]
+    if flag:
+        checks.append(
+            Check(
+                "unlocked path revealed the expected flag",
+                flag_ok,
+                "flag recovered at runtime" if flag_ok else "expected flag not observed",
+            )
+        )
+
+    passed = all(c.passed for c in checks)
+    timeline = (
+        f"baseline (no hook): {'DENIED / locked' if baseline_gated else 'not gated'}\n"
+        f"after your hook:    {'UNLOCKED' if hooked_unlocked else 'still locked'}\n"
+        f"flag revealed:      {'yes' if flag_ok else 'no'}"
+    )
+    items = [
+        EvidenceItem("baseline logcat (no hook)", "log", _tail(baseline_log) or "(empty)"),
+        EvidenceItem("logcat after your hook", "log", _tail(hooked_log) or "(empty)"),
+        EvidenceItem("frida send() messages", "trace", json.dumps(frida_msgs, indent=2) if frida_msgs else "(none)"),
+        EvidenceItem("timeline", "timeline", timeline),
+    ]
+    evidence = (
+        "Behavioral proof: the target was locked at baseline and your hook unlocked it at "
+        "runtime — the bypass is attributable to your script."
+        if passed
+        else "Not verified: "
+        + (
+            "the app was not gating at baseline (cannot attribute a bypass to your hook). "
+            if not baseline_gated
+            else "your hook did not defeat the guard. "
+        )
+    )
+    return GradeResult.from_checks(checks, evidence, evidence_items=items)

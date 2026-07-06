@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { api } from "../api/endpoints";
 import { ApiError } from "../api/client";
-import type { Submission } from "../api/types";
+import type { EvidenceItem, Submission } from "../api/types";
 import { Panel, Spinner } from "./ui";
 import { ProofCard } from "./ProofCard";
 import { GradingConsole } from "./GradingConsole";
@@ -65,6 +65,10 @@ export function GradePanel({
         </ul>
       )}
 
+      {submission.evidence_bundle?.length > 0 && (
+        <EvidenceBundle items={submission.evidence_bundle} />
+      )}
+
       {submission.error && (
         <p className="mt-3 font-mono text-xs text-signal-amber">{submission.error}</p>
       )}
@@ -75,6 +79,46 @@ export function GradePanel({
         <ReviewBlock taskId={taskId} />
       )}
     </Panel>
+  );
+}
+
+// The proof-of-technique flight recorder: the structured artifacts (baseline vs
+// hooked logcat, frida trace, timeline) that prove the technique actually took
+// effect — not just that a flag string matched.
+function EvidenceBundle({ items }: { items: EvidenceItem[] }) {
+  const [open, setOpen] = useState<number | null>(0);
+  const icon: Record<string, string> = {
+    log: "▤",
+    trace: "↯",
+    timeline: "⋮",
+    note: "✎",
+    network: "⇄",
+  };
+  return (
+    <div className="mt-3 rounded-md border border-signal-cyan/30">
+      <div className="border-b border-signal-cyan/20 px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-signal-cyan">
+        ✦ evidence bundle · proof of technique
+      </div>
+      <ul>
+        {items.map((it, i) => (
+          <li key={i} className="border-t border-ink-500/40 first:border-t-0">
+            <button
+              className="flex w-full items-center gap-2 px-3 py-2 text-left font-mono text-[11px] text-zinc-300 hover:text-phosphor"
+              onClick={() => setOpen(open === i ? null : i)}
+            >
+              <span className="text-signal-cyan">{icon[it.kind] ?? "•"}</span>
+              <span className="flex-1 truncate">{it.label}</span>
+              <span className="text-zinc-600">{open === i ? "−" : "+"}</span>
+            </button>
+            {open === i && (
+              <pre className="max-h-56 overflow-auto border-t border-ink-500/40 bg-ink-900/90 px-3 py-2 font-mono text-[10.5px] leading-relaxed text-zinc-400">
+                {it.content}
+              </pre>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 

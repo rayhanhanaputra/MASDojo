@@ -18,9 +18,10 @@ from runner.grade_runner import GradeRunner
 
 REPO = Path(__file__).resolve().parents[2]
 TASKS = REPO / "tasks"
-# The two ⭐ live-only reference graders need a real device; covered separately
-# in test_reference_graders.py with faithful device fakes.
-LIVE_ONLY = {"005-intercept-api-call", "009-root-detection-bypass"}
+# 005 (network_assert) needs a live capture; covered separately in
+# test_reference_graders.py with a faithful NetworkCapture fake. 009 now grades
+# in dry-run too (static fallback of the behavioral Frida grader).
+LIVE_ONLY = {"005-intercept-api-call"}
 
 
 def _implemented():

@@ -24,6 +24,14 @@ class CheckResult(BaseModel):
     detail: str = ""
 
 
+class EvidenceItem(BaseModel):
+    """One structured proof artifact backing the verdict (log, trace, timeline)."""
+
+    label: str
+    kind: str
+    content: str
+
+
 class SubmissionPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -33,6 +41,7 @@ class SubmissionPublic(BaseModel):
     status: str
     evidence: str
     checks: list[CheckResult]
+    evidence_bundle: list[EvidenceItem] = []
     score: int
     error: str | None = None
     job_id: str | None = None

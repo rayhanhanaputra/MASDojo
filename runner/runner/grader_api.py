@@ -45,6 +45,23 @@ class Check:
 
 
 @dataclass
+class EvidenceItem:
+    """One piece of the evidence bundle — the flight-recorder trail that proves a
+    technique actually took effect. Unlike the free-text `evidence` summary, these
+    are structured, portable artifacts (logcat before/after a hook, a Frida
+    message trace, a captured request, a timeline) the learner can inspect and
+    that the Proof-of-Pwn certificate signs over.
+    """
+
+    label: str
+    kind: str  # "log" | "trace" | "timeline" | "note" | "network"
+    content: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"label": self.label, "kind": self.kind, "content": self.content}
+
+
+@dataclass
 class GradeResult:
     """The outcome of grading a submission."""
 
@@ -52,6 +69,9 @@ class GradeResult:
     evidence: str
     checks: list[Check] = field(default_factory=list)
     score: int = 0
+    # Structured proof artifacts backing the verdict (may be empty for simple
+    # comparison graders).
+    evidence_items: list[EvidenceItem] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -59,13 +79,20 @@ class GradeResult:
             "evidence": self.evidence,
             "checks": [c.to_dict() for c in self.checks],
             "score": self.score,
+            "evidence_items": [e.to_dict() for e in self.evidence_items],
         }
 
     @classmethod
-    def from_checks(cls, checks: list[Check], evidence: str) -> "GradeResult":
+    def from_checks(
+        cls,
+        checks: list[Check],
+        evidence: str,
+        evidence_items: list[EvidenceItem] | None = None,
+    ) -> "GradeResult":
         """Build a result that passes only if every check passed."""
         passed = all(c.passed for c in checks)
-        return cls(passed=passed, evidence=evidence, checks=checks)
+        return cls(passed=passed, evidence=evidence, checks=checks,
+                   evidence_items=evidence_items or [])
 
 
 class Artifacts:

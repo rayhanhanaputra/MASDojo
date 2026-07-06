@@ -63,6 +63,13 @@ export interface CheckResult {
   detail: string;
 }
 
+// A structured proof artifact backing the verdict (log, trace, timeline, note).
+export interface EvidenceItem {
+  label: string;
+  kind: string;
+  content: string;
+}
+
 export type SubmissionStatus = "queued" | "running" | "passed" | "failed" | "error";
 
 export interface Submission {
@@ -72,6 +79,7 @@ export interface Submission {
   status: SubmissionStatus;
   evidence: string;
   checks: CheckResult[];
+  evidence_bundle: EvidenceItem[];
   score: number;
   error: string | null;
   job_id: string | null;

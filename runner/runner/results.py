@@ -69,6 +69,7 @@ class ResultWriter:
                     SET status=:status,
                         evidence=:evidence,
                         checks=:checks,
+                        evidence_bundle=:evidence_bundle,
                         score=:score,
                         error=NULL,
                         completed_at=:completed_at
@@ -79,6 +80,9 @@ class ResultWriter:
                     "status": status,
                     "evidence": result.evidence,
                     "checks": json.dumps([c.to_dict() for c in result.checks]),
+                    "evidence_bundle": json.dumps(
+                        [e.to_dict() for e in result.evidence_items]
+                    ),
                     "score": score if result.passed else 0,
                     "completed_at": now,
                     "id": submission_id,
