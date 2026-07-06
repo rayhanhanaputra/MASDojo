@@ -74,6 +74,15 @@ services:
     ports:
       - "5173:5173"
 
+  # Intentionally-vulnerable API — the live target for Lab 3 (IDOR + JWT
+  # alg:none, tasks 071/072). Learners exploit it directly at http://localhost:8091.
+  vulnapi:
+    build:
+      context: ./vulnapi
+      dockerfile: Dockerfile
+    ports:
+      - "8091:8091"
+
   # Requires a KVM-enabled host. Comment out if /dev/kvm is unavailable and run
   # the runner on bare metal instead (docs/architecture.md#runner-on-bare-metal).
   runner:
