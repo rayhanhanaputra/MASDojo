@@ -1,3 +1,5 @@
-**Full solution.**
-
-`adb logcat | grep -i token` (or reading your `logcat.txt`) surfaces `AuthManager: issuing session for <user> token=sess_…`. Submit that `sess_…` value. The token is uniquely seeded to you — there is no shared flag, so you must read your own dump.
+**Full solution.** One log line leaks `Authorization: Basic <base64(user:token)>`:
+```python
+import base64; print(base64.b64decode(B64).decode())   # -> user:tok_...
+```
+Submit the `tok_…` token. Seeded per learner. Lesson: never log Authorization headers.

@@ -11,8 +11,10 @@ mastg_refs:
 difficulty: 2
 prereqs:
 - 021-secrets-in-prefs
-objective: The app is debuggable / backup-enabled. Pull its private data via adb backup
-  and recover the flag.
+objective: >
+  VaultBank's app allows backups, so its private data isn't so private. You've run
+  `adb backup` and have the archive. Unpack it — decode, decompress, untar — and
+  read the private notes to recover the account recovery key.
 success_type: flag
 submission_schema:
   flag: string

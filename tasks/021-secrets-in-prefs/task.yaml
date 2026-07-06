@@ -10,8 +10,11 @@ mastg_refs:
 difficulty: 2
 prereqs:
 - 001-find-hardcoded-secret
-objective: The app caches sensitive data on the device in SharedPreferences and a
-  SQLite database. Read it off the device and submit the flag.
+objective: >
+  During your assessment of VaultBank you pull the app's private storage. It
+  caches a session token in shared_prefs for "convenience" — but only
+  base64-encoded, which is not encryption. Find the encoded value in the prefs XML
+  and decode it to recover the token.
 success_type: flag
 submission_schema:
   flag: string

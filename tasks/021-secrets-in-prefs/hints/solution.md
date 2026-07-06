@@ -1,5 +1,5 @@
-**Full solution.**
-
-On the emulator, `adb shell run-as <pkg> cat shared_prefs/auth.xml` (or open the `shared_prefs/auth.xml` file in this task) reveals `<string name="auth_token">sk_live_…</string>` in cleartext. Submit that `sk_live_…` value.
-
-This challenge is seeded per learner: your `auth_token` is unique to you, so there is no single shared flag — you must read your own file. That's the point: recovering the secret *is* the proof you performed the technique.
+**Full solution.** The token is base64 in shared_prefs:
+```python
+import base64; print(base64.b64decode(VALUE).decode())
+```
+Submit the `sk_live_…` token. Seeded per learner — no shared answer. Lesson: base64 in local storage is still cleartext storage of a secret.

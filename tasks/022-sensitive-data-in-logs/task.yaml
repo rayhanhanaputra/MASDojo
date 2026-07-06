@@ -10,8 +10,10 @@ mastg_refs:
 difficulty: 2
 prereqs:
 - 000-apk-anatomy-recon
-objective: The app leaks a secret to logcat during normal use. Capture it from the
-  logs.
+objective: >
+  VaultBank's app is chatty in logcat. Somewhere in the noise, one request logs an
+  HTTP Authorization header it never should. Filter the log, find the leaked
+  credential, and decode it to recover the session token.
 success_type: flag
 submission_schema:
   flag: string
