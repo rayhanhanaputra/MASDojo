@@ -17,4 +17,4 @@ submission_schema:
   value: string
 time_estimate_min: 30
 is_reference: false
-grader_status: todo
+grader_status: implemented

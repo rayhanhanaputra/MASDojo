@@ -25,6 +25,7 @@ device = [
 dev = [
     "pytest>=8.0",
     "ruff>=0.4",
+    "cryptography>=42.0",  # verifies the crypto tasks' ciphertext is genuinely solvable
 ]
 
 [build-system]

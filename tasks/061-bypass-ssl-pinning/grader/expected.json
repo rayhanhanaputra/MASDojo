@@ -1,0 +1,9 @@
+{
+  "frida": {
+    "class": "okhttp3.CertificatePinner",
+    "method": "check",
+    "must_contain": [
+      "Java.perform"
+    ]
+  }
+}

@@ -1,1 +1,3 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+`adb shell run-as <pkg> cat shared_prefs/session.xml` shows `session_token = FLAG{pr3fs_pl41nt3xt}`. Submit it.

@@ -1,1 +1,3 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+Querying the exported provider returns the secret row `value=FLAG{c0nt3nt_pr0v1d3r_l34k}`. Submit it.

@@ -1,0 +1,5 @@
+package org.masdojo.hooklab;
+class Flagger {
+    // returns a value computed at runtime, never shown in the UI
+    String computeFlag() { return derive(seed); }
+}

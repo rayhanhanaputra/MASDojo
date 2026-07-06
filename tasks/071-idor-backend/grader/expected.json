@@ -1,0 +1,6 @@
+{
+  "value": "FLAG{id0r_cr0ss_us3r}",
+  "present_in": [
+    "artifacts/orders_db.json"
+  ]
+}

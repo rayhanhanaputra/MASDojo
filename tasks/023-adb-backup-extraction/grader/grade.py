@@ -1,19 +1,12 @@
-"""Grader scaffold for 023-adb-backup-extraction — implement grade(ctx) -> GradeResult.
+"""Grader for 023-adb-backup-extraction — payload detection (recovered value).
 
-See runner/runner/grader_api.py for the contract and tasks/001, 005, 009 for
-fully-worked reference graders of each success type.
+Verifies the learner recovered the correct value by applying the technique, and
+(where artifacts are committed) that the value genuinely lives in them.
 """
-
 from __future__ import annotations
 
-from runner.grader_api import Check, GradeResult, GradingContext
+from runner.graders import grade_recovered
 
 
-def grade(ctx: GradingContext) -> GradeResult:
-    # TODO: implement grader
-    return GradeResult(
-        passed=False,
-        evidence="Grader not implemented for this scaffolded task.",
-        checks=[Check(name="implemented", passed=False, detail="This task is a scaffold.")],
-        score=0,
-    )
+def grade(ctx):
+    return grade_recovered(ctx)

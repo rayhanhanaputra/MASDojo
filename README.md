@@ -113,7 +113,7 @@ Ten modules, ordered so each builds the prerequisites for the next. Full mapping
 | 9 · RASP & Anti-Tampering | `rasp-bypass` | MASVS-RESILIENCE-1..4 |
 | 10 · Capstone | `capstone` | Cross-MASVS |
 
-Three ⭐ **reference tasks** are implemented fully end-to-end (one per dynamic grader type); the rest are scaffolded from [`tasks/_template/`](tasks/_template/) with complete metadata, tiered hints, and a stubbed grader.
+**Every one of the 24 tasks has a real payload-detection grader** — the system that verifies you genuinely applied the technique, not just that you guessed a flag. That's what sets MASDojo apart from a bag of vulnerable apps: an automated per-technique mastery check. Tasks are **solvable and gradeable now, in dry-run**, from committed artifacts (decoded resources, prefs/log/backup dumps, real encrypted blobs, captured traffic) — no emulator or APK build required. The three ⭐ reference tasks (`001`/`005`/`009`) additionally run on a live Android emulator. New comparison graders are a one-liner via [`runner/runner/graders.py`](runner/runner/graders.py); see [`tasks/_template/`](tasks/_template/) and [`docs/authoring.md`](docs/authoring.md).
 
 ---
 

@@ -1,19 +1,13 @@
-"""Grader scaffold for 042-flip-boolean-gate — implement grade(ctx) -> GradeResult.
+"""Grader for 042-flip-boolean-gate — payload detection (Frida script).
 
-See runner/runner/grader_api.py for the contract and tasks/001, 005, 009 for
-fully-worked reference graders of each success type.
+Live on a KVM host the script is injected and its effect asserted; in dry-run it
+is statically validated (does it hook the right method and enforce the required
+behaviour?).
 """
-
 from __future__ import annotations
 
-from runner.grader_api import Check, GradeResult, GradingContext
+from runner.graders import grade_frida_script
 
 
-def grade(ctx: GradingContext) -> GradeResult:
-    # TODO: implement grader
-    return GradeResult(
-        passed=False,
-        evidence="Grader not implemented for this scaffolded task.",
-        checks=[Check(name="implemented", passed=False, detail="This task is a scaffold.")],
-        score=0,
-    )
+def grade(ctx):
+    return grade_frida_script(ctx)

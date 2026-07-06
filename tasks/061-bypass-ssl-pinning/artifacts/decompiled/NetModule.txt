@@ -1,0 +1,4 @@
+package org.masdojo.pinned;
+// OkHttp client pins the server cert:
+new CertificatePinner.Builder().add(host, "sha256/AAAA...").build();
+// okhttp3.CertificatePinner.check(host, chain) throws on mismatch

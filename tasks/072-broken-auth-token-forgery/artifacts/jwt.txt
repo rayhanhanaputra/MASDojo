@@ -1,0 +1,2 @@
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhbGljZSIsInJvbGUiOiJ1c2VyIn0.c2lnbmF0dXJl
+(header alg=HS256, payload role=user — server also accepts alg=none)

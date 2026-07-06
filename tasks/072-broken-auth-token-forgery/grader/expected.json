@@ -1,0 +1,6 @@
+{
+  "value": "FLAG{jwt_n0n3_f0rg3d}",
+  "present_in": [
+    "artifacts/admin_area.json"
+  ]
+}

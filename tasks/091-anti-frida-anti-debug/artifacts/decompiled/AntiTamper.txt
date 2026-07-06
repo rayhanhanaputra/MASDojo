@@ -1,0 +1,5 @@
+package org.masdojo.rasp;
+class AntiTamper {
+    boolean isInstrumented() { /* scans for frida-server, ports, maps */ }
+    // if true -> app kills itself before you can hook the feature
+}

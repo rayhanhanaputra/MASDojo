@@ -1,0 +1,3 @@
+algorithm: AES-128-CBC (PKCS7)
+key: the 32 hex chars of the API key you recovered in Module 1 (msd_live_sk_<32-hex>) -> bytes.fromhex(...)
+ciphertext: base64 in secret.enc; the first 16 bytes are the IV.

@@ -1,0 +1,7 @@
+{
+  "frida": {
+    "class": "org.masdojo.gatelab.FeatureGate",
+    "method": "isUnlocked",
+    "returns": "true"
+  }
+}

@@ -1,1 +1,3 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+`adb shell am start -a android.intent.action.VIEW -d masdojo://secret` reaches the protected screen, which shows `FLAG{3xp0rt3d_r34ch3d}`. Submit it.

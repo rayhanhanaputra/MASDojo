@@ -19,4 +19,4 @@ submission_schema:
   script: string
 time_estimate_min: 40
 is_reference: false
-grader_status: todo
+grader_status: implemented

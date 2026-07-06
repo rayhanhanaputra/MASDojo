@@ -1,0 +1,10 @@
+{
+  "frida": {
+    "class": "org.masdojo.hooklab.Flagger",
+    "method": "computeFlag",
+    "must_contain": [
+      "Java.perform",
+      "send"
+    ]
+  }
+}

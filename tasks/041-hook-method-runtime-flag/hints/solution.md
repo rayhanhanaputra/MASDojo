@@ -1,1 +1,13 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+```js
+Java.perform(function () {
+  var F = Java.use('org.masdojo.hooklab.Flagger');
+  F.computeFlag.implementation = function () {
+    var r = this.computeFlag();
+    send('flag=' + r);
+    return r;
+  };
+});
+```
+Submit this script.

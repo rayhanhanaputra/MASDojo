@@ -1,1 +1,3 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+Following the chain in `artifacts/chain.md` step by step yields the final flag `FLAG{full_ch41n_pwn3d}`. Submit it.

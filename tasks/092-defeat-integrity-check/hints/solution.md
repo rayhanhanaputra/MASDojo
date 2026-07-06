@@ -1,1 +1,3 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+Patch the integrity check so `if-eqz v0, :tampered` falls through to the valid branch (or hook `Sig.matchesOfficial` to return true). It returns `FLAG{1nt3grity_byp4ss3d}`. Submit it.

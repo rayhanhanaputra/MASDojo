@@ -1,0 +1,4 @@
+package org.masdojo.gatelab;
+class FeatureGate {
+    boolean isUnlocked() { return false; }  // gates the hidden screen
+}

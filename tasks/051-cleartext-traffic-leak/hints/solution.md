@@ -1,1 +1,3 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+The captured `POST /v1/login` sends the password in cleartext JSON: `FLAG{cl34rt3xt_cr3d}`. Submit it.

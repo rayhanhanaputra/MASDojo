@@ -1,1 +1,3 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+Read `artifacts/setup_check.log` — with all three checks green the token is `MASDOJO{l4b_r34dy}`. Submit it.

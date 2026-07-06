@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<map>
+    <string name="user">alice</string>
+    <string name="session_token">FLAG{pr3fs_pl41nt3xt}</string>
+    <boolean name="remember_me" value="true" />
+</map>

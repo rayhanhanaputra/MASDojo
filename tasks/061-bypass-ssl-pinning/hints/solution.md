@@ -1,1 +1,9 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+```js
+Java.perform(function () {
+  var CP = Java.use('okhttp3.CertificatePinner');
+  CP.check.overload('java.lang.String', 'java.util.List').implementation = function () { return; };
+});
+```
+Submit this bypass script.

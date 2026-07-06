@@ -1,1 +1,3 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+`adb backup -f b.ab org.masdojo.notes`, convert with `abe`/`dd`+`tar`, then read `db/notes.txt`: `note#2: recovery phrase -> FLAG{b4ckup_3xtract3d}`. Submit the flag.

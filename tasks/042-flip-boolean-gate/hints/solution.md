@@ -1,1 +1,8 @@
-**Full solution (gated).** Replace this with the complete walkthrough and the final flag/value or script. Never returned by the API before tier 3 / enough attempts.
+**Full solution.**
+
+```js
+Java.perform(function () {
+  Java.use('org.masdojo.gatelab.FeatureGate').isUnlocked.implementation = function () { return true; };
+});
+```
+Submit it.

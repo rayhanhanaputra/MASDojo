@@ -1,0 +1,6 @@
+{
+  "value": "FLAG{sm4li_p4tch_unl0ck}",
+  "present_in": [
+    "artifacts/smali/PremiumGate.smali"
+  ]
+}

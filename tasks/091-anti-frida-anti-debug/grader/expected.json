@@ -1,0 +1,7 @@
+{
+  "frida": {
+    "class": "org.masdojo.rasp.AntiTamper",
+    "method": "isInstrumented",
+    "returns": "false"
+  }
+}
