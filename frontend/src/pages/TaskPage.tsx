@@ -11,6 +11,7 @@ import {
   Spinner,
 } from "../components/ui";
 import { SubmitForm } from "../components/SubmitForm";
+import { ChallengeFiles } from "../components/ChallengeFiles";
 import { GradePanel } from "../components/GradePanel";
 import { HintPanel } from "../components/HintPanel";
 
@@ -100,6 +101,8 @@ export function TaskPage() {
               </p>
             )}
           </Panel>
+
+          <ChallengeFiles taskId={taskId} />
 
           <Panel>
             <h2 className="label">Submit your solution</h2>

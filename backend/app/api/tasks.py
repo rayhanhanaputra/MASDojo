@@ -1,19 +1,23 @@
-"""Task catalog routes: list, detail, and gated hint reveal."""
+"""Task catalog routes: list, detail, gated hint reveal, and challenge files."""
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import os
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.config import settings
 from app.db.session import get_db
 from app.models.hint_usage import HintUsage
 from app.models.progress import Progress
 from app.models.task import Task
 from app.models.user import User
 from app.schemas.mentor import HintResponse
-from app.schemas.task import TaskDetail, TaskSummary
+from app.schemas.task import ArtifactEntry, TaskDetail, TaskSummary
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -43,6 +47,49 @@ def get_task(task_id: str, db: Session = Depends(get_db)) -> TaskDetail:
         **{c.name: getattr(task, c.name) for c in Task.__table__.columns if c.name != "hints"},
         hint_count=_hint_count(task),
     )
+
+
+def _artifacts_root(task_id: str) -> Path:
+    """The task's committed challenge files. Only `artifacts/` is ever served —
+    never grader/, frida/, hints/ or expected.json (those are the answer key)."""
+    return (Path(settings.tasks_dir) / task_id / "artifacts").resolve()
+
+
+@router.get("/{task_id}/artifacts", response_model=list[ArtifactEntry])
+def list_artifacts(
+    task_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> list[ArtifactEntry]:
+    """List the challenge files the learner can download/analyse for this task."""
+    if not db.get(Task, task_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Task not found")
+    root = _artifacts_root(task_id)
+    if not root.is_dir():
+        return []
+    return [
+        ArtifactEntry(path=str(p.relative_to(root)), size=p.stat().st_size)
+        for p in sorted(root.rglob("*"))
+        if p.is_file()
+    ]
+
+
+@router.get("/{task_id}/artifacts/{artifact_path:path}")
+def get_artifact(
+    task_id: str,
+    artifact_path: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> Response:
+    """Serve one challenge file, confined to the task's artifacts/ directory."""
+    if not db.get(Task, task_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Task not found")
+    root = _artifacts_root(task_id)
+    target = (root / artifact_path).resolve()
+    # Path-traversal guard: the resolved target must stay inside artifacts/.
+    if not (target == root or str(target).startswith(str(root) + os.sep)) or not target.is_file():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Artifact not found")
+    return Response(content=target.read_bytes(), media_type="text/plain; charset=utf-8")
 
 
 @router.post("/{task_id}/hints/{tier}", response_model=HintResponse)

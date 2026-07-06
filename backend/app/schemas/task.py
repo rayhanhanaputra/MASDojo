@@ -55,3 +55,10 @@ class SkillNode(BaseModel):
 class SkillMap(BaseModel):
     nodes: list[SkillNode]
     recommended_task_id: str | None
+
+
+class ArtifactEntry(BaseModel):
+    """A challenge file the learner may download/analyse for a task."""
+
+    path: str
+    size: int

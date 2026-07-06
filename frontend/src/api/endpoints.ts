@@ -1,6 +1,6 @@
 // Typed endpoint helpers, one per backend route used by the UI.
 
-import { request } from "./client";
+import { authedFetch, request } from "./client";
 import type {
   ApiKeyStatus,
   HintResponse,
@@ -36,6 +36,14 @@ export const api = {
   skillMap: () => request<SkillMap>("/pathway/skill-map"),
   revealHint: (id: string, tier: number) =>
     request<HintResponse>(`/tasks/${id}/hints/${tier}`, { method: "POST" }),
+
+  // challenge files
+  listArtifacts: (taskId: string) =>
+    request<{ path: string; size: number }[]>(`/tasks/${taskId}/artifacts`),
+  getArtifactText: async (taskId: string, filePath: string) => {
+    const enc = filePath.split("/").map(encodeURIComponent).join("/");
+    return (await authedFetch(`/tasks/${taskId}/artifacts/${enc}`)).text();
+  },
 
   // submissions
   submit: (taskId: string, payload: Record<string, unknown>) =>

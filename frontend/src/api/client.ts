@@ -30,6 +30,16 @@ interface RequestOptions {
   auth?: boolean;
 }
 
+/** Authenticated raw fetch — for non-JSON responses (e.g. artifact files). */
+export async function authedFetch(path: string): Promise<Response> {
+  const token = getToken();
+  const resp = await fetch(`${BASE_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!resp.ok) throw new ApiError(resp.status, `Request failed (${resp.status})`);
+  return resp;
+}
+
 export async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, auth = true } = opts;
   const headers: Record<string, string> = {};
