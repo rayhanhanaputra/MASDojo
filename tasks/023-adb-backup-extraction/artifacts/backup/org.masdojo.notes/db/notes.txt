@@ -1,2 +1,0 @@
-note#1: buy milk
-note#2: recovery phrase -> FLAG{b4ckup_3xtract3d}

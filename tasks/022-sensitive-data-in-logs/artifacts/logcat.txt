@@ -1,5 +1,0 @@
-I/Activity: onCreate
-D/Net: GET /api/profile 200
-D/AuthManager: issuing session for alice token=FLAG{l0gcat_l34k}
-I/Activity: onResume
-W/Net: retry 1

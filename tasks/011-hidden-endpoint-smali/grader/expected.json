@@ -1,6 +1,0 @@
-{
-  "value": "/internal/v1/admin/exec",
-  "present_in": [
-    "artifacts/smali/DebugApi.smali"
-  ]
-}

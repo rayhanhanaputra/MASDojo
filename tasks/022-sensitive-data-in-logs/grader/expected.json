@@ -1,6 +1,0 @@
-{
-  "value": "FLAG{l0gcat_l34k}",
-  "present_in": [
-    "artifacts/logcat.txt"
-  ]
-}
