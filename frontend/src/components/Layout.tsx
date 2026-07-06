@@ -39,11 +39,7 @@ export function Layout() {
                 {item.label}
               </NavLink>
             ))}
-            {soloMode ? (
-              <span className="ml-2 px-3 py-1.5 font-mono text-xs text-zinc-600">
-                local session
-              </span>
-            ) : (
+            {!soloMode && (
               <button
                 className="ml-2 rounded-md px-3 py-1.5 text-sm text-zinc-500 hover:text-signal-red"
                 onClick={() => {
@@ -61,7 +57,7 @@ export function Layout() {
         <Outlet />
       </main>
       <footer className="border-t border-ink-500/40 py-4 text-center font-mono text-[11px] text-zinc-700">
-        defensive education · OWASP MASVS / MASTG aligned · graded on a real emulator
+        MASDojo · OWASP MASVS / MASTG
       </footer>
     </div>
   );

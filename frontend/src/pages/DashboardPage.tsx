@@ -79,14 +79,12 @@ export function DashboardPage() {
 }
 
 function NodeRow({ node }: { node: SkillNode }) {
-  const locked = node.state === "locked";
+  // Every task is freely navigable — jump straight to any module. The state dot
+  // still shows progress (passed / available / not-yet-recommended); we just
+  // never lock or grey out a row.
   const body = (
     <div
-      className={`flex items-center gap-3 rounded-md border px-4 py-3 transition-colors ${
-        locked
-          ? "border-ink-600 bg-ink-800/40 opacity-60"
-          : "border-ink-500 bg-ink-700/40 hover:border-phosphor/40"
-      }`}
+      className="flex items-center gap-3 rounded-md border border-ink-500 bg-ink-700/40 px-4 py-3 transition-colors hover:border-phosphor/40"
     >
       <StateDot state={node.state} />
       <div className="min-w-0 flex-1">
@@ -113,7 +111,11 @@ function NodeRow({ node }: { node: SkillNode }) {
       </div>
     </div>
   );
-  return <li>{locked ? <div title="Complete the prerequisites first">{body}</div> : <Link to={`/tasks/${node.id}`}>{body}</Link>}</li>;
+  return (
+    <li>
+      <Link to={`/tasks/${node.id}`}>{body}</Link>
+    </li>
+  );
 }
 
 function groupByModule(nodes: SkillNode[]): [string, SkillNode[]][] {
