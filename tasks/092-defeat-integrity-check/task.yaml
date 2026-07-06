@@ -11,8 +11,11 @@ difficulty: 5
 prereqs:
 - 012-patch-rebuild-resign
 - 009-root-detection-bypass
-objective: After patching the app, an integrity/signature check refuses to run it.
-  Defeat the check so your patched build executes and reveals the flag.
+objective: >
+  You've patched VaultBank's app, but a signature/integrity check refuses to run
+  the tampered build. Defeat the check — flip the branch or hook it — to reach the
+  guarded path, and recover the reward it returns. The app keeps that reward
+  XOR-obfuscated in the binary, so reconstruct it from the smali.
 success_type: flag
 submission_schema:
   flag: string

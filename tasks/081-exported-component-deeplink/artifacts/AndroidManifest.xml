@@ -1,3 +1,0 @@
-<activity android:name=".SecretActivity" android:exported="true">
-  <intent-filter><data android:scheme="masdojo" android:host="secret"/></intent-filter>
-</activity>

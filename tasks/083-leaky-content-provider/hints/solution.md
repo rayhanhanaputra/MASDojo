@@ -1,3 +1,5 @@
-**Full solution.**
-
-Querying the exported provider returns the secret row `value=FLAG{c0nt3nt_pr0v1d3r_l34k}`. Submit it.
+**Full solution.** The exported provider returns `value` base64-encoded:
+```python
+import base64; print(base64.b64decode(VALUE).decode())
+```
+Submit the decoded `FLAG{...}`. (Live: `adb shell content query --uri content://com.vaultbank.provider/secrets`.) Seeded per learner.

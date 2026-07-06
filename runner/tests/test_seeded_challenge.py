@@ -43,9 +43,12 @@ def test_two_learners_get_different_targets(tid):
     a = generate_challenge(task, derive_seed(1, tid))
     b = generate_challenge(task, derive_seed(2, tid))
     assert a["answer"] != b["answer"], f"{tid}: distinct learners must get distinct secrets"
-    # The secret really is embedded in each learner's own served file(s).
+    # Where a generator declares present_in (the value is meant to be read
+    # directly), it really must be there. Obfuscated tasks declare no present_in
+    # — the answer is *derived* (decoded/reconstructed), not copyable verbatim.
     for spec in (a, b):
-        assert any(spec["answer"] in c for c in spec["files"].values()), f"{tid}: answer not in files"
+        for rel in spec.get("present_in", []) or []:
+            assert spec["answer"] in spec["files"].get(rel, ""), f"{tid}: {rel} missing the value"
 
 
 @pytest.mark.parametrize("tid", SEEDED)

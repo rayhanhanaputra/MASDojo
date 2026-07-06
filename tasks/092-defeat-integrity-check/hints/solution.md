@@ -1,3 +1,5 @@
-**Full solution.**
-
-Patch the integrity check so `if-eqz v0, :tampered` falls through to the valid branch (or hook `Sig.matchesOfficial` to return true). It returns `FLAG{1nt3grity_byp4ss3d}`. Submit it.
+**Full solution.** `verify()` guards the reward behind a signature check; flipping the `if-eqz v0, :tampered` branch reaches the valid path, which returns the XOR-decoded reward:
+```python
+print(bytes(b ^ key for b in bytes.fromhex(ENC)).decode())
+```
+Submit the `FLAG{...}`. Seeded per learner.

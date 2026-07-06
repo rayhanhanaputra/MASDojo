@@ -10,8 +10,12 @@ mastg_refs:
 difficulty: 4
 prereqs:
 - 000-apk-anatomy-recon
-objective: An exported activity (or deep link) reaches a screen that should be protected.
-  Invoke it directly via adb to bypass the intended flow and read the flag.
+objective: >
+  VaultBank has a screen that should only appear after login. On this engagement
+  you notice an activity is exported with a deep link and no caller check — so it
+  can be launched directly, skipping auth. Confirm it's reachable and recover the
+  value that screen reveals; the app obfuscates it in code rather than storing it
+  in the clear, so you'll reconstruct it from the decompiled activity.
 success_type: flag
 submission_schema:
   flag: string

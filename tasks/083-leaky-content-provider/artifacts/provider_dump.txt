@@ -1,2 +1,0 @@
-$ adb shell content query --uri content://org.masdojo.vault.provider/secrets
-Row: 0 _id=1, name=api, value=FLAG{c0nt3nt_pr0v1d3r_l34k}

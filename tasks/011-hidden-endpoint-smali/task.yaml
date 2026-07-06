@@ -10,8 +10,12 @@ mastg_refs:
 difficulty: 2
 prereqs:
 - 001-find-hardcoded-secret
-objective: A debug-only admin endpoint never appears in the UI but is referenced in
-  the disassembly. Recover the endpoint path from the smali.
+objective: >
+  You're assessing VaultBank's Android app for a client. The UI only exposes
+  customer features, but you suspect a hidden admin route. It's in the code — just
+  not as a plain string: the path is XOR-obfuscated in the smali and rebuilt at
+  runtime, so grepping for "/admin" finds nothing. Reverse the obfuscation and
+  recover the admin endpoint path.
 success_type: static_assert
 submission_schema:
   value: string

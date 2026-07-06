@@ -1,3 +1,5 @@
-**Full solution.**
-
-In `DebugApi.smali` the `adminUrl()` method loads a `const-string` like `/internal/v1/admin/…`. Submit that exact path. It is seeded uniquely to you, so copying another learner's path won't pass.
+**Full solution.** `DebugApi.adminUrl()` decodes `ENC` by XOR-ing each byte with `XOR_KEY`. Reproduce it:
+```python
+print(bytes(b ^ key for b in bytes.fromhex(ENC)).decode())
+```
+Submit the recovered `/internal/v1/admin/...` path. Seeded per learner — no shared answer.

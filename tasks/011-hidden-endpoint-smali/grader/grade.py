@@ -1,9 +1,5 @@
-"""Seeded payload-detection grader.
-
-This task is per-learner seeded: each learner's artifact embeds a different
-secret (see challenge/generate.py). The grader regenerates this learner's target
-from their seed and checks the submission against it, so a value shared from
-another learner never passes.
+"""Seeded payload-detection grader — the answer is derived (deobfuscated /
+reconstructed) from the per-learner challenge, never copied from it verbatim.
 """
 from __future__ import annotations
 

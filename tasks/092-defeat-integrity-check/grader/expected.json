@@ -1,6 +1,0 @@
-{
-  "value": "FLAG{1nt3grity_byp4ss3d}",
-  "present_in": [
-    "artifacts/smali/IntegrityCheck.smali"
-  ]
-}

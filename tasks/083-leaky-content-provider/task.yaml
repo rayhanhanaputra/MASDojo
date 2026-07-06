@@ -10,8 +10,11 @@ mastg_refs:
 difficulty: 4
 prereqs:
 - 000-apk-anatomy-recon
-objective: An exported content provider returns data it shouldn't. Query it via adb
-  and submit the flag.
+objective: >
+  While mapping VaultBank's components you find a content provider exported to
+  every app on the device. Query it and recover the sensitive value it leaks — but
+  it's stored encoded, not encrypted, so you'll decode what the provider returns
+  rather than reading it straight off.
 success_type: flag
 submission_schema:
   flag: string
