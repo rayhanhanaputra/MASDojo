@@ -31,6 +31,29 @@ That live, evidence-backed grading loop is the heart of the platform.
 
 ## Quickstart
 
+### Run it on your own laptop (workshop / solo mode) — no cloud, no login
+
+Everything runs locally; live Frida/RASP grading uses **your machine's own**
+Android emulator, so **no KVM VM is needed**. Full setup + troubleshooting:
+[`docs/preflight.md`](docs/preflight.md) and [`docs/local-mode.md`](docs/local-mode.md).
+
+```bash
+git clone <your-fork-url> masdojo && cd masdojo
+make doctor        # check your machine has everything (tells you what's missing)
+make solo          # http://localhost:5173 — no login, straight into the curriculum
+```
+
+`make solo` already gives you **Lab 1** (RE/secrets) and **Lab 3** (API abuse) —
+neither needs an emulator. For **Lab 2** (live Frida/RASP):
+
+```bash
+make avd-up        # create a rooted local AVD + launch a matching frida-server
+make avd-check     # confirm it's ready
+make runner-host   # grade against your local AVD (attach mode)
+```
+
+### Or run it hosted (multi-user)
+
 > **Heads-up:** the grading **runner** boots an Android emulator and therefore needs a **KVM-enabled host** (nested virtualization). The database, Redis, backend, and frontend run anywhere Docker runs. See [Runner & KVM](#runner--kvm).
 
 ```bash

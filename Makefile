@@ -32,6 +32,9 @@ solo: env ## Run for a single local participant: no login, straight to the curri
 runner-dryrun: ## Start a no-emulator grader (grades flag/static_assert tasks; macOS-friendly)
 	docker compose --profile dryrun up --build -d runner-dryrun
 
+doctor: ## Pre-flight: check your machine has everything for the workshop
+	bash infra/preflight.sh
+
 avd-up: ## Provision a local AVD (rooted + frida) for live Frida/RASP grading
 	bash infra/avd-up.sh
 
