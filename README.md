@@ -2,9 +2,8 @@
 
 > A self-hostable, open-source platform for learning **Android application penetration testing** through a guided, adaptive curriculum where every task is graded by a **real Android emulator**.
 
-<!-- CI badge slot: replace OWNER/REPO once pushed to GitHub. -->
-<!-- ![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg) -->
-<!-- ![KVM live-grade](https://github.com/OWNER/REPO/actions/workflows/kvm-live-grade.yml/badge.svg) -->
+![CI](https://github.com/rayhanhanaputra/MASDojo/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
 
 
 MASDojo turns the OWASP **MASVS / MASTG** body of knowledge into a hands-on dojo. Each task ships with a deliberately vulnerable target app, a clear objective, and an **automated grader**. When you think you've solved a task, MASDojo boots a real Android AVD, installs the target APK, applies your submission — a recovered secret, a Frida script, or a captured request — runs the grader, and returns a **PASS or FAIL with concrete evidence** of exactly which check passed or failed.
