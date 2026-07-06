@@ -105,9 +105,18 @@ class GradeRunner:
         adb = self._emulator.adb if self._emulator else None
         live = self._emulator is not None and not config.dry_run
 
-        if not live:
-            logger.info("grading {} in dry-run (no live device)", package_dir.name)
-            emit("dry-run: no live device — comparing against expected values", phase="grade")
+        # A task needs the device only if it's a device-driven success type AND
+        # ships a target APK. Comparison/seeded and artifact-based tasks (incl.
+        # network_assert tasks graded from committed captures) grade without a
+        # device — so a host/attach-mode runner never tries to install a
+        # nonexistent APK.
+        apk = package_dir / "app" / "target.apk"
+        device_task = success_type in {"frida_assert", "network_assert"} and apk.is_file()
+
+        if not live or not device_task:
+            if not live:
+                logger.info("grading {} without a live device", package_dir.name)
+            emit("comparing against expected values (no device needed)", phase="grade")
             ctx = GradingContext.build(
                 submission=submission, package_dir=package_dir, log=logger, emit=emit, seed=seed
             )

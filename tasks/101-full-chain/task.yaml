@@ -1,6 +1,6 @@
 id: 101-full-chain
 title: Full Chain Capstone
-module: '10'
+module: '11'
 order_index: 1
 domain: capstone
 masvs:

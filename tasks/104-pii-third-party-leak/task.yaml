@@ -1,0 +1,20 @@
+id: "104-pii-third-party-leak"
+title: "PII Leaked to a Third-Party SDK"
+module: "10"
+order_index: 1
+domain: "privacy"
+masvs: ["MASVS-PRIVACY-1"]
+mastg_refs: ["MASTG-TEST-0206"]  # Determining Whether Sensitive Data Is Sent to Third Parties
+difficulty: 3
+prereqs: ["021-secrets-in-prefs"]
+objective: >
+  On startup the app phones home with analytics — but the payload sent to a
+  third-party tracker carries personal data it has no business sharing. Inspect
+  the captured request, identify the PII that leaves the device, and submit the
+  exact value that leaked.
+success_type: "static_assert"
+submission_schema:
+  value: string   # the leaked PII value
+time_estimate_min: 25
+is_reference: false
+grader_status: "implemented"

@@ -47,6 +47,7 @@ runner-host: ## Run the grader on THIS host in attach mode against the local AVD
 		DATABASE_URL="postgresql+psycopg://masdojo:masdojo@localhost:5432/masdojo" \
 		REDIS_URL="redis://localhost:6379/0" \
 		TASKS_ROOT="$(CURDIR)/tasks" \
+		INSTALL_SALT="$$(grep -E '^INSTALL_SALT=' ../.env | cut -d= -f2-)" \
 		python -m runner.worker
 
 down: ## Stop the stack
