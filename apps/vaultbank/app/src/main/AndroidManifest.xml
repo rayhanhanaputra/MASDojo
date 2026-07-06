@@ -14,7 +14,7 @@
         android:label="VaultBank"
         android:usesCleartextTraffic="true"
         android:networkSecurityConfig="@xml/network_security_config"
-        android:theme="@android:style/Theme.Material.Light"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         tools:ignore="HardcodedDebugMode">
 
         <!-- Launcher: login screen -->
