@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Cleartext is permitted app-wide (task 051). A real app would set this
+         to false. -->
+    <base-config cleartextTrafficPermitted="true" />
+
+    <!-- Declarative certificate pinning for the API host (MASVS-NETWORK-2).
+         The OkHttp CertificatePinner in ApiConfig.kt pins the same host in
+         code; both are bypass targets for task 061. -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.vaultbank.example</domain>
+        <pin-set>
+            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
+        </pin-set>
+    </domain-config>
+</network-security-config>

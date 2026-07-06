@@ -17,6 +17,9 @@ declare -A TASK_FOR=(
   [securenotes]="tasks/001-find-hardcoded-secret"
   [pulse]="tasks/005-intercept-api-call"
   [vaultguard]="tasks/009-root-detection-bypass"
+  # vaultbank is the all-in-one target; it isn't tied to a single task, so it is
+  # handled specially below and published as apps/vaultbank/MASDojo.apk.
+  [vaultbank]="apps/vaultbank"
 )
 
 build_one() {
@@ -46,9 +49,15 @@ build_one() {
     return 1
   fi
 
-  mkdir -p "${REPO_ROOT}/${dest}/app"
-  cp "${apk}" "${REPO_ROOT}/${dest}/app/target.apk"
-  echo "    -> ${dest}/app/target.apk"
+  if [[ "${app}" == "vaultbank" ]]; then
+    # The all-in-one target is published under its own name for download.
+    cp "${apk}" "${REPO_ROOT}/${dest}/MASDojo.apk"
+    echo "    -> ${dest}/MASDojo.apk"
+  else
+    mkdir -p "${REPO_ROOT}/${dest}/app"
+    cp "${apk}" "${REPO_ROOT}/${dest}/app/target.apk"
+    echo "    -> ${dest}/app/target.apk"
+  fi
   popd >/dev/null
 }
 

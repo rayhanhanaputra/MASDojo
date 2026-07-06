@@ -10,6 +10,7 @@ from loguru import logger
 
 from app.api import (
     auth,
+    downloads,
     mentor,
     pathway,
     proof,
@@ -66,3 +67,4 @@ app.include_router(pathway.router)
 app.include_router(settings_api.router)
 app.include_router(mentor.router)
 app.include_router(proof.router)
+app.include_router(downloads.router)

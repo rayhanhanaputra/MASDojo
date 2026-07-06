@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- VULNERABILITIES declared at the app level:
+         - allowBackup=true      → adb backup extraction of private files (task 023, STORAGE)
+         - usesCleartextTraffic  → login/telemetry sent over plain HTTP (task 051, NETWORK-1)
+         - debuggable            → jdb / Frida can attach freely (RESILIENCE) -->
+    <application
+        android:allowBackup="true"
+        android:debuggable="true"
+        android:label="VaultBank"
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:theme="@android:style/Theme.Material.Light"
+        tools:ignore="HardcodedDebugMode">
+
+        <!-- Launcher: login screen -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".DashboardActivity" android:exported="false" />
+
+        <!-- VULNERABILITY (MASVS-PLATFORM-1, task 081): the admin console is
+             exported with a deep link and no permission guard, so any app (or
+             `adb shell am start -a android.intent.action.VIEW -d vaultbank://admin`)
+             can open it directly, skipping login. -->
+        <activity
+            android:name=".AdminActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="vaultbank" android:host="admin" />
+            </intent-filter>
+        </activity>
+
+        <!-- VULNERABILITY (MASVS-PLATFORM-2, task 082): a WebView that bridges a
+             Java object into untrusted JavaScript via @JavascriptInterface. -->
+        <activity android:name=".WebViewActivity" android:exported="false" />
+
+        <!-- VULNERABILITY (MASVS-PLATFORM-3, task 083): an exported content
+             provider with no read permission — any app can query the account
+             ledger at content://org.masdojo.vaultbank.provider/accounts via
+             `adb shell content query`. -->
+        <provider
+            android:name=".VaultProvider"
+            android:authorities="org.masdojo.vaultbank.provider"
+            android:exported="true"
+            android:grantUriPermissions="true" />
+    </application>
+</manifest>

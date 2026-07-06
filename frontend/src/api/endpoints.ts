@@ -37,6 +37,12 @@ export const api = {
   revealHint: (id: string, tier: number) =>
     request<HintResponse>(`/tasks/${id}/hints/${tier}`, { method: "POST" }),
 
+  // all-in-one target APK
+  targetApkStatus: () =>
+    request<{ available: boolean; filename: string; size: number }>(
+      "/download/target-apk/status",
+    ),
+
   // challenge files
   listArtifacts: (taskId: string) =>
     request<{ path: string; size: number }[]>(`/tasks/${taskId}/artifacts`),

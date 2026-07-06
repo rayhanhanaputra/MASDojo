@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api/endpoints";
 import type { SkillMap, SkillNode } from "../api/types";
 import { Difficulty, ErrorText, GraderBadge, MasvsBadge, Panel, Spinner, StateDot } from "../components/ui";
+import { TargetAppCard } from "../components/TargetAppCard";
 
 export function DashboardPage() {
   const [map, setMap] = useState<SkillMap | null>(null);
@@ -54,6 +55,8 @@ export function DashboardPage() {
           </div>
         </Link>
       )}
+
+      <TargetAppCard />
 
       <div className="space-y-6">
         {modules.map(([moduleId, nodes]) => (

@@ -51,6 +51,8 @@ services:
         condition: service_healthy
     volumes:
       - ./tasks:/app/tasks:ro
+      # The all-in-one target APK (built via `make apps`), served at /download/target-apk.
+      - ./apps/vaultbank:/app/apps/vaultbank:ro
     command: >
       sh -c "python -m app.db.init_db &&
              python -m app.services.seeder &&

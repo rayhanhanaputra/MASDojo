@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     # Where curriculum task packages live (mounted read-only in compose).
     tasks_dir: Path = Field(default=Path("tasks"))
 
+    # The all-in-one vulnerable target APK, served for download once built via
+    # `infra/build-apps.sh vaultbank` (mounted read-only in compose).
+    target_apk_path: Path = Field(default=Path("apps/vaultbank/MASDojo.apk"))
+
     # Escape hatch for local dev only: allow boot with the placeholder secrets.
     allow_insecure_defaults: bool = False
 
