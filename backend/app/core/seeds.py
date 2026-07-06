@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import os
 from pathlib import Path
 from typing import Any
 
@@ -26,8 +27,13 @@ _SALT = "masdojo-seed:v1"
 
 
 def derive_seed(user_id: int, task_id: str) -> str:
-    """Deterministic, per-(learner, task) seed. Same everywhere for one learner."""
-    return hashlib.sha256(f"{_SALT}:{user_id}:{task_id}".encode()).hexdigest()
+    """Deterministic, per-(learner, task) seed. Same everywhere for one learner.
+
+    INSTALL_SALT differentiates installs so participants get distinct targets
+    even in solo mode (one fixed profile). Empty by default (no differentiation).
+    """
+    install = os.environ.get("INSTALL_SALT", "")
+    return hashlib.sha256(f"{_SALT}:{install}:{user_id}:{task_id}".encode()).hexdigest()
 
 
 def generator_path(package_dir: Path) -> Path:

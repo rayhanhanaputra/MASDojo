@@ -23,10 +23,15 @@ function Protected({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
+  const { soloMode } = useAuth();
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      {/* Solo mode has no accounts — send auth routes into the curriculum. */}
+      <Route path="/login" element={soloMode ? <Navigate to="/" replace /> : <LoginPage />} />
+      <Route
+        path="/register"
+        element={soloMode ? <Navigate to="/" replace /> : <RegisterPage />}
+      />
       <Route path="/verify" element={<VerifyPage />} />
       <Route
         element={

@@ -11,6 +11,7 @@ env: ## Create .env with fresh secrets if missing
 	@test -f .env || (cp .env.example .env && \
 		sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=$$(openssl rand -hex 32)|" .env && \
 		sed -i.bak "s|^MASTER_KEY=.*|MASTER_KEY=$$(python3 -c 'from cryptography.fernet import Fernet;print(Fernet.generate_key().decode())')|" .env && \
+		sed -i.bak "s|^INSTALL_SALT=.*|INSTALL_SALT=$$(openssl rand -hex 16)|" .env && \
 		rm -f .env.bak && echo "wrote .env")
 
 apps: ## Build the vulnerable target APKs (needs Docker; no host Android SDK)
@@ -21,6 +22,12 @@ up: env ## Build + start the FULL stack (requires a KVM host for the runner)
 
 up-core: env ## Start everything EXCEPT the runner (works without KVM, e.g. on macOS)
 	docker compose up --build -d db redis backend frontend
+
+solo: env ## Run for a single local participant: no login, straight to the curriculum
+	@grep -q '^SOLO_MODE=true' .env || (sed -i.bak 's|^SOLO_MODE=.*|SOLO_MODE=true|' .env && rm -f .env.bak)
+	docker compose up --build -d db redis backend frontend vulnapi
+	@echo "MASDojo (solo) is up -> http://localhost:5173  (no login; Lab 3 API -> http://localhost:8091)"
+	@echo "For live Frida/RASP grading, run the runner on your host against a local AVD (see docs)."
 
 runner-dryrun: ## Start a no-emulator grader (grades flag/static_assert tasks; macOS-friendly)
 	docker compose --profile dryrun up --build -d runner-dryrun

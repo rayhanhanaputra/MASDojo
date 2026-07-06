@@ -6,6 +6,7 @@ import type { UserPublic } from "../api/types";
 interface AuthState {
   user: UserPublic | null;
   loading: boolean;
+  soloMode: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, displayName: string, password: string) => Promise<void>;
   logout: () => void;
@@ -16,17 +17,38 @@ const AuthContext = createContext<AuthState | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserPublic | null>(null);
   const [loading, setLoading] = useState(true);
+  const [soloMode, setSoloMode] = useState(false);
 
   useEffect(() => {
-    if (!getToken()) {
-      setLoading(false);
-      return;
-    }
+    let cancelled = false;
+    // Solo mode: no login — /auth/me resolves the single local profile without a
+    // token, so we go straight into the curriculum. Hosted mode: token flow.
+    const tokenFlow = () => {
+      if (!getToken()) {
+        setLoading(false);
+        return;
+      }
+      api.me().then((u) => !cancelled && setUser(u)).catch(() => clearToken()).finally(
+        () => !cancelled && setLoading(false),
+      );
+    };
     api
-      .me()
-      .then(setUser)
-      .catch(() => clearToken())
-      .finally(() => setLoading(false));
+      .config()
+      .then((cfg) => {
+        if (cancelled) return;
+        if (cfg.solo_mode) {
+          setSoloMode(true);
+          api.me().then((u) => !cancelled && setUser(u)).catch(() => undefined).finally(
+            () => !cancelled && setLoading(false),
+          );
+        } else {
+          tokenFlow();
+        }
+      })
+      .catch(tokenFlow);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function login(email: string, password: string) {
@@ -46,8 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout }),
-    [user, loading],
+    () => ({ user, loading, soloMode, login, register, logout }),
+    [user, loading, soloMode],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

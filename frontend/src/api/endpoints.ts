@@ -15,6 +15,9 @@ import type {
 } from "./types";
 
 export const api = {
+  // public front-end config (deployment mode)
+  config: () => request<{ solo_mode: boolean }>("/config", { auth: false }),
+
   // auth
   register: (email: string, display_name: string, password: string) =>
     request<UserPublic>("/auth/register", {

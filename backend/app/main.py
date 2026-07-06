@@ -59,6 +59,13 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/config", tags=["meta"])
+def public_config() -> dict[str, object]:
+    """Public front-end config. `solo_mode` tells the UI to skip login and go
+    straight to the curriculum for a single local participant."""
+    return {"solo_mode": settings.solo_mode}
+
+
 app.include_router(auth.router)
 app.include_router(tasks.router)
 app.include_router(submissions.router)

@@ -36,6 +36,16 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     cors_origins: str = "http://localhost:5173"
 
+    # Deployment mode
+    # SOLO_MODE: run for a single local participant — no login, a single implicit
+    # local profile, straight into the curriculum. Keep false for the multi-user
+    # hosted deployment.
+    solo_mode: bool = False
+    # Per-install differentiator mixed into seeded-challenge seeds so each
+    # participant's targets differ even in solo mode (a single fixed profile).
+    # `make env` generates a random value; empty = no differentiation.
+    install_salt: str = ""
+
     # Runner-related (read here so the backend can surface limits in the API)
     grading_job_timeout_sec: int = 420
 

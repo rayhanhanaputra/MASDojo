@@ -8,7 +8,7 @@ const navItems = [
 ];
 
 export function Layout() {
-  const { user, logout } = useAuth();
+  const { user, logout, soloMode } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -39,15 +39,21 @@ export function Layout() {
                 {item.label}
               </NavLink>
             ))}
-            <button
-              className="ml-2 rounded-md px-3 py-1.5 text-sm text-zinc-500 hover:text-signal-red"
-              onClick={() => {
-                logout();
-                navigate("/login");
-              }}
-            >
-              {user?.display_name} · logout
-            </button>
+            {soloMode ? (
+              <span className="ml-2 px-3 py-1.5 font-mono text-xs text-zinc-600">
+                local session
+              </span>
+            ) : (
+              <button
+                className="ml-2 rounded-md px-3 py-1.5 text-sm text-zinc-500 hover:text-signal-red"
+                onClick={() => {
+                  logout();
+                  navigate("/login");
+                }}
+              >
+                {user?.display_name} · logout
+              </button>
+            )}
           </nav>
         </div>
       </header>
