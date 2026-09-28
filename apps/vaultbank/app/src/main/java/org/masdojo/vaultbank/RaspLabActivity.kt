@@ -40,25 +40,25 @@ class RaspLabActivity : AppCompatActivity() {
             lines, "Anti-instrumentation (anti-Frida) gate",
             clean = !AntiTamper.isInstrumented(),
             reason = "MASDOJO_DENIED_TAMPER: instrumentation toolkit detected",
-            unlock = "MASDOJO_UNLOCK_TAMPER", flag = BuildConfig.TAMPER_FLAG,
+            unlock = "MASDOJO_UNLOCK_TAMPER", flag = Flags.reveal(BuildConfig.TAMPER_FLAG),
         )
         gate(
             lines, "Emulator / sandbox gate",
             clean = !EmulatorDetector.isEmulator(),
             reason = "MASDOJO_DENIED_EMU: emulator/sandbox detected",
-            unlock = "MASDOJO_UNLOCK_EMU", flag = BuildConfig.EMU_FLAG,
+            unlock = "MASDOJO_UNLOCK_EMU", flag = Flags.reveal(BuildConfig.EMU_FLAG),
         )
         gate(
             lines, "Anti-debug (TracerPid) gate",
             clean = !DebugDetector.isBeingTraced(),
             reason = "MASDOJO_DENIED_DBG: tracer attached (TracerPid != 0)",
-            unlock = "MASDOJO_UNLOCK_DBG", flag = BuildConfig.DEBUG_FLAG,
+            unlock = "MASDOJO_UNLOCK_DBG", flag = Flags.reveal(BuildConfig.DEBUG_FLAG),
         )
         gate(
             lines, "Play-Integrity attestation gate",
             clean = PlayIntegrityStub.attestationPassed(),
             reason = "MASDOJO_DENIED_ATT: attestation verdict failed",
-            unlock = "MASDOJO_UNLOCK_ATT", flag = BuildConfig.ATTEST_FLAG,
+            unlock = "MASDOJO_UNLOCK_ATT", flag = Flags.reveal(BuildConfig.ATTEST_FLAG),
         )
     }
 

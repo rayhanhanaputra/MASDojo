@@ -42,6 +42,6 @@ class WebViewActivity : AppCompatActivity() {
     class SupportBridge {
         /** Exposed to untrusted JS — returns a secret it should never hand out. */
         @JavascriptInterface
-        fun getSessionSecret(): String = "FLAG{js_br1dg3_l34ks_s3cr3t}"
+        fun getSessionSecret(): String = Flags.reveal("1c161b1d2130290538286b3e3d690536696e31290529693928692e27")
     }
 }
