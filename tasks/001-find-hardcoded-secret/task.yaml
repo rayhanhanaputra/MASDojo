@@ -9,9 +9,9 @@ mastg_refs: ["MASTG-TECH-0023"]  # "Reviewing decompiled Java/Kotlin code"
 difficulty: 1
 prereqs: ["000-apk-anatomy-recon"]
 objective: >
-  The SecureNotes app talks to a backend using an API key that the developers
-  hardcoded into the app. Decompile the APK with jadx, find the embedded key,
-  and submit it to prove you recovered it.
+  Download the target app (MASDojo.apk) from this page. It talks to a backend
+  using an API key that the developers hardcoded into the binary. Decompile the
+  APK with jadx, find the embedded key, and submit it to prove you recovered it.
 success_type: "static_assert"
 submission_schema:
   value: "string"   # the recovered API key, e.g. msd_live_sk_xxxxxxxx

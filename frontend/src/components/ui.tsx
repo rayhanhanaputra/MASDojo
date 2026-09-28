@@ -11,11 +11,9 @@ export function Wordmark({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   const cls = size === "lg" ? "text-4xl" : size === "sm" ? "text-base" : "text-lg";
   return (
     <span className={`inline-flex items-baseline font-mono font-bold leading-none ${cls}`}>
-      <span className="text-phosphor" style={{ textShadow: "0 0 18px rgba(57,255,139,0.45)" }}>
-        MAS
-      </span>
+      <span className="text-phosphor">MAS</span>
       <span className="text-zinc-100">Dojo</span>
-      <span aria-hidden className="ml-0.5 inline-block h-[0.85em] w-[0.45em] translate-y-[0.1em] bg-phosphor/80 animate-blink" />
+      <span aria-hidden className="ml-0.5 inline-block h-[0.85em] w-[0.45em] translate-y-[0.1em] bg-phosphor/70" />
     </span>
   );
 }
@@ -151,7 +149,7 @@ const STATE_META: Record<NodeState, { symbol: string; cls: string; label: string
   },
   passed: {
     symbol: "✓",
-    cls: "border-phosphor bg-phosphor text-ink-900 shadow-[0_0_12px_-2px_rgba(57,255,139,0.7)]",
+    cls: "border-phosphor bg-phosphor text-ink-900",
     label: "cleared",
   },
 };
@@ -267,7 +265,7 @@ export function GraderPipeline({
     { key: "boot", label: "boot AVD", glyph: "▣" },
     { key: "install", label: "install APK", glyph: "⇩" },
     { key: "probe", label: m.describe, glyph: m.glyph },
-    { key: "verdict", label: "signed verdict", glyph: "✦" },
+    { key: "verdict", label: "verdict", glyph: "✓" },
   ];
 
   // Which stage index is "live" for the current status.
@@ -296,7 +294,7 @@ export function GraderPipeline({
           isVerdict && terminal
             ? verdictCls
             : active
-              ? "border-phosphor/70 bg-phosphor/10 text-phosphor animate-pulse-ring"
+              ? "border-phosphor/70 bg-phosphor/10 text-phosphor"
               : done
                 ? "border-phosphor/40 bg-ink-800 text-phosphor-dim"
                 : "border-ink-400 bg-ink-800/60 text-zinc-500";

@@ -77,7 +77,7 @@ export function TaskPage() {
   return (
     <div className="space-y-6">
       {/* ---------- header ---------- */}
-      <div className="panel reticle overflow-hidden p-6">
+      <div className="panel overflow-hidden p-6">
         <nav className="flex flex-wrap items-center gap-2 font-mono text-2xs uppercase text-zinc-400" aria-label="breadcrumb">
           <Link to="/" className="rounded text-zinc-400 transition-colors hover:text-phosphor">
             ← skill map
@@ -122,7 +122,7 @@ export function TaskPage() {
           {bestScore > 0 && (
             <div className="text-right">
               <p className="eyebrow">best score</p>
-              <p className="font-mono text-2xl font-bold text-phosphor" style={{ textShadow: "0 0 16px rgba(57,255,139,0.45)" }}>
+              <p className="font-mono text-2xl font-bold text-phosphor">
                 {bestScore}
                 <span className="ml-1 text-xs font-medium text-zinc-500">pts</span>
               </p>
