@@ -67,12 +67,9 @@ export function Layout() {
       <footer className="border-t border-ink-500/40">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-5 py-4 font-mono text-2xs uppercase text-zinc-500">
           <span>MASDojo · OWASP MASVS / MASTG</span>
-          <span className="inline-flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5">
-              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-phosphor" />
-              graded on a real Android emulator
-            </span>
-            <span className="hidden sm:inline">· signed Proof-of-Pwn</span>
+          <span className="inline-flex items-center gap-1.5">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-phosphor" />
+            graded on a real Android emulator
           </span>
         </div>
       </footer>

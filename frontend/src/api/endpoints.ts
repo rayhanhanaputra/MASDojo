@@ -84,18 +84,6 @@ export const api = {
       { method: "POST", body: { task_id } },
     ),
 
-  // proof-of-pwn
-  getCertificate: (submissionId: number) =>
-    request<{ token: string; payload: Record<string, unknown> }>(
-      `/submissions/${submissionId}/certificate`,
-    ),
-  verifyCertificate: (token: string) =>
-    request<{ valid: boolean; payload: Record<string, unknown> | null }>("/verify", {
-      method: "POST",
-      auth: false,
-      body: { token },
-    }),
-
   streamToken: (submissionId: number) =>
     request<{ token: string }>(`/submissions/${submissionId}/stream-token`),
 

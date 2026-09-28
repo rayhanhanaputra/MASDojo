@@ -41,7 +41,7 @@ export function DashboardPage() {
       <PageHeader
         eyebrow={`curriculum · ${modules.length} modules · ${total} tasks`}
         title="Skill map"
-        subtitle="Work the path top to bottom. Every task is graded live on a real Android emulator and signed as a Proof-of-Pwn."
+        subtitle="Work the path top to bottom. Every task is graded live on a real Android emulator."
         aside={
           <div className="min-w-[14rem]" aria-label={`${passed} of ${total} tasks cleared`}>
             <div className="flex items-baseline justify-between font-mono text-xs text-zinc-400">
@@ -53,7 +53,7 @@ export function DashboardPage() {
             </div>
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink-600">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-phosphor-dim to-phosphor shadow-[0_0_10px_rgba(57,255,139,0.6)] transition-[width] duration-700"
+                className="h-full rounded-full bg-gradient-to-r from-phosphor-dim to-phosphor transition-[width] duration-700"
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -92,12 +92,11 @@ function RecommendedHero({ node }: { node: SkillNode }) {
       className="group block rounded-xl"
       aria-label={`Start recommended task: ${node.title}`}
     >
-      <div className="reticle panel relative overflow-hidden border-phosphor/50 bg-hero-glow p-6 shadow-glow-lg transition-shadow duration-300 group-hover:border-phosphor sm:p-7">
-        <div aria-hidden className="console-sweep opacity-60" />
+      <div className="panel relative overflow-hidden border-phosphor/40 p-6 transition-colors duration-200 group-hover:border-phosphor/70 sm:p-7">
         <div className="relative flex flex-wrap items-center justify-between gap-6">
           <div className="min-w-0 flex-1">
             <p className="inline-flex items-center gap-2 font-mono text-2xs font-semibold uppercase text-phosphor">
-              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-phosphor animate-pulse-ring" />
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-phosphor" />
               recommended next
               <span className="text-zinc-500">· module {node.module} · {node.domain}</span>
             </p>
@@ -151,7 +150,7 @@ function ModuleSection({
         aria-hidden
         className={`absolute left-0 top-3 grid h-8 w-8 place-items-center rounded-full border font-mono text-2xs font-bold ${
           complete
-            ? "border-phosphor bg-phosphor text-ink-900 shadow-[0_0_14px_-2px_rgba(57,255,139,0.8)]"
+            ? "border-phosphor bg-phosphor text-ink-900"
             : cleared > 0
               ? "border-phosphor/60 bg-ink-800 text-phosphor"
               : "border-ink-300 bg-ink-800 text-zinc-400"

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api/endpoints";
 import { Panel } from "./ui";
 
@@ -23,11 +24,51 @@ export function ChallengeFiles({ taskId }: { taskId: string }) {
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const [loaded, setLoaded] = useState(false);
+
   useEffect(() => {
     setFiles([]);
     setOpen(null);
-    api.listArtifacts(taskId).then(setFiles).catch(() => setFiles([]));
+    setLoaded(false);
+    api
+      .listArtifacts(taskId)
+      .then(setFiles)
+      .catch(() => setFiles([]))
+      .finally(() => setLoaded(true));
   }, [taskId]);
+
+  // No per-task files: this task is worked against the shared practice target,
+  // so point the learner at where they fetch it instead of showing an empty gap.
+  if (loaded && files.length === 0) {
+    return (
+      <Panel>
+        <h2 className="label">Get the target</h2>
+        <p className="text-sm leading-relaxed text-zinc-400">
+          This task has no per-task files — you work it against the practice target,{" "}
+          <span className="font-mono text-zinc-200">MASDojo.apk</span>. Download and install it,
+          analyse it with your own tools, then submit what you recover below.
+        </p>
+        <ol className="mt-3 space-y-1.5 font-mono text-xs text-zinc-400">
+          <li>
+            <span className="text-phosphor-dim">1. </span>
+            Grab <span className="text-zinc-200">MASDojo.apk</span> from the{" "}
+            <Link to="/" className="rounded text-phosphor hover:underline">
+              skill map
+            </Link>{" "}
+            (if it isn&apos;t built yet, run <span className="text-zinc-200">make apps</span>).
+          </li>
+          <li>
+            <span className="text-phosphor-dim">2. </span>
+            <span className="text-zinc-200">adb install -r MASDojo.apk</span>, then analyse it.
+          </li>
+          <li>
+            <span className="text-phosphor-dim">3. </span>
+            Submit your result to the emulator grader below.
+          </li>
+        </ol>
+      </Panel>
+    );
+  }
 
   if (files.length === 0) return null;
 
