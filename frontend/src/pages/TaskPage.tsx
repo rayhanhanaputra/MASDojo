@@ -78,14 +78,14 @@ export function TaskPage() {
     <div className="space-y-6">
       {/* ---------- header ---------- */}
       <div className="panel reticle overflow-hidden p-6">
-        <nav className="flex flex-wrap items-center gap-2 font-mono text-2xs uppercase text-zinc-500" aria-label="breadcrumb">
+        <nav className="flex flex-wrap items-center gap-2 font-mono text-2xs uppercase text-zinc-400" aria-label="breadcrumb">
           <Link to="/" className="rounded text-zinc-400 transition-colors hover:text-phosphor">
             ← skill map
           </Link>
           <span aria-hidden>/</span>
           <span>module {task.module.padStart(2, "0")}</span>
           <span aria-hidden>/</span>
-          <span className="text-zinc-300">{task.domain}</span>
+          <span className="text-zinc-200">{task.domain}</span>
         </nav>
 
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
@@ -113,7 +113,7 @@ export function TaskPage() {
               <span className="mx-1">
                 <Difficulty level={task.difficulty} />
               </span>
-              <span className="font-mono text-2xs uppercase text-zinc-500">
+              <span className="font-mono text-2xs uppercase text-zinc-400">
                 ~{task.time_estimate_min} min
               </span>
             </div>
@@ -133,7 +133,7 @@ export function TaskPage() {
         <div className="mt-5 border-t border-ink-500/60 pt-4">
           <p className="eyebrow mb-2">
             how this task is graded
-            <span className="ml-2 normal-case tracking-normal text-zinc-500">
+            <span className="ml-2 normal-case tracking-normal">
               — a real emulator runs every submission
             </span>
           </p>
@@ -165,7 +165,7 @@ export function TaskPage() {
           <Panel className={submission ? "" : "border-phosphor/25"}>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="label mb-0">Submit your solution</h2>
-              <span className="inline-flex items-center gap-1.5 font-mono text-2xs uppercase text-zinc-500">
+              <span className="inline-flex items-center gap-1.5 font-mono text-2xs uppercase text-zinc-400">
                 <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-phosphor" />
                 emulator grader
               </span>
@@ -182,7 +182,7 @@ export function TaskPage() {
                 {history.slice(0, 8).map((s) => (
                   <li key={s.id} className="flex items-center justify-between gap-3 py-2">
                     <span className="flex items-center gap-2 text-zinc-400">
-                      <span className="text-zinc-600">#{s.id}</span>
+                      <span className="text-zinc-400">#{s.id}</span>
                       {new Date(s.created_at).toLocaleString()}
                       {s.ai_generated && <MentorMark>ai attempt</MentorMark>}
                     </span>

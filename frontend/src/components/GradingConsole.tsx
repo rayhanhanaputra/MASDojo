@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { API_BASE } from "../api/client";
 import { api } from "../api/endpoints";
 
@@ -67,14 +67,15 @@ export function GradingConsole({ submissionId }: { submissionId: number }) {
           <span className={`h-2 w-2 rounded-full ${finished ? "bg-phosphor-dim" : "bg-phosphor animate-blink"}`} />
         </span>
         <span className="text-zinc-200">flight recorder</span>
-        <span className="text-zinc-600">·</span>
+        <span className="text-zinc-600" aria-hidden>·</span>
         <span>emulator pipeline</span>
-        <span className="text-zinc-600">·</span>
+        <span className="text-zinc-600" aria-hidden>·</span>
         <span>#{submissionId}</span>
         <span className="ml-auto flex items-center gap-2">
           {phase && <span className="text-phosphor-dim">{phase}</span>}
           <span className={`chip ${finished ? "border-ink-400 text-zinc-400" : "border-phosphor/50 text-phosphor"}`}>
-            {finished ? "rec end" : "● live"}
+            <span aria-hidden>{finished ? "■" : "●"}</span>
+            {finished ? "rec end" : "live"}
           </span>
         </span>
       </div>
@@ -83,7 +84,7 @@ export function GradingConsole({ submissionId }: { submissionId: number }) {
 
       <div
         ref={boxRef}
-        className="console-text relative max-h-64 overflow-y-auto p-3 font-mono text-xs leading-[1.7]"
+        className="console-text relative max-h-80 overflow-y-auto p-3 font-mono text-xs leading-[1.7]"
         role="log"
         aria-live="polite"
         aria-label="grading console"
@@ -92,9 +93,10 @@ export function GradingConsole({ submissionId }: { submissionId: number }) {
           <ConsoleLine key={i} line={l} t0={t0} />
         ))}
         {!finished && (
-          <div className="text-phosphor" aria-hidden>
-            <span className="mr-2 inline-block w-14 text-right text-zinc-600">&nbsp;</span>
-            <span className="inline-block h-3 w-2 translate-y-0.5 bg-phosphor animate-blink" />
+          <div className="flex items-center gap-2 text-phosphor" aria-hidden>
+            <span className="w-14 shrink-0" />
+            <span className="w-3 shrink-0" />
+            <span className="inline-block h-3 w-2 bg-phosphor animate-blink" />
           </div>
         )}
       </div>
@@ -108,9 +110,40 @@ function Stamp({ ts, t0 }: { ts: number; t0: number }) {
   const dt = ts && t0 ? Math.max(0, ts - t0) : null;
   const text = dt === null ? "" : `+${dt.toFixed(2).padStart(5, "0")}s`;
   return (
-    <span className="mr-2 inline-block w-14 select-none text-right text-zinc-600" aria-hidden>
+    <span className="w-14 shrink-0 select-none text-right tabular-nums text-zinc-400/80" aria-hidden>
       {text}
     </span>
+  );
+}
+
+// Every line is three fixed columns — [timestamp][glyph][message] — so wrapped
+// messages hang under their own text instead of under the gutter, and the
+// glyphs line up into a readable spine down the left of the recorder.
+function Row({
+  line,
+  t0,
+  glyph,
+  glyphCls,
+  className = "",
+  style,
+  children,
+}: {
+  line: Line;
+  t0: number;
+  glyph: string;
+  glyphCls?: string;
+  className?: string;
+  style?: CSSProperties;
+  children: ReactNode;
+}) {
+  return (
+    <div className={`flex items-start gap-2 ${className}`} style={style}>
+      <Stamp ts={line.ts} t0={t0} />
+      <span className={`w-3 shrink-0 text-center ${glyphCls ?? ""}`} aria-hidden>
+        {glyph}
+      </span>
+      <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">{children}</span>
+    </div>
   );
 }
 
@@ -118,35 +151,36 @@ function ConsoleLine({ line, t0 }: { line: Line; t0: number }) {
   if (line.level === "done") {
     const pass = line.msg.toUpperCase().includes("PASSED");
     return (
-      <div
-        className={`mt-1 border-t pt-1 font-bold uppercase tracking-[0.2em] ${
+      <Row
+        line={line}
+        t0={t0}
+        glyph="■"
+        className={`mt-1.5 border-t pt-1.5 font-bold uppercase tracking-[0.2em] ${
           pass ? "border-phosphor/40 text-phosphor" : "border-signal-red/40 text-signal-red"
         }`}
         style={{ textShadow: pass ? "0 0 12px rgba(57,255,139,0.6)" : "0 0 12px rgba(255,92,92,0.5)" }}
       >
-        <Stamp ts={line.ts} t0={t0} />■ {line.msg}
-      </div>
+        {line.msg}
+      </Row>
     );
   }
   if (line.level === "error")
     return (
-      <div className="text-signal-red">
-        <Stamp ts={line.ts} t0={t0} />✗ {line.msg}
-      </div>
+      <Row line={line} t0={t0} glyph="✗" className="text-signal-red">
+        {line.msg}
+      </Row>
     );
   if (line.level === "check") {
     const pass = line.msg.startsWith("PASS");
     return (
-      <div className={pass ? "text-phosphor" : "text-signal-red"}>
-        <Stamp ts={line.ts} t0={t0} />
-        {pass ? "✓" : "✗"} {line.msg.replace(/^(PASS|FAIL)\s·\s/, "")}
-      </div>
+      <Row line={line} t0={t0} glyph={pass ? "✓" : "✗"} className={pass ? "text-phosphor" : "text-signal-red"}>
+        {line.msg.replace(/^(PASS|FAIL)\s·\s/, "")}
+      </Row>
     );
   }
   return (
-    <div className="text-zinc-300">
-      <Stamp ts={line.ts} t0={t0} />
-      <span className="text-phosphor-dim">▸</span> {line.msg}
-    </div>
+    <Row line={line} t0={t0} glyph="▸" glyphCls="text-phosphor-dim" className="text-zinc-300">
+      {line.msg}
+    </Row>
   );
 }

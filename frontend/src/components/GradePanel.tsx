@@ -39,7 +39,7 @@ export function GradePanel({
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="label mb-0">Grading result</h2>
-          <p className="font-mono text-2xs text-zinc-500">
+          <p className="font-mono text-2xs text-zinc-400">
             submission #{submission.id}
             {submission.ai_generated && (
               <span className="ml-2 inline-flex align-middle">
@@ -162,8 +162,8 @@ function EvidenceBundle({ items }: { items: EvidenceItem[] }) {
                   {icon[it.kind] ?? "•"}
                 </span>
                 <span className="flex-1 truncate">{it.label}</span>
-                <span className="text-2xs uppercase text-zinc-500">{it.kind}</span>
-                <span className="w-3 text-center text-zinc-500" aria-hidden>
+                <span className="text-2xs uppercase text-zinc-400">{it.kind}</span>
+                <span className="w-3 text-center text-zinc-400" aria-hidden>
                   {isOpen ? "−" : "+"}
                 </span>
               </button>
