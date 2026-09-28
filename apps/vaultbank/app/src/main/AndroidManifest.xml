@@ -48,6 +48,36 @@
              Java object into untrusted JavaScript via @JavascriptInterface. -->
         <activity android:name=".WebViewActivity" android:exported="false" />
 
+        <!-- RASP practice surface (tasks 093 / 094 / 096): three runtime
+             self-protection gates (anti-Frida, emulator, anti-debug,
+             attestation), each a single in-process boolean. Exported with a deep link so a learner can
+             launch it directly:
+               adb shell am start -a android.intent.action.VIEW -d "vaultbank://rasplab" -->
+        <activity
+            android:name=".RaspLabActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="vaultbank" android:host="rasplab" />
+            </intent-filter>
+        </activity>
+
+        <!-- VULNERABILITY (MASVS-PLATFORM-1, task 084): a "privilege helper"
+             broadcast receiver exported with NO android:permission and no caller
+             check. It mints an elevation grant for whoever sends it the intent —
+             a userland confused deputy / permission re-delegation reachable via
+             `adb shell am broadcast` to the ELEVATE action with a string extra
+             named "requester". -->
+        <receiver
+            android:name=".GrantReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.masdojo.vaultbank.action.ELEVATE" />
+            </intent-filter>
+        </receiver>
+
         <!-- VULNERABILITY (MASVS-PLATFORM-3, task 083): an exported content
              provider with no read permission — any app can query the account
              ledger at content://org.masdojo.vaultbank.provider/accounts via

@@ -1,59 +1,78 @@
 # MASDojo — Mobile App Security Dojo
 
-> A self-hostable, open-source platform for learning **Android application penetration testing** through a guided, adaptive curriculum where every task is graded by a **real Android emulator**.
+> A self-hostable platform for learning Android app penetration testing. Every
+> task ships with an automated grader that checks you actually applied the
+> technique — not that you guessed a flag.
 
 ![CI](https://github.com/rayhanhanaputra/MASDojo/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
 
+MASDojo builds a hands-on curriculum on top of the OWASP MASVS / MASTG body of
+knowledge. Each task pairs a deliberately vulnerable target app with an objective
+and a grader. You submit what the task asks for — a recovered secret, a Frida
+script, or a captured request — and the grader returns pass or fail with the
+individual checks it ran, so you can see exactly what held and what didn't.
 
-MASDojo turns the OWASP **MASVS / MASTG** body of knowledge into a hands-on dojo. Each task ships with a deliberately vulnerable target app, a clear objective, and an **automated grader**. When you think you've solved a task, MASDojo boots a real Android AVD, installs the target APK, applies your submission — a recovered secret, a Frida script, or a captured request — runs the grader, and returns a **PASS or FAIL with concrete evidence** of exactly which check passed or failed.
-
-That live, evidence-backed grading loop is the heart of the platform.
+Device-backed tasks run against a real Android emulator: the runner restores an
+AVD snapshot, installs the target APK, applies your submission, and grades the
+result. Most tasks also grade in dry-run from committed artifacts, so you can
+work through the curriculum without an emulator or a build toolchain.
 
 <!-- SCREENSHOT/GIF SLOT: docs/assets/demo.gif -->
 <!-- Add a demo GIF of the task view → submit → live PASS verdict here before submission. -->
 <!-- A full stage walkthrough lives in docs/demo.md. -->
 
----
+## What it does
 
-## Why MASDojo
-
-- **The emulator is the answer key.** No self-reported "I think I got it." A task is complete only when a real device run verifies your solution.
-- **Watch it grade.** A live **flight-recorder console** streams every step of the pipeline — AVD snapshot restore, `adb install`, Frida injection, mitmproxy capture, each check — so PASS/FAIL is the climax of a visible pipeline, not a boolean from nowhere.
-- **Proof-of-Pwn.** Every PASS issues a signed, independently-verifiable certificate (public `/verify`) binding the verdict to the task, the learner, and a digest of the evidence — so "how do I know that PASS isn't faked?" is answered on screen.
-- **Adaptive pathway.** Tasks form a prerequisite DAG across ten modules. A pathway engine recommends your next task based on mastery, hints used, and time-to-solve.
-- **AI mentor, bring-your-own-key.** Plug in your *own* Anthropic or OpenAI API key to unlock Socratic tiered hints, "explain this smali/Frida error," and post-task remediation reviews. Keys are encrypted at rest, used server-side only, and the platform is fully functional without them — so it stays free to host.
-- **MASVS-aligned.** Every task maps to a MASVS v2 control and references the relevant MASTG technique/test.
-- **Defensive education only.** All target apps are intentionally-vulnerable training artifacts authored in this repo. No real malware, no third-party copyrighted apps.
-
----
+- **Graders, not self-assessment.** A task is done when its grader passes, not
+  when you decide you've got it. Graders report per-check results rather than a
+  bare boolean.
+- **Live grading console.** For device-backed tasks the runner streams each step
+  of the pipeline — AVD restore, `adb install`, Frida injection, mitmproxy
+  capture, each check — so a verdict is traceable to what produced it.
+- **Signed pass certificates.** Each pass is signed and verifiable at a public
+  `/verify` endpoint, binding the verdict to the task, the learner, and a digest
+  of the evidence.
+- **Prerequisite-ordered curriculum.** Tasks form a dependency graph; a pathway
+  engine suggests your next task from mastery, hints used, and time-to-solve.
+- **Optional AI mentor (bring your own key).** Point it at an Anthropic or OpenAI
+  key — or any OpenAI-compatible gateway — for tiered hints, snippet
+  explanations, and post-task reviews. Keys are encrypted at rest and used
+  server-side only; the platform is fully functional without one.
+- **MASVS/MASTG-mapped.** Each task cites a MASVS v2 control and the relevant
+  MASTG technique or test.
+- **Training targets only.** Every target app is an intentionally-vulnerable
+  artifact authored in this repo. No real malware, no third-party apps.
 
 ## Quickstart
 
-### Run it on your own laptop (workshop / solo mode) — no cloud, no login
+### On your own laptop (workshop / solo mode) — no cloud, no login
 
-Everything runs locally; live Frida/RASP grading uses **your machine's own**
-Android emulator, so **no KVM VM is needed**. Full setup + troubleshooting:
-[`docs/preflight.md`](docs/preflight.md) and [`docs/local-mode.md`](docs/local-mode.md).
+Everything runs locally, and live Frida/RASP grading uses your machine's own
+Android emulator, so no nested-virtualization host is required. Setup and
+troubleshooting: [`docs/preflight.md`](docs/preflight.md) and
+[`docs/local-mode.md`](docs/local-mode.md).
 
 ```bash
 git clone <your-fork-url> masdojo && cd masdojo
-make doctor        # check your machine has everything (tells you what's missing)
+make doctor        # check your machine has everything (reports what's missing)
 make solo          # http://localhost:5173 — no login, straight into the curriculum
 ```
 
-`make solo` already gives you **Lab 1** (RE/secrets) and **Lab 3** (API abuse) —
-neither needs an emulator. For **Lab 2** (live Frida/RASP):
+`make solo` covers Lab 1 (RE/secrets) and Lab 3 (API abuse), neither of which
+needs an emulator. For Lab 2 (live Frida/RASP):
 
 ```bash
-make avd-up        # create a rooted local AVD + launch a matching frida-server
+make avd-up        # create a rooted local AVD + a matching frida-server
 make avd-check     # confirm it's ready
 make runner-host   # grade against your local AVD (attach mode)
 ```
 
-### Or run it hosted (multi-user)
+### Hosted (multi-user)
 
-> **Heads-up:** the grading **runner** boots an Android emulator and therefore needs a **KVM-enabled host** (nested virtualization). The database, Redis, backend, and frontend run anywhere Docker runs. See [Runner & KVM](#runner--kvm).
+The grading runner boots an Android emulator and needs a KVM-enabled host
+(nested virtualization). The database, Redis, backend, and frontend run anywhere
+Docker runs — see [Runner & KVM](#runner--kvm).
 
 ```bash
 git clone <your-fork-url> masdojo && cd masdojo
@@ -62,24 +81,24 @@ make apps                     # build the vulnerable target APKs (Docker, no hos
 make up                       # full stack: db, redis, backend, frontend, runner
 ```
 
-Then open <http://localhost:5173>, register a local account, and start at **Module 0 — Foundations**.
+Open <http://localhost:5173>, register a local account, and start at Module 0.
 
-**No KVM host (e.g. on a Mac)?** The emulator-backed runner needs `/dev/kvm`, but
-everything else runs anywhere:
+No KVM host (for example on a Mac)? Everything except the emulator runner still
+runs:
 
 ```bash
 make up-core                  # db, redis, backend, frontend — skips the runner
 ```
 
-You can still browse the whole UI and use the AI mentor. To watch the grading
-loop work without an emulator, run the runner in **dry-run** mode — it grades
-`flag` and `static_assert` tasks (which compare against server-side expected
-values). For the full emulator path on a real KVM box, see
-[`docs/deploy-kvm.md`](docs/deploy-kvm.md).
+You can browse the whole UI and use the AI mentor. To exercise the grading loop
+without an emulator, run the runner in dry-run mode: it grades `flag` and
+`static_assert` tasks against server-side expected values. For the full emulator
+path on a KVM box, see [`docs/deploy-kvm.md`](docs/deploy-kvm.md).
 
-To enable the AI mentor, go to **Settings → AI Key**, paste your Anthropic or OpenAI key, and click **Test & Save**.
-
----
+To enable the AI mentor, open Settings → AI Key and save an Anthropic or OpenAI
+key. For a custom endpoint (a proxy or OpenAI-compatible gateway), set
+`OPENAI_BASE_URL` / `OPENAI_MODEL` (or the `ANTHROPIC_*` equivalents) in `.env`;
+see [`.env.example`](.env.example).
 
 ## Architecture
 
@@ -105,21 +124,21 @@ To enable the AI mentor, go to **Settings → AI Key**, paste your Anthropic or 
 
 | Component | Stack | Responsibility |
 |-----------|-------|----------------|
-| `frontend/` | React, TypeScript, Vite, Tailwind | Dark terminal-ops UI: dashboard skill map, task view, hint panel, live grading, BYOK settings |
+| `frontend/` | React, TypeScript, Vite, Tailwind | Dashboard skill map, task view, hint panel, live grading, BYOK settings |
 | `backend/` | FastAPI, SQLAlchemy, Pydantic, loguru | Auth (JWT), task API, pathway engine, AI mentor proxy, BYOK key management |
-| `runner/` | Python worker | Boots/snapshots AVD, installs APK, injects Frida, captures with mitmproxy, runs graders |
+| `runner/` | Python worker | Boots/snapshots the AVD, installs the APK, injects Frida, captures with mitmproxy, runs graders |
 | `tasks/` | YAML + Python graders | Self-contained curriculum task packages |
 | `apps/` | Kotlin | Source for the intentionally-vulnerable training apps |
 | `infra/` | Docker | Compose, Dockerfiles, AVD build, seed scripts |
 | `docs/` | Markdown | Architecture, authoring guide, MASVS coverage, demo assets |
 
-Full design notes: [`docs/architecture.md`](docs/architecture.md).
-
----
+Design notes: [`docs/architecture.md`](docs/architecture.md).
 
 ## Curriculum
 
-Eleven modules, ordered so each builds the prerequisites for the next, covering all eight MASVS v2 categories. Full mapping in [`docs/masvs-coverage.md`](docs/masvs-coverage.md).
+Twelve modules (0–11), ordered so each builds the prerequisites for the next,
+covering all eight MASVS v2 categories. Full mapping in
+[`docs/masvs-coverage.md`](docs/masvs-coverage.md).
 
 | Module | Domain | MASVS focus |
 |--------|--------|-------------|
@@ -136,16 +155,24 @@ Eleven modules, ordered so each builds the prerequisites for the next, covering 
 | 10 · Privacy & Data Sharing | `privacy` | MASVS-PRIVACY-1 |
 | 11 · Capstone | `capstone` | Cross-MASVS |
 
-**Every one of the 25 tasks has a real payload-detection grader** — the system that verifies you genuinely applied the technique, not just that you guessed a flag. That's what sets MASDojo apart from a bag of vulnerable apps: an automated per-technique mastery check. Tasks are **solvable and gradeable now, in dry-run**, from committed artifacts (decoded resources, prefs/log/backup dumps, real encrypted blobs, captured traffic) — no emulator or APK build required. The three ⭐ reference tasks (`001`/`005`/`009`) additionally run on a live Android emulator. New comparison graders are a one-liner via [`runner/runner/graders.py`](runner/runner/graders.py); see [`tasks/_template/`](tasks/_template/) and [`docs/authoring.md`](docs/authoring.md).
-
----
+All 30 tasks ship a grader that verifies the technique was applied, not just that
+a flag matched. Most grade in dry-run from committed artifacts (decoded
+resources, prefs/log/backup dumps, real encrypted blobs, captured traffic), so no
+emulator or APK build is needed to solve them; the reference tasks (`001`, `005`,
+`009`) also run on a live emulator. Module 9 is a tour of RASP techniques — root,
+emulator, and debugger detection, anti-Frida, integrity/tamper checks, string
+encryption, and a local attestation stub — each with its own bypass. Adding a
+comparison grader is usually a one-liner via
+[`runner/runner/graders.py`](runner/runner/graders.py); see
+[`tasks/_template/`](tasks/_template/) and [`docs/authoring.md`](docs/authoring.md).
 
 ## Grading model
 
-Each task declares a `success_type`. The runner produces a `GradeResult(passed, evidence, checks, score)`:
+Each task declares a `success_type`. The runner returns a
+`GradeResult(passed, evidence, checks, score)`:
 
-| `success_type` | What the learner submits | What the grader asserts |
-|----------------|--------------------------|-------------------------|
+| `success_type` | What you submit | What the grader asserts |
+|----------------|-----------------|-------------------------|
 | `flag` | A string | Constant-time match against the expected flag |
 | `static_assert` | An extracted value (secret/endpoint) | The value was genuinely present in the target |
 | `frida_assert` | A Frida script | A hook fired / a guarded function's return was flipped |
@@ -153,22 +180,21 @@ Each task declares a `success_type`. The runner produces a `GradeResult(passed, 
 
 Every job is sandboxed, network-restricted, and hard-timeouted.
 
----
-
 ## Runner & KVM
 
-The emulator runner requires hardware-accelerated virtualization:
+The emulator runner needs hardware-accelerated virtualization:
 
-- **Linux host with `/dev/kvm`** is the supported path. The runner container is launched with `--device /dev/kvm`.
-- If KVM is unavailable inside containers, run the runner **on bare metal** against the same Redis/Postgres — see [`docs/architecture.md`](docs/architecture.md#runner-on-bare-metal).
+- A Linux host with `/dev/kvm` is the supported path; the runner container is
+  launched with `--device /dev/kvm`.
+- If KVM isn't available inside containers, run the runner on bare metal against
+  the same Redis/Postgres — see
+  [`docs/architecture.md`](docs/architecture.md#runner-on-bare-metal).
 
----
+## Adding a task
 
-## Add a task
-
-Drop a new directory under `tasks/` following [`tasks/_template/`](tasks/_template/). The full authoring workflow — `task.yaml` schema, grader contract, hint tiers, building the target app — is in [`docs/authoring.md`](docs/authoring.md).
-
----
+Copy [`tasks/_template/`](tasks/_template/) to a new directory under `tasks/`.
+The authoring workflow — `task.yaml` schema, grader contract, hint tiers,
+building the target app — is in [`docs/authoring.md`](docs/authoring.md).
 
 ## License
 

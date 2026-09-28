@@ -19,6 +19,14 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        // Native self-ptrace anti-debug guard (task 094): src/main/jniLibs/*/
+        // libguard.so sets this process's TracerPid non-zero on load so the
+        // anti-debug gate actually engages. Prebuilt (see cpp/guard.c) and
+        // shipped for the emulator + device ABIs the dojo runs on.
+        ndk {
+            abiFilters += listOf("x86_64", "arm64-v8a")
+        }
+
         // Hardcoded secrets baked into the binary (MASVS-STORAGE-1 / -CRYPTO):
         // recoverable from BuildConfig or the decompiled smali.
         buildConfigField("String", "API_KEY", "\"msd_live_sk_8f3c1d77a94b42e0b6c5e9f0a1d2c3b4\"")
@@ -30,6 +38,17 @@ android {
         buildConfigField("String", "REWARD_FLAG", "\"FLAG{runt1m3_r3w4rd_h00k3d}\"")
         // The flag behind the client-side root/anti-frida gate (task 009/091).
         buildConfigField("String", "VAULT_FLAG", "\"FLAG{r00t_ch3ck_bypass3d}\"")
+        // RASP-technique gate flags, each revealed only when the matching runtime
+        // self-protection check is defeated (tasks 093 / 094 / 096).
+        buildConfigField("String", "EMU_FLAG", "\"FLAG{3mul4t0r_ch3ck_d3f34t3d}\"")
+        buildConfigField("String", "DEBUG_FLAG", "\"FLAG{tr4c3rp1d_4nt1d3bug_byp4ss3d}\"")
+        buildConfigField("String", "ATTEST_FLAG", "\"FLAG{4tt3st4t10n_stub_f0rg3d}\"")
+        // The flag behind the anti-instrumentation / anti-Frida gate (task 091),
+        // revealed only when AntiTamper.isInstrumented() is hooked to false.
+        buildConfigField("String", "TAMPER_FLAG", "\"FLAG{4nt1_fr1d4_ch3ck_d3f34t3d}\"")
+        // The grant token the exported confused-deputy receiver hands any caller
+        // (task 084). Reversibly obfuscated in GrantReceiver, not stored cleartext.
+        buildConfigField("String", "GRANT_FLAG", "\"FLAG{c0nfus3d_d3puty_pr1v_r3d3l3g4t3d}\"")
     }
 
     buildFeatures {

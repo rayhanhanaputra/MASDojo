@@ -1,0 +1,22 @@
+// Decompiled — org.masdojo.vaultbank.EmulatorDetector  (RASP: emulator/sandbox gate)
+// The RASP lab denies each reward when its check reports a hostile environment.
+// This gate's whole decision is the single boolean returned by isEmulator().
+
+package org.masdojo.vaultbank;
+
+public final class EmulatorDetector {
+
+    // true  -> "this is an emulator/sandbox" -> reward stays locked
+    // false -> "physical device"            -> reward unlocks
+    public static boolean isEmulator() {
+        return hasQemuBuildProps() || hasGenericHardware() || hasQemuNodes();
+    }
+
+    private static boolean hasQemuBuildProps() { /* Build.FINGERPRINT / PRODUCT / HARDWARE tells */ }
+    private static boolean hasGenericHardware() { /* generic BRAND/DEVICE, Genymotion, SDK model */ }
+    private static boolean hasQemuNodes() { /* /dev/qemu_pipe, /dev/goldfish_pipe, ... */ }
+}
+
+// RaspLabActivity gates on it:
+//   if (!EmulatorDetector.isEmulator()) { Log.i("VaultBank", "MASDOJO_UNLOCK_EMU:" + EMU_FLAG); }
+//   else                                { Log.w("VaultBank", "MASDOJO_DENIED_EMU: ..."); }

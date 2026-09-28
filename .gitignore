@@ -49,3 +49,7 @@ redis-data/
 .idea/
 .vscode/
 *.swp
+
+# native build cache
+.cxx/
+**/.cxx/

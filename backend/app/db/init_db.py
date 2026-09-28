@@ -47,9 +47,14 @@ def init_db() -> None:
     wait_for_db()
     logger.info("creating database tables")
     Base.metadata.create_all(bind=engine)
-    with engine.begin() as conn:
-        for stmt in _COLUMN_PATCHES:
-            conn.execute(text(stmt))
+    # Additive patches bring an *existing* server's table up to date (create_all
+    # never ALTERs). They use Postgres `ADD COLUMN IF NOT EXISTS`; on SQLite the
+    # columns already exist from create_all above and that syntax is invalid, so
+    # skip them there — keeping a local SQLite self-host working out of the box.
+    if engine.dialect.name != "sqlite":
+        with engine.begin() as conn:
+            for stmt in _COLUMN_PATCHES:
+                conn.execute(text(stmt))
     logger.info("database ready")
 
 

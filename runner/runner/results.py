@@ -125,19 +125,27 @@ class ResultWriter:
             return score
 
         if passed:
+            # SQLite returns datetimes as ISO strings (Postgres returns aware
+            # datetimes); normalize so time-to-solve works on either backend.
+            if isinstance(first_attempt_at, str):
+                first_attempt_at = datetime.fromisoformat(first_attempt_at)
+            if first_attempt_at is not None and first_attempt_at.tzinfo is None:
+                first_attempt_at = first_attempt_at.replace(tzinfo=timezone.utc)
             tts = int((now - first_attempt_at).total_seconds()) if first_attempt_at else None
+            # `GREATEST` is Postgres/MySQL-only; compute the best score in Python
+            # so the UPDATE is portable to SQLite too.
             conn.execute(
                 text(
                     """
                     UPDATE progress
                     SET passed=true,
-                        best_score=GREATEST(best_score, :score),
+                        best_score=:best,
                         passed_at=COALESCE(passed_at, :now),
                         time_to_solve_sec=COALESCE(time_to_solve_sec, :tts)
                     WHERE id=:id
                     """
                 ),
-                {"score": score, "now": now, "tts": tts, "id": prog["id"]},
+                {"best": max(best_score, score), "now": now, "tts": tts, "id": prog["id"]},
             )
         return max(score, best_score)
 
