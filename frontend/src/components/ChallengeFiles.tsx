@@ -7,6 +7,12 @@ interface FileEntry {
   size: number;
 }
 
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 // Challenge files: the committed artifacts a learner analyses to solve a task
 // (decoded resources, prefs/log/backup dumps, encrypted blobs, captured
 // traffic). This is what closes the loop — the technique is applied against
@@ -54,48 +60,63 @@ export function ChallengeFiles({ taskId }: { taskId: string }) {
 
   return (
     <Panel>
-      <h2 className="label">Challenge files</h2>
-      <p className="mb-3 text-xs text-zinc-500">
+      <div className="mb-1 flex items-center justify-between">
+        <h2 className="label mb-0">Challenge files</h2>
+        <span className="font-mono text-2xs uppercase text-zinc-500">{files.length} artifacts</span>
+      </div>
+      <p className="mb-3 text-xs leading-relaxed text-zinc-400">
         The artifacts to analyse for this task. Apply the technique to these, then submit what you
         recover.
       </p>
-      <ul className="divide-y divide-ink-500/40 rounded-md border border-ink-500/60">
-        {files.map((f) => (
-          <li key={f.path} className="flex items-center justify-between gap-2 px-3 py-2">
-            <button
-              className={`truncate text-left font-mono text-xs ${
-                open === f.path ? "text-phosphor" : "text-zinc-300 hover:text-phosphor"
+      <ul className="divide-y divide-ink-500/40 overflow-hidden rounded-lg border border-ink-500/60">
+        {files.map((f) => {
+          const isOpen = open === f.path;
+          return (
+            <li
+              key={f.path}
+              className={`flex items-center justify-between gap-2 px-3 py-2 transition-colors ${
+                isOpen ? "bg-phosphor/[0.05]" : "hover:bg-ink-700/60"
               }`}
-              onClick={() => view(f.path)}
-              title={f.path}
             >
-              <span className="text-phosphor-dim">📄</span> {f.path}
-            </button>
-            <div className="flex shrink-0 items-center gap-3">
-              <span className="font-mono text-[10px] text-zinc-600">{f.size} B</span>
               <button
-                className="font-mono text-[10px] text-zinc-500 hover:text-signal-cyan"
-                onClick={() => download(f.path)}
+                className={`flex min-w-0 items-center gap-2 text-left font-mono text-xs ${
+                  isOpen ? "text-phosphor" : "text-zinc-200 hover:text-phosphor"
+                }`}
+                onClick={() => view(f.path)}
+                title={f.path}
+                aria-expanded={isOpen}
               >
-                download
+                <span aria-hidden className={isOpen ? "text-phosphor" : "text-zinc-500"}>
+                  {isOpen ? "▾" : "▸"}
+                </span>
+                <span className="truncate">{f.path}</span>
               </button>
-            </div>
-          </li>
-        ))}
+              <div className="flex shrink-0 items-center gap-3">
+                <span className="font-mono text-2xs text-zinc-500">{formatSize(f.size)}</span>
+                <button
+                  className="rounded font-mono text-2xs uppercase text-zinc-400 transition-colors hover:text-signal-cyan"
+                  onClick={() => download(f.path)}
+                >
+                  ⇩ download
+                </button>
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       {open && (
-        <div className="mt-3 overflow-hidden rounded-md border border-ink-500/60">
+        <div className="mt-3 overflow-hidden rounded-lg border border-ink-500/60 animate-rise">
           <div className="flex items-center justify-between border-b border-ink-500/60 bg-ink-800 px-3 py-1.5">
-            <span className="truncate font-mono text-[11px] text-zinc-400">{open}</span>
+            <span className="truncate font-mono text-xs text-zinc-300">{open}</span>
             <button
-              className="font-mono text-[10px] text-zinc-500 hover:text-signal-red"
+              className="rounded font-mono text-2xs uppercase text-zinc-400 hover:text-signal-red"
               onClick={() => setOpen(null)}
             >
-              close
+              close ✕
             </button>
           </div>
-          <pre className="max-h-72 overflow-auto bg-ink-900/90 p-3 font-mono text-[11px] leading-relaxed text-zinc-300">
+          <pre className="max-h-72 overflow-auto bg-ink-950 p-3 font-mono text-xs leading-relaxed text-zinc-200">
             {busy ? "loading…" : content}
           </pre>
         </div>

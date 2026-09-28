@@ -2,7 +2,7 @@ import { useState } from "react";
 import { api } from "../api/endpoints";
 import { ApiError } from "../api/client";
 import type { HintResponse, TaskDetail } from "../api/types";
-import { Panel } from "./ui";
+import { MentorMark, Panel } from "./ui";
 
 interface RevealedHint extends HintResponse {
   key: string;
@@ -75,28 +75,53 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
   }
 
   const tiers = [1, 2, 3].slice(0, task.hint_count);
+  const revealedTiers = new Set(hints.filter((h) => h.source === "static").map((h) => h.tier));
 
   return (
     <Panel className="sticky top-20 space-y-4">
       <div>
-        <h2 className="label">Hints</h2>
-        <p className="text-xs text-zinc-500">
+        <div className="flex items-center justify-between">
+          <h2 className="label mb-0">Hints</h2>
+          <span className="font-mono text-2xs uppercase text-zinc-500">
+            {hints.length} used
+          </span>
+        </div>
+        <p className="mt-1.5 text-xs leading-relaxed text-zinc-400">
           Each hint you open lowers your score. The full solution stays locked until tier 3 or a
           few attempts.
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {tiers.map((t) => (
-          <button key={t} className="btn-ghost text-xs" onClick={() => reveal(t)} disabled={busy}>
-            Hint {t}
-          </button>
-        ))}
-        <button className="btn-ghost text-xs" onClick={() => reveal(4)} disabled={busy}>
+        {tiers.map((t) => {
+          const seen = revealedTiers.has(t);
+          return (
+            <button
+              key={t}
+              className={`btn-ghost btn-sm ${seen ? "border-phosphor/40 text-phosphor" : ""}`}
+              onClick={() => reveal(t)}
+              disabled={busy}
+              aria-pressed={seen}
+            >
+              {seen && <span aria-hidden>✓</span>}
+              Hint {t}
+            </button>
+          );
+        })}
+        <button
+          className="btn-ghost btn-sm border-signal-amber/40 text-signal-amber hover:border-signal-amber hover:bg-signal-amber/10 hover:text-signal-amber"
+          onClick={() => reveal(4)}
+          disabled={busy}
+        >
           Solution
         </button>
-        <button className="btn-ghost text-xs text-phosphor" onClick={aiHint} disabled={busy}>
-          ✦ AI hint
+        <button
+          className="btn-ghost btn-sm border-signal-violet/40 text-signal-violet hover:border-signal-violet hover:bg-signal-violet/10 hover:text-signal-violet"
+          onClick={aiHint}
+          disabled={busy}
+        >
+          <span aria-hidden>✦</span>
+          AI hint
         </button>
       </div>
 
@@ -107,32 +132,47 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
         spellCheck={false}
         maxLength={8000}
         onChange={(e) => setAttempt(e.target.value)}
+        aria-label="what have you tried"
       />
 
       {note && <p className="font-mono text-xs text-signal-amber">{note}</p>}
 
       <div className="space-y-3">
-        {hints.map((h) => (
-          <div
-            key={h.key}
-            className={`rounded-md border px-3 py-2 ${
-              h.is_solution ? "border-signal-amber/40 bg-signal-amber/5" : "border-ink-500 bg-ink-900/50"
-            }`}
-          >
-            <div className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wide">
-              <span className={h.source === "ai" ? "text-phosphor" : "text-zinc-500"}>
-                {h.source === "ai" ? "mentor" : "hint"} · tier {h.tier}
-                {h.is_solution ? " · solution" : ""}
-              </span>
+        {hints.map((h) => {
+          const ai = h.source === "ai";
+          return (
+            <div
+              key={h.key}
+              className={`animate-rise rounded-lg border px-3 py-2.5 ${
+                h.is_solution
+                  ? "border-signal-amber/40 bg-signal-amber/5"
+                  : ai
+                    ? "border-signal-violet/30 bg-signal-violet/[0.04]"
+                    : "border-ink-400 bg-ink-900/50"
+              }`}
+            >
+              <div className="mb-1.5 flex items-center gap-2">
+                {ai ? (
+                  <MentorMark>mentor · tier {h.tier}</MentorMark>
+                ) : (
+                  <span className="chip-masvs">
+                    hint · tier {h.tier}
+                  </span>
+                )}
+                {h.is_solution && <span className="chip-flag">solution</span>}
+              </div>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-200">{h.content}</p>
             </div>
-            <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-300">{h.content}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="border-t border-ink-500/50 pt-4">
-        <h3 className="label">Explain this</h3>
-        <p className="mb-2 text-xs text-zinc-600">
+        <div className="flex items-center justify-between">
+          <h3 className="label mb-0">Explain this</h3>
+          <MentorMark />
+        </div>
+        <p className="mb-2 mt-1.5 text-xs leading-relaxed text-zinc-400">
           Paste decompiled smali/Kotlin or a Frida error — the mentor explains it without solving
           the task.
         </p>
@@ -143,14 +183,16 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
           spellCheck={false}
           maxLength={12000}
           onChange={(e) => setSnippet(e.target.value)}
+          aria-label="snippet to explain"
         />
-        <button className="btn-ghost mt-2 w-full text-xs" onClick={explain} disabled={busy}>
-          ✦ Explain
+        <button className="btn-ghost btn-sm mt-2 w-full" onClick={explain} disabled={busy || !snippet.trim()}>
+          <span aria-hidden className="text-signal-violet">✦</span>
+          Explain
         </button>
         {explanation && (
-          <p className="mt-2 whitespace-pre-line rounded-md bg-ink-900/50 px-3 py-2 text-sm leading-relaxed text-zinc-300">
-            {explanation}
-          </p>
+          <div className="animate-rise mt-2 rounded-lg border border-signal-violet/30 bg-signal-violet/[0.04] px-3 py-2.5">
+            <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-200">{explanation}</p>
+          </div>
         )}
       </div>
     </Panel>
