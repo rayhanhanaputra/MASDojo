@@ -92,7 +92,9 @@ def list_artifacts(
     if not root.is_dir():
         return []
     return [
-        ArtifactEntry(path=str(p.relative_to(root)), size=p.stat().st_size)
+        # `.as_posix()` so the served path is always URL-style ("res/values/x"),
+        # never OS-dependent backslashes on a Windows host.
+        ArtifactEntry(path=p.relative_to(root).as_posix(), size=p.stat().st_size)
         for p in sorted(root.rglob("*"))
         if p.is_file()
     ]

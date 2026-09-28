@@ -1,0 +1,26 @@
+id: 096-play-integrity-bypass
+title: Forge a Play-Integrity / Attestation Verdict
+module: '9'
+order_index: 7
+domain: rasp-bypass
+masvs:
+- MASVS-RESILIENCE-1
+mastg_refs:
+- MASTG-TECH-0043
+difficulty: 5
+prereqs:
+- 092-defeat-integrity-check
+objective: >
+  VaultBank guards its highest-value reward behind a Play-Integrity /
+  SafetyNet-style attestation verdict — but it trusts a verdict it computes
+  locally, never a server-signed token. Because the "genuine device" decision
+  never leaves the process, hook the attestation gate so it reports a passing
+  verdict and unlock the reward.
+success_type: frida_assert
+submission_schema:
+  script: string
+time_estimate_min: 40
+is_reference: false
+grader_status: implemented
+app_package: org.masdojo.vaultbank
+launch_activity: .RaspLabActivity

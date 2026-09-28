@@ -1,0 +1,26 @@
+id: 084-confused-deputy-privesc
+title: Confused-Deputy Privilege Re-Delegation
+module: '8'
+order_index: 4
+domain: platform
+masvs:
+- MASVS-PLATFORM-1
+mastg_refs:
+- MASTG-TECH-0029
+difficulty: 3
+prereqs:
+- 081-exported-component-deeplink
+objective: >
+  VaultBank ships a "privilege helper" broadcast receiver that mints an elevation
+  grant — but it is exported with no permission and never checks who called it, so
+  any app (or `adb shell am broadcast`) can invoke the protected action and obtain
+  an effect it shouldn't. Confirm the component is reachable by a low-privileged
+  caller and recover the elevation grant it hands out; the app obfuscates the
+  grant in code rather than returning it in the clear, so reconstruct it.
+success_type: flag
+submission_schema:
+  flag: string
+time_estimate_min: 30
+is_reference: false
+grader_status: implemented
+app_package: org.masdojo.vaultbank

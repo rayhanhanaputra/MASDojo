@@ -1,7 +1,7 @@
 # MASVS Coverage
 
 The full task → MASVS → MASTG mapping for the MASDojo curriculum. **Every one of
-the 25 tasks is implemented with a real payload-detection grader** — the system
+the 30 tasks is implemented with a real payload-detection grader** — the system
 that verifies the learner genuinely applied the technique, not just that they
 found the right shape. Three ⭐ reference tasks (`001`/`005`/`009`) additionally
 drive a live Android emulator; most others are solvable and gradeable **now, in
@@ -70,9 +70,14 @@ rejecting a wrong one, or the prerequisite DAG has a dangling id or cycle.
 | 8 | Exported Component / Deep Link Abuse | `081-exported-component-deeplink` | flag | MASVS-PLATFORM-1 | MASTG-TECH-0029 | **implemented** |
 | 8 | WebView JS-Bridge Exploit | `082-webview-jsbridge-exploit` | static_assert | MASVS-PLATFORM-2 | MASTG-TECH-0030 | **implemented** |
 | 8 | Leaky Content Provider | `083-leaky-content-provider` | flag | MASVS-PLATFORM-3 | MASTG-TECH-0031 | **implemented** |
+| 8 | Confused-Deputy Privilege Re-Delegation | `084-confused-deputy-privesc` | flag | MASVS-PLATFORM-1 | MASTG-TECH-0029 | **implemented** |
 | 9 | ⭐ Root Detection Bypass | `009-root-detection-bypass` | frida_assert | MASVS-RESILIENCE-1 | MASTG-TECH-0144 | **implemented** |
 | 9 | Anti-Frida / Anti-Debug Evasion | `091-anti-frida-anti-debug` | frida_assert | MASVS-RESILIENCE-2, MASVS-RESILIENCE-3 | MASTG-TECH-0043 | **implemented** |
 | 9 | Defeat Integrity/Tamper Check | `092-defeat-integrity-check` | flag | MASVS-RESILIENCE-4 | MASTG-TECH-0049 | **implemented** |
+| 9 | Emulator / Sandbox Detection Bypass | `093-emulator-detection-bypass` | frida_assert | MASVS-RESILIENCE-1 | MASTG-TECH-0043 | **implemented** |
+| 9 | Anti-Debug (TracerPid) Bypass | `094-anti-debug-tracerpid` | frida_assert | MASVS-RESILIENCE-4 | MASTG-TECH-0043 | **implemented** |
+| 9 | Defeat String Encryption (Anti-Static-Analysis) | `095-string-encryption-deobf` | static_assert | MASVS-RESILIENCE-3 | MASTG-TECH-0023 | **implemented** |
+| 9 | Forge a Play-Integrity / Attestation Verdict | `096-play-integrity-bypass` | frida_assert | MASVS-RESILIENCE-1 | MASTG-TECH-0043 | **implemented** |
 | 10 | PII Leaked to a Third-Party SDK | `104-pii-third-party-leak` | static_assert | MASVS-PRIVACY-1 | MASTG-TEST-0206 | **implemented** |
 | 11 | Full Chain Capstone | `101-full-chain` | flag | MASVS-STORAGE-1, MASVS-NETWORK-2, MASVS-AUTH-1, MASVS-RESILIENCE-1 | MASTG-TECH-0011 | **implemented** |
 
@@ -95,10 +100,28 @@ All 8 MASVS v2 categories are covered.
 
 | Grader type | Count | Implemented | Reference (live-device) task |
 |-------------|:-----:|:-----------:|----------------|
-| `flag` | 10 | 10 | recovered-value detection |
-| `static_assert` | 6 | 6 | ⭐ `001-find-hardcoded-secret` |
+| `flag` | 11 | 11 | recovered-value detection |
+| `static_assert` | 7 | 7 | ⭐ `001-find-hardcoded-secret` |
 | `network_assert` | 4 | 4 | ⭐ `005-intercept-api-call` |
-| `frida_assert` | 5 | 5 | ⭐ `009-root-detection-bypass` |
+| `frida_assert` | 8 | 8 | ⭐ `009-root-detection-bypass` |
 
-All 25 tasks pass their own PASS/FAIL detection test in dry-run
+All 30 tasks pass their own PASS/FAIL detection test in dry-run
 (`runner/tests/test_all_tasks_gradeable.py`).
+
+## Module 9 — RASP technique tour
+
+Module 9 is a full Runtime Application Self-Protection technique tour: each major
+RASP class is its own task with its own bypass objective, all against the bundled
+`vaultbank` target. Every check is a single in-process decision, which is exactly
+why each is defeatable — the lesson being that client-side RASP raises the bar but
+is not a trust boundary.
+
+| Technique | Task | Bypass |
+|-----------|------|--------|
+| Root detection | `009-root-detection-bypass` | hook the root verdict |
+| Anti-Frida / anti-debug (maps/ports) | `091-anti-frida-anti-debug` | hook the instrumentation check |
+| Signature / tamper integrity | `092-defeat-integrity-check` | flip the integrity branch |
+| Emulator / sandbox detection | `093-emulator-detection-bypass` | hook `isEmulator()` |
+| Debugger detection (ptrace / TracerPid) | `094-anti-debug-tracerpid` | hook `isBeingTraced()` |
+| String encryption (anti-static-analysis) | `095-string-encryption-deobf` | replay the XOR decode offline |
+| Play-Integrity / attestation stub | `096-play-integrity-bypass` | forge the local verdict |
