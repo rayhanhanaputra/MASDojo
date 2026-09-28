@@ -25,7 +25,7 @@ class AdminActivity : AppCompatActivity() {
             addView(TextView(this@AdminActivity).apply { text = "Admin Console"; textSize = 22f })
             addView(TextView(this@AdminActivity).apply {
                 // No auth was required to reach this screen.
-                text = "FLAG{exp0rt3d_adm1n_no_auth}\n\nLedger API: ${ApiConfig.adminEndpoint}"
+                text = "${Flags.reveal("1c161b1d213f222a6a282e693e053b3e376b34053435053b2f2e3227")}\n\nLedger API: ${ApiConfig.adminEndpoint}"
                 textSize = 13f
             })
         }

@@ -52,8 +52,8 @@ class DashboardActivity : AppCompatActivity() {
 
         premiumBtn.setOnClickListener {
             if (isPremiumUser()) {
-                status.text = "Premium ledger unlocked.\n${BuildConfig.PREMIUM_FLAG}"
-                Log.i(tag, "MASDOJO_PREMIUM:${BuildConfig.PREMIUM_FLAG}")
+                status.text = "Premium ledger unlocked.\n${Flags.reveal(BuildConfig.PREMIUM_FLAG)}"
+                Log.i(tag, "MASDOJO_PREMIUM:${Flags.reveal(BuildConfig.PREMIUM_FLAG)}")
             } else {
                 status.text = "Premium membership required."
             }
@@ -65,8 +65,8 @@ class DashboardActivity : AppCompatActivity() {
                 status.text = "Transfers disabled on a compromised device."
                 Log.w(tag, "MASDOJO_DENIED: compromised device")
             } else {
-                status.text = "Transfer authorised.\n${BuildConfig.VAULT_FLAG}"
-                Log.i(tag, "MASDOJO_UNLOCK:${BuildConfig.VAULT_FLAG}")
+                status.text = "Transfer authorised.\n${Flags.reveal(BuildConfig.VAULT_FLAG)}"
+                Log.i(tag, "MASDOJO_UNLOCK:${Flags.reveal(BuildConfig.VAULT_FLAG)}")
             }
         }
 
@@ -79,7 +79,7 @@ class DashboardActivity : AppCompatActivity() {
     private fun isPremiumUser(): Boolean = false
 
     /** VULNERABILITY (task 041): flag computed at runtime, never rendered. */
-    private fun computeReward(): String = BuildConfig.REWARD_FLAG
+    private fun computeReward(): String = Flags.reveal(BuildConfig.REWARD_FLAG)
 
     /** Deep link into the exported admin console (task 081). */
     @Suppress("unused")

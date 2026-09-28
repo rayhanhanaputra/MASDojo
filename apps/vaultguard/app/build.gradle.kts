@@ -15,7 +15,9 @@ android {
         versionName = "1.0"
 
         // The flag revealed only when the (client-side) root check is defeated.
-        buildConfigField("String", "VAULT_FLAG", "\"FLAG{r00t_ch3ck_bypass3d}\"")
+        // XOR-obfuscated (Flags.reveal, key 0x5A) so `strings` finds no FLAG{...};
+        // decoded at runtime on the unlocked path. Plaintext: FLAG{r00t_ch3ck_bypass3d}
+        buildConfigField("String", "VAULT_FLAG", "\"1c161b1d21286a6a2e0539326939310538232a3b2929693e27\"")
     }
 
     buildFeatures {

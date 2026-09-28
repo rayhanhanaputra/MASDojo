@@ -31,6 +31,17 @@ adb install -r MASDojo.apk
 | Leaky content provider | PLATFORM-3 | 083 | `VaultProvider` (exported) | `content query --uri content://org.masdojo.vaultbank.provider/accounts` → `FLAG{l34ky_c0nt3nt_pr0v1d3r}` |
 | Root / anti-Frida bypass | RESILIENCE-1/2/3 | 009 / 091 | `RootDetector.isCompromised()` | Force it false → `FLAG{r00t_ch3ck_bypass3d}` |
 | Integrity/signature check | RESILIENCE-4 | 092 | `IntegrityChecker.isValidSignature` | Hook/patch to always-valid |
+| Confused-deputy privilege re-delegation | PLATFORM-1 | 084 | `GrantReceiver` (exported, no permission) | `am broadcast -a org.masdojo.vaultbank.action.ELEVATE` → grant token |
+| Emulator / sandbox detection | RESILIENCE-1 | 093 | `EmulatorDetector.isEmulator()` (gated by `RaspLabActivity`) | Hook it false → `FLAG{3mul4t0r_ch3ck_d3f34t3d}` |
+| Anti-debug (TracerPid/ptrace) | RESILIENCE-4 | 094 | `DebugDetector.isBeingTraced()` (`/proc/self/status`) | Hook it false → `FLAG{tr4c3rp1d_4nt1d3bug_byp4ss3d}` |
+| String encryption (anti-static-analysis) | RESILIENCE-3 | 095 | `StringVault.decode()` (XOR-encrypted table) | Replay the XOR offline |
+| Play-Integrity / attestation stub | RESILIENCE-1 | 096 | `PlayIntegrityStub.attestationPassed()` (local verdict) | Hook it true → `FLAG{4tt3st4t10n_stub_f0rg3d}` |
+
+The RASP lab surface `RaspLabActivity` (deep link `vaultbank://rasplab`) runs the
+093/094/096 gates and logs a distinct `MASDOJO_UNLOCK_*` marker per gate. The
+attestation in 096 is a **self-contained local stub** — no network / no real Play
+Integrity call. All RASP checks are single in-process booleans, which is exactly
+why each is defeatable by a one-method hook (see Module 9).
 
 IDOR and JWT forgery (tasks 071 / 072) are server-side and exercised against the
 MASDojo backend, not this client.

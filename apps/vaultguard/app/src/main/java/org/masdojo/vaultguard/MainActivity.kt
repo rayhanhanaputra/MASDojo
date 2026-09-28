@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun unlockVault(status: TextView) {
-        val flag = BuildConfig.VAULT_FLAG
+        val flag = Flags.reveal(BuildConfig.VAULT_FLAG)
         // MASDOJO_UNLOCK:<flag> is logged only on the not-rooted path.
         Log.i(tag, "MASDOJO_UNLOCK:$flag")
         status.text = "Premium vault unlocked.\n$flag"

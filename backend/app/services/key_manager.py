@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from loguru import logger
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.crypto import decrypt_secret, encrypt_secret, mask_key
 from app.models.api_key import ApiKey
 from app.models.user import User
@@ -67,6 +68,14 @@ def get_provider(db: Session, user: User) -> AIProvider | None:
     """
     record = user.api_key
     if record is None:
+        # Install-level fallback for SOLO_MODE / workshop demos: when the user
+        # hasn't set their own key in-app but the operator configured an
+        # install-level key (OPENAI_API_KEY / ANTHROPIC_API_KEY, optionally with
+        # a custom *_BASE_URL for a proxy/gateway), use it so the mentor works
+        # out of the box. Per-user BYOK still takes precedence.
+        fallback = settings.mentor_fallback
+        if fallback:
+            return make_provider(*fallback)
         return None
     try:
         key = decrypt_secret(record.encrypted_key)

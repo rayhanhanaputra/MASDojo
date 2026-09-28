@@ -62,6 +62,39 @@ class Settings(BaseSettings):
     # Per-user hourly cap on AI mentor calls (BYOK credit protection).
     mentor_rate_limit_per_hour: int = 30
 
+    # ── AI mentor (BYOK) ──
+    # Anthropic-compatible endpoint. Point this at a proxy/gateway (e.g. an
+    # LLM router) to use a custom base URL; the provider appends `/v1/messages`.
+    # Default is the official API. Env: ANTHROPIC_BASE_URL.
+    anthropic_base_url: str = "https://api.anthropic.com"
+    # Model id sent to the endpoint. Env: ANTHROPIC_MODEL.
+    anthropic_model: str = "claude-sonnet-4-6"
+    # Optional install-level Anthropic key, used as a fallback only when a user
+    # has not set their own key in-app. Handy for SOLO_MODE / workshop demos so
+    # the mentor works with zero UI steps. Empty = pure per-user BYOK.
+    # Env: ANTHROPIC_API_KEY.
+    anthropic_api_key: str = ""
+
+    # OpenAI provider — also usable against any OpenAI-compatible gateway/proxy
+    # (the provider appends `/v1/chat/completions`). Env: OPENAI_BASE_URL,
+    # OPENAI_MODEL, OPENAI_API_KEY (install-level fallback key).
+    openai_base_url: str = "https://api.openai.com"
+    openai_model: str = "gpt-4o"
+    openai_api_key: str = ""
+
+    @property
+    def mentor_fallback(self) -> tuple[str, str] | None:
+        """Install-level (provider, key) fallback for the mentor, or None.
+
+        Prefers OpenAI when an OPENAI_API_KEY is set (covers OpenAI-compatible
+        gateways), else Anthropic. Only used when a user has no in-app key.
+        """
+        if self.openai_api_key:
+            return ("openai", self.openai_api_key)
+        if self.anthropic_api_key:
+            return ("anthropic", self.anthropic_api_key)
+        return None
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

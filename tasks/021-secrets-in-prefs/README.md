@@ -1,9 +1,13 @@
 # 021-secrets-in-prefs — Secrets in SharedPreferences/SQLite
 
-**Grader type:** `flag` · **MASVS:** MASVS-STORAGE-1 · status: **scaffold (TODO grader)**
+**Grader type:** `flag` · **MASVS:** MASVS-STORAGE-1 · status: **implemented**
 
-Scaffolded from `tasks/_template/`. To finish this task: build the vulnerable
-target under `apps/`, drop its APK at `app/target.apk`, implement
-`grader/grade.py` against the contract in `runner/runner/grader_api.py` (see the
-reference graders in tasks/001, 005, 009), flesh out the hints + solution, and
-verify the MASVS/MASTG ids against the live MASTG.
+This task is fully implemented and CI-guarded. Its objective, MASVS/MASTG
+mapping, difficulty, and prerequisites live in `task.yaml`; the payload-detection
+grader that verifies a submission is `grader/grade.py` (success type: `flag`), and
+the escalating hints plus full walkthrough are under `hints/`. The challenge is seeded per-learner (see `challenge/generate.py`), so the derived answer can't be shared.
+
+Per the repo's derive-the-answer principle, no learner-visible file (artifact,
+hint tier 1–3, or decompiled snippet) contains the answer verbatim — the learner
+must apply the technique to recover it. Server-side expected values, when used,
+live in `grader/expected.json` and are never shipped to the client.

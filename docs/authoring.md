@@ -36,7 +36,7 @@ title: "Human-readable title"
 module: "2"                  # module label for grouping/ordering
 order_index: 1               # order within the module
 domain: "storage"            # foundations | static-re | storage | crypto | network |
-                             # api-dynamic | platform | rasp-bypass | capstone
+                             # api-dynamic | platform | rasp-bypass | privacy | capstone
 masvs: ["MASVS-STORAGE-1"]   # one or more MASVS v2 controls
 mastg_refs: ["MASTG-TECH-…"] # verify against the live MASTG
 difficulty: 2                # 1..5
