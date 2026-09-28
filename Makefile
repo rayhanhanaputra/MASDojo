@@ -26,8 +26,10 @@ up-core: env ## Start everything EXCEPT the runner (works without KVM, e.g. on m
 solo: env ## Run for a single local participant: no login, straight to the curriculum
 	@if grep -q '^SOLO_MODE=' .env; then sed -i.bak 's|^SOLO_MODE=.*|SOLO_MODE=true|' .env && rm -f .env.bak; else echo 'SOLO_MODE=true' >> .env; fi
 	@grep -qE '^INSTALL_SALT=.+' .env || (echo "INSTALL_SALT=$$(openssl rand -hex 16)" >> .env && sed -i.bak '/^INSTALL_SALT=$$/d' .env && rm -f .env.bak)
+	@test -f apps/vaultbank/MASDojo.apk || (echo ">> building the target APK once for the reverse-engineering tasks (uses Docker)..." && $(MAKE) apps)
 	docker compose up --build -d db redis backend frontend vulnapi
 	@echo "MASDojo (solo) is up -> http://localhost:5173  (no login; Lab 3 API -> http://localhost:8091)"
+	@echo "Download the target app (MASDojo.apk) from any RE/static task page, then decompile it with jadx."
 	@echo "For live Frida/RASP grading, run the runner on your host against a local AVD (see docs)."
 
 runner-dryrun: ## Start a no-emulator grader (grades flag/static_assert tasks; macOS-friendly)

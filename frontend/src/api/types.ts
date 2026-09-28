@@ -63,7 +63,7 @@ export interface CheckResult {
   detail: string;
 }
 
-// A structured proof artifact backing the verdict (log, trace, timeline, note).
+// A structured artifact backing the verdict (log, trace, timeline, note).
 export interface EvidenceItem {
   label: string;
   kind: string;

@@ -19,7 +19,6 @@ from app.db.session import SessionLocal
 from app.services.queue import get_redis
 
 from app.api.deps import get_current_user
-from app.core.proof import CERT_VERSION, evidence_digest, issue_certificate
 from app.db.session import get_db
 from app.models.progress import Progress
 from app.models.submission import (
@@ -31,7 +30,6 @@ from app.models.submission import (
 )
 from app.models.task import Task
 from app.models.user import User
-from app.schemas.proof import Certificate
 from app.schemas.submission import SubmissionPublic, SubmitRequest
 from app.services.queue import enqueue_grading_job
 
@@ -225,41 +223,6 @@ def stream_grading_events(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
-
-
-@router.get("/{submission_id}/certificate", response_model=Certificate)
-def get_certificate(
-    submission_id: int,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-) -> Certificate:
-    """Issue a signed Proof-of-Pwn certificate for a passed submission."""
-    submission = db.get(Submission, submission_id)
-    if not submission or submission.user_id != user.id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
-    if submission.status != STATUS_PASSED:
-        raise HTTPException(
-            status.HTTP_409_CONFLICT, "A certificate is only issued for a passed submission."
-        )
-    task = db.get(Task, submission.task_id)
-    issued = (submission.completed_at or _now()).isoformat()
-    payload = {
-        "v": CERT_VERSION,
-        "kind": "masdojo-proof-of-pwn",
-        "task_id": submission.task_id,
-        "task_title": task.title if task else submission.task_id,
-        "masvs": task.masvs if task else [],
-        "success_type": submission.success_type,
-        "learner": user.display_name,
-        "score": submission.score,
-        "submission_id": submission.id,
-        "evidence_sha256": evidence_digest(
-            submission.evidence, submission.checks, submission.evidence_bundle
-        ),
-        "issued_at": issued,
-        "grader": "MASDojo emulator grader",
-    }
-    return Certificate(token=issue_certificate(payload), payload=payload)
 
 
 @router.get("", response_model=list[SubmissionPublic])

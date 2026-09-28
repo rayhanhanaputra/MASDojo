@@ -77,8 +77,8 @@ export function LoginPage() {
 
 const PILLARS = [
   { glyph: "▣", title: "Real emulator", body: "Every task is graded live on an Android AVD." },
-  { glyph: "✦", title: "Proof-of-Pwn", body: "Each pass is a signed, verifiable certificate." },
   { glyph: "◆", title: "AI mentor", body: "Adaptive hints, never a served answer." },
+  { glyph: "❖", title: "Self-hosted", body: "Open source. Runs entirely on your own box." },
 ];
 
 export function AuthShell({
@@ -91,13 +91,8 @@ export function AuthShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative grid min-h-full place-items-center overflow-hidden px-5 py-12">
-      {/* ambient phosphor pool behind the card */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/3 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-phosphor/10 blur-3xl"
-      />
-      <div className="relative w-full max-w-sm animate-rise">
+    <div className="grid min-h-full place-items-center px-5 py-12">
+      <div className="w-full max-w-sm animate-rise">
         <div className="mb-8 text-center">
           <Wordmark size="lg" />
           <p className="mt-3 font-mono text-2xs uppercase text-zinc-400">
@@ -105,7 +100,7 @@ export function AuthShell({
           </p>
         </div>
 
-        <div className="reticle panel p-6 shadow-glow-lg sm:p-7">
+        <div className="panel p-6 sm:p-7">
           <h2 className="text-lg font-semibold tracking-tight text-zinc-50">{title}</h2>
           <p className="mb-5 mt-1 text-sm text-zinc-400">{subtitle}</p>
           {children}
@@ -124,10 +119,7 @@ export function AuthShell({
         </ul>
 
         <p className="mt-8 text-center font-mono text-2xs uppercase text-zinc-600">
-          self-hosted · open source ·{" "}
-          <Link to="/verify" className="rounded text-zinc-500 hover:text-phosphor">
-            verify a certificate
-          </Link>
+          self-hosted · open source · MASVS / MASTG
         </p>
       </div>
     </div>

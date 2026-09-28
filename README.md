@@ -22,7 +22,7 @@ submission and returns a pass or a fail together with the individual checks it
 performed, so you always see exactly what held up and what did not.
 
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="MASDojo demo: pick a task, submit a solution, watch it graded live, receive a signed pass" width="100%">
+  <img src="docs/assets/demo.gif" alt="MASDojo demo: pick a task, submit a solution, and watch a real emulator grade it live" width="100%">
 </p>
 
 ## How the grading loop works
@@ -49,23 +49,19 @@ pass or fail verdict.
    step of the pipeline (snapshot restore, `adb install`, Frida injection,
    mitmproxy capture, and each check) so the final verdict is traceable to what
    produced it.
-4. **Signed Proof of Pwn certificates.** Every pass issues a signed certificate
-   that anyone can check at a public `/verify` endpoint. The certificate binds the
-   verdict to the task, the learner, and a digest of the evidence, so a pass is a
-   portable, verifiable proof of skill.
-5. **Anti memorization challenges.** Many tasks are seeded per learner, so two
+4. **Anti memorization challenges.** Many tasks are seeded per learner, so two
    people get different secrets and sharing an answer does not help. The reward
    flags are also obfuscated inside the APKs, so running `strings` over the binary
    does not shortcut a challenge. You have to apply the technique.
-6. **An adaptive path.** Tasks form a prerequisite graph across twelve modules. A
+5. **An adaptive path.** Tasks form a prerequisite graph across twelve modules. A
    pathway engine recommends your next task based on what you have mastered, how
    many hints you used, and how long you took.
-7. **An optional AI mentor (bring your own key).** Plug in your own Anthropic or
+6. **An optional AI mentor (bring your own key).** Plug in your own Anthropic or
    OpenAI key, or point it at any OpenAI compatible gateway, to unlock tiered
    Socratic hints, plain language explanations of a smali or Frida error, and a
    remediation review after you pass. Keys are encrypted at rest and used only on
    the server, and the platform is fully functional without a key.
-8. **Defensive education only.** Every target app is an intentionally vulnerable
+7. **Defensive education only.** Every target app is an intentionally vulnerable
    training artifact authored in this repository. There is no real malware and no
    third party or copyrighted app.
 
