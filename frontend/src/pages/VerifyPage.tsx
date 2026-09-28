@@ -36,7 +36,7 @@ export function VerifyPage() {
         <Link to="/" className="rounded" aria-label="MASDojo home">
           <Wordmark />
         </Link>
-        <span className="font-mono text-2xs uppercase text-zinc-500">public verifier · no account needed</span>
+        <span className="font-mono text-2xs uppercase text-zinc-400">public verifier · no account needed</span>
       </div>
 
       <div className="mt-8">
@@ -65,7 +65,7 @@ export function VerifyPage() {
           onChange={(e) => setToken(e.target.value)}
         />
         <div className="mt-3 flex items-center justify-between gap-3">
-          <span className="font-mono text-2xs uppercase text-zinc-500">
+          <span className="font-mono text-2xs uppercase text-zinc-400">
             checks signature + evidence digest
           </span>
           <button className="btn-primary" disabled={busy || !token.trim()} onClick={verify}>

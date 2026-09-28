@@ -1,3 +1,54 @@
+/* ---------- self-hosted fonts (served from /public/fonts, no network) ---------- */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/inter-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/inter-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/inter-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jbmono-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jbmono-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/jbmono-700.woff2') format('woff2');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -121,7 +172,8 @@
     @apply mb-1.5 block font-mono text-2xs font-medium uppercase text-zinc-400;
   }
   .eyebrow {
-    @apply font-mono text-2xs font-medium uppercase text-zinc-500;
+    /* zinc-400 (not 500) so 10px micro-labels clear WCAG AA on the ink panels. */
+    @apply font-mono text-2xs font-medium uppercase text-zinc-400;
   }
   .mono {
     @apply font-mono;
@@ -186,8 +238,10 @@
 
   /* ---------- verdict stamp ---------- */
   .stamp {
-    @apply inline-flex items-center gap-2 rounded border-2 px-3 py-1 font-mono text-base font-bold
-      uppercase tracking-[0.25em] animate-stamp;
+    /* pr is one tracking-unit narrower than pl so the wide letter-spacing's trailing
+       gap doesn't make the word sit off-centre inside the stamp. */
+    @apply inline-flex items-center gap-2 rounded border-2 py-1 pl-3 pr-2 font-mono text-lg font-bold
+      uppercase leading-none tracking-[0.25em] animate-stamp;
   }
   .stamp-pass {
     @apply stamp border-phosphor text-phosphor;

@@ -79,6 +79,7 @@ export function Certificate({
       className={`relative mt-5 overflow-hidden rounded-xl border p-[3px] ${
         invalid ? "border-signal-red/50" : "border-phosphor/50 shadow-glow"
       }`}
+      role="group"
       aria-label="Proof-of-Pwn certificate"
     >
       {/* inner hairline frame — the "printed certificate" border */}
@@ -99,27 +100,31 @@ export function Certificate({
             <span className={`seal ${invalid ? "seal-invalid" : ""}`} role="img" aria-label={invalid ? "signature invalid" : verified ? "signature verified" : "signature pending"}>
               {invalid ? "✕" : "✓"}
             </span>
-            <span className={`font-mono text-2xs uppercase ${invalid ? "text-signal-red" : verified ? "text-phosphor" : "text-zinc-500"}`}>
+            <span className={`font-mono text-2xs uppercase ${invalid ? "text-signal-red" : verified ? "text-phosphor" : "text-zinc-400"}`}>
               {invalid ? "invalid" : verified ? "verified" : "checking"}
             </span>
           </div>
         </div>
 
         <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 border-t border-ink-500/60 pt-3 font-mono text-xs">
-          <dt className="text-zinc-500">score</dt>
+          <dt className="text-zinc-400">score</dt>
           <dd className="font-bold text-phosphor">{String(payload.score)} pts</dd>
-          <dt className="text-zinc-500">issued</dt>
+          <dt className="text-zinc-400">issued</dt>
           <dd className="truncate text-zinc-200">{String(payload.issued_at)}</dd>
-          <dt className="text-zinc-500">evidence</dt>
+          <dt className="text-zinc-400">evidence</dt>
           <dd className="min-w-0">
-            <span className="block text-2xs uppercase text-zinc-500">sha256</span>
+            <span className="block text-2xs uppercase text-zinc-400">sha256</span>
             <span className="grid grid-cols-4 gap-x-2 text-zinc-200 sm:grid-cols-8" title={digest}>
               {fingerprint.map((chunk, i) => (
                 <span key={i} className={i % 2 === 0 ? "text-zinc-200" : "text-zinc-400"}>
                   {chunk}
                 </span>
               ))}
-              {digest.length > 32 && <span className="text-zinc-600">…</span>}
+              {digest.length > 32 && (
+                <span className="text-zinc-500" aria-hidden>
+                  …
+                </span>
+              )}
             </span>
           </dd>
         </dl>
