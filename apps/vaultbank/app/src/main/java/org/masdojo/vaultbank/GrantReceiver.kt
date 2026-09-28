@@ -45,7 +45,7 @@ class GrantReceiver : BroadcastReceiver() {
      * point: the "privilege" is not protected by anything the caller can't see.
      */
     private fun mintGrant(requester: String): String {
-        val reward = BuildConfig.GRANT_FLAG
+        val reward = Flags.reveal(BuildConfig.GRANT_FLAG)
         // A reversible obfuscation so the grant isn't a bare cleartext constant.
         val out = StringBuilder()
         for ((i, c) in reward.withIndex()) {

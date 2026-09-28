@@ -29,7 +29,7 @@ class VaultProvider : ContentProvider() {
         cursor.addRow(arrayOf(1, "IBAN-0001", "demo user", "4921.00"))
         cursor.addRow(arrayOf(2, "IBAN-0002", "j. doe", "88120.55"))
         // A row that should never be readable by other apps.
-        cursor.addRow(arrayOf(3, "FLAG{l34ky_c0nt3nt_pr0v1d3r}", "admin", "0.00"))
+        cursor.addRow(arrayOf(3, Flags.reveal("1c161b1d2136696e312305396a342e69342e052a286a2c6b3e692827"), "admin", "0.00"))
         return cursor
     }
 
