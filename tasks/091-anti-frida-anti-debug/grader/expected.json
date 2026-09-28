@@ -1,7 +1,9 @@
 {
   "frida": {
-    "class": "org.masdojo.rasp.AntiTamper",
+    "class": "org.masdojo.vaultbank.AntiTamper",
     "method": "isInstrumented",
-    "returns": "false"
-  }
+    "returns": "false",
+    "must_contain": ["implementation"]
+  },
+  "note": "frida_assert: dry-run statically validates that the script hooks AntiTamper.isInstrumented() (the anti-Frida check that scans /proc/self/maps, the frida-server binary, and the default control port) and forces it to return false. On a KVM host, launch .RaspLabActivity and confirm MASDOJO_UNLOCK_TAMPER:<TAMPER_FLAG> appears only after the hook (baseline logs MASDOJO_DENIED_TAMPER)."
 }

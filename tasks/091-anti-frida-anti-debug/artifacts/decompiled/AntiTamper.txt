@@ -1,5 +1,11 @@
-package org.masdojo.rasp;
-class AntiTamper {
-    boolean isInstrumented() { /* scans for frida-server, ports, maps */ }
-    // if true -> app kills itself before you can hook the feature
+package org.masdojo.vaultbank;
+
+// Decompiled — org.masdojo.vaultbank.AntiTamper
+object AntiTamper {
+    boolean isInstrumented() {
+        // scans /proc/self/maps for frida/gum markers, looks for a dropped
+        // frida-server binary, and probes the default frida control port (27042)
+    }
+    // if isInstrumented() is true -> the app bails out of the RASP lab before
+    // you can reach the gated feature (logs MASDOJO_DENIED_TAMPER).
 }

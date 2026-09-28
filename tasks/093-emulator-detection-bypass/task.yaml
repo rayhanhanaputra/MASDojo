@@ -1,0 +1,25 @@
+id: 093-emulator-detection-bypass
+title: Emulator / Sandbox Detection Bypass
+module: '9'
+order_index: 4
+domain: rasp-bypass
+masvs:
+- MASVS-RESILIENCE-1
+mastg_refs:
+- MASTG-TECH-0043
+difficulty: 4
+prereqs:
+- 009-root-detection-bypass
+objective: >
+  VaultBank refuses to reveal its RASP-lab reward when it thinks it is running on
+  an emulator or analysis sandbox — and the training AVD trips every signal. The
+  whole verdict is one in-process boolean. Hook the emulator check so it reports a
+  physical device and the gated reward unlocks.
+success_type: frida_assert
+submission_schema:
+  script: string
+time_estimate_min: 30
+is_reference: false
+grader_status: implemented
+app_package: org.masdojo.vaultbank
+launch_activity: .RaspLabActivity

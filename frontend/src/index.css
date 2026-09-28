@@ -1,3 +1,54 @@
+/* ---------- self-hosted fonts (served from /public/fonts, no network) ---------- */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/inter-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/inter-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/inter-700.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/jbmono-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/jbmono-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/jbmono-700.woff2') format('woff2');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,39 +59,239 @@
   #root {
     height: 100%;
   }
+  html {
+    color-scheme: dark;
+  }
   body {
     @apply bg-ink-900 text-zinc-200 font-sans antialiased;
-    /* faint scanline grid for the terminal-ops feel */
+    /* Faint blueprint grid + a phosphor "monitor glow" pooled at the top edge. */
     background-image:
-      linear-gradient(rgba(57, 255, 139, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(57, 255, 139, 0.025) 1px, transparent 1px);
-    background-size: 32px 32px;
+      radial-gradient(90% 40% at 50% -10%, rgba(57, 255, 139, 0.08) 0%, transparent 60%),
+      linear-gradient(rgba(57, 255, 139, 0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57, 255, 139, 0.028) 1px, transparent 1px);
+    background-size:
+      100% 100%,
+      32px 32px,
+      32px 32px;
+    background-attachment: fixed;
+  }
+  ::selection {
+    background: rgba(57, 255, 139, 0.28);
+    color: #f4f4f5;
+  }
+  /* One visible focus treatment for every interactive element (WCAG 2.4.7). */
+  :focus-visible {
+    outline: 2px solid theme("colors.phosphor.DEFAULT");
+    outline-offset: 2px;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme("colors.ink.500");
+    border: 3px solid theme("colors.ink.900");
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme("colors.ink.300");
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer components {
+  /* ---------- surfaces ---------- */
   .panel {
-    @apply rounded-lg border border-ink-500/70 bg-ink-800/80 backdrop-blur;
+    @apply rounded-xl border border-ink-500/70 bg-ink-800/85 bg-panel-sheen shadow-panel backdrop-blur;
   }
+  .panel-inset {
+    @apply rounded-lg border border-ink-500/50 bg-ink-900/70;
+  }
+  /* Corner-bracket "reticle" motif for hero / verdict surfaces. */
+  .reticle {
+    position: relative;
+  }
+  .reticle::before,
+  .reticle::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: theme("colors.phosphor.DEFAULT");
+    border-style: solid;
+    opacity: 0.75;
+    pointer-events: none;
+  }
+  .reticle::before {
+    top: 8px;
+    left: 8px;
+    border-width: 1.5px 0 0 1.5px;
+  }
+  .reticle::after {
+    bottom: 8px;
+    right: 8px;
+    border-width: 0 1.5px 1.5px 0;
+  }
+  .reticle-red::before,
+  .reticle-red::after {
+    border-color: theme("colors.signal.red");
+  }
+
+  /* ---------- buttons ---------- */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm
-      font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-md px-4 py-2 text-sm
+      font-medium transition duration-150 active:translate-y-px
+      disabled:cursor-not-allowed disabled:opacity-50 disabled:active:translate-y-0;
   }
   .btn-primary {
-    @apply btn bg-phosphor/90 text-ink-900 hover:bg-phosphor;
+    @apply btn bg-phosphor text-ink-900 shadow-btn hover:bg-phosphor-soft hover:shadow-btn-hover;
   }
   .btn-ghost {
-    @apply btn border border-ink-500 text-zinc-300 hover:border-phosphor/50 hover:text-phosphor;
+    @apply btn border border-ink-400 bg-ink-800/40 text-zinc-300
+      hover:border-phosphor/60 hover:bg-phosphor/5 hover:text-phosphor;
   }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  /* ---------- forms ---------- */
   .input {
-    @apply w-full rounded-md border border-ink-500 bg-ink-900/80 px-3 py-2 text-sm
-      text-zinc-100 placeholder:text-zinc-600 focus:border-phosphor/60 focus:outline-none
-      focus:ring-1 focus:ring-phosphor/40;
+    @apply w-full rounded-md border border-ink-400 bg-ink-900/80 px-3 py-2 text-sm text-zinc-100
+      shadow-[inset_0_1px_0_rgba(0,0,0,0.4)] transition-colors placeholder:text-zinc-500
+      hover:border-ink-300 focus:border-phosphor/70 focus:outline-none focus:ring-2 focus:ring-phosphor/25;
   }
   .label {
-    @apply mb-1 block text-xs font-medium uppercase tracking-wider text-zinc-500;
+    @apply mb-1.5 block font-mono text-2xs font-medium uppercase text-zinc-400;
+  }
+  .eyebrow {
+    /* zinc-400 (not 500) so 10px micro-labels clear WCAG AA on the ink panels. */
+    @apply font-mono text-2xs font-medium uppercase text-zinc-400;
   }
   .mono {
     @apply font-mono;
+  }
+
+  /* ---------- chips ---------- */
+  .chip {
+    @apply inline-flex h-5 items-center gap-1 whitespace-nowrap rounded border px-1.5 font-mono
+      text-2xs font-medium uppercase leading-none;
+  }
+  .chip-masvs {
+    @apply chip border-ink-400 bg-ink-700/60 text-zinc-300;
+  }
+  .chip-flag {
+    @apply chip border-signal-amber/40 bg-signal-amber/10 text-signal-amber;
+  }
+  .chip-static {
+    @apply chip border-zinc-500/50 bg-zinc-400/10 text-zinc-200;
+  }
+  .chip-frida {
+    @apply chip border-signal-rose/40 bg-signal-rose/10 text-signal-rose;
+  }
+  .chip-network {
+    @apply chip border-signal-cyan/40 bg-signal-cyan/10 text-signal-cyan;
+  }
+  .chip-mentor {
+    @apply chip border-signal-violet/40 bg-signal-violet/10 text-signal-violet;
+  }
+  .chip-pass {
+    @apply chip border-phosphor/50 bg-phosphor/10 text-phosphor;
+  }
+  .chip-fail {
+    @apply chip border-signal-red/50 bg-signal-red/10 text-signal-red;
+  }
+
+  /* ---------- the flight-recorder console ---------- */
+  .console {
+    @apply relative overflow-hidden rounded-lg border border-phosphor/25 bg-ink-950 shadow-console;
+  }
+  .console::after {
+    /* CRT scanlines, kept faint so text stays crisp. */
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.18) 3px
+    );
+    mix-blend-mode: multiply;
+  }
+  .console-text {
+    text-shadow: 0 0 6px rgba(57, 255, 139, 0.25);
+  }
+  .console-sweep {
+    /* A faint phosphor band that drifts down the full height of its container. */
+    @apply pointer-events-none absolute inset-0 bg-gradient-to-b from-phosphor/[0.08] from-0%
+      via-transparent via-30% to-transparent animate-scan;
+  }
+
+  /* ---------- verdict stamp ---------- */
+  .stamp {
+    /* pr is one tracking-unit narrower than pl so the wide letter-spacing's trailing
+       gap doesn't make the word sit off-centre inside the stamp. */
+    @apply inline-flex items-center gap-2 rounded border-2 py-1 pl-3 pr-2 font-mono text-lg font-bold
+      uppercase leading-none tracking-[0.25em] animate-stamp;
+  }
+  .stamp-pass {
+    @apply stamp border-phosphor text-phosphor;
+    text-shadow: 0 0 14px rgba(57, 255, 139, 0.55);
+    box-shadow:
+      inset 0 0 0 1px rgba(57, 255, 139, 0.35),
+      0 0 24px -6px rgba(57, 255, 139, 0.6);
+  }
+  .stamp-fail {
+    @apply stamp border-signal-red text-signal-red;
+    text-shadow: 0 0 14px rgba(255, 92, 92, 0.45);
+    box-shadow: inset 0 0 0 1px rgba(255, 92, 92, 0.35);
+  }
+  .stamp-error {
+    @apply stamp border-signal-amber text-signal-amber;
+  }
+
+  /* ---------- Proof-of-Pwn seal ---------- */
+  .seal {
+    @apply grid h-14 w-14 shrink-0 place-items-center rounded-full border-2 border-phosphor/70
+      font-mono text-xl font-bold text-phosphor;
+    box-shadow:
+      inset 0 0 0 3px theme("colors.ink.900"),
+      inset 0 0 0 4px rgba(57, 255, 139, 0.55),
+      0 0 22px -6px rgba(57, 255, 139, 0.7);
+    text-shadow: 0 0 10px rgba(57, 255, 139, 0.6);
+  }
+  .seal-invalid {
+    @apply border-signal-red/70 text-signal-red;
+    box-shadow:
+      inset 0 0 0 3px theme("colors.ink.900"),
+      inset 0 0 0 4px rgba(255, 92, 92, 0.5);
+    text-shadow: none;
+  }
+
+  /* ---------- skeleton loading ---------- */
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-ink-600/70;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: theme("backgroundImage.shimmer");
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
+  }
+
+  /* ---------- skill-map path rail ---------- */
+  .rail {
+    @apply absolute bottom-0 left-[15px] top-8 w-px bg-gradient-to-b from-phosphor/50 via-ink-400 to-ink-400;
   }
 }

@@ -1,0 +1,25 @@
+id: 094-anti-debug-tracerpid
+title: Anti-Debug (TracerPid) Bypass
+module: '9'
+order_index: 5
+domain: rasp-bypass
+masvs:
+- MASVS-RESILIENCE-4
+mastg_refs:
+- MASTG-TECH-0043
+difficulty: 5
+prereqs:
+- 091-anti-frida-anti-debug
+objective: >
+  VaultBank hunts for a debugger the hard way — it reads TracerPid from
+  /proc/self/status, so a native debugger, strace, or a Frida ptrace attach all
+  trip it, not just a JDWP debugger. Defeat the ptrace/TracerPid check so you can
+  keep a tracer attached and still unlock the guarded reward.
+success_type: frida_assert
+submission_schema:
+  script: string
+time_estimate_min: 40
+is_reference: false
+grader_status: implemented
+app_package: org.masdojo.vaultbank
+launch_activity: .RaspLabActivity

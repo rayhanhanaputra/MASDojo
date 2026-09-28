@@ -1,0 +1,9 @@
+{
+  "frida": {
+    "class": "org.masdojo.vaultbank.EmulatorDetector",
+    "method": "isEmulator",
+    "returns": "false",
+    "must_contain": ["implementation"]
+  },
+  "note": "frida_assert: dry-run statically validates that the script hooks EmulatorDetector.isEmulator() and forces it to return false. On a KVM host, launch .RaspLabActivity and confirm MASDOJO_UNLOCK_EMU:<EMU_FLAG> appears only after the hook (baseline logs MASDOJO_DENIED_EMU)."
+}

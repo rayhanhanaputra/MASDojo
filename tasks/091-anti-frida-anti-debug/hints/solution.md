@@ -2,7 +2,7 @@
 
 ```js
 Java.perform(function () {
-  Java.use('org.masdojo.rasp.AntiTamper').isInstrumented.implementation = function () { return false; };
+  Java.use('org.masdojo.vaultbank.AntiTamper').isInstrumented.implementation = function () { return false; };
 });
 ```
 Submit it.

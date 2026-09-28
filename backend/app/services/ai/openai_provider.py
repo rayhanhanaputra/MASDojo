@@ -5,19 +5,42 @@ from __future__ import annotations
 import httpx
 from loguru import logger
 
+from app.core.config import settings
 from app.services.ai.provider import AIError, AIProvider, ChatMessage
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 DEFAULT_MODEL = "gpt-4o"
 
 
+def _chat_url(base_url: str) -> str:
+    """Resolve the Chat Completions endpoint from a configurable base URL.
+
+    Accepts a bare origin, a `.../v1` prefix, or a full `.../v1/chat/completions`
+    URL, so any OpenAI-compatible gateway/proxy can be pointed at with just its
+    origin in OPENAI_BASE_URL.
+    """
+    b = (base_url or "https://api.openai.com").rstrip("/")
+    if b.endswith("/chat/completions"):
+        return b
+    if b.endswith("/v1"):
+        return b + "/chat/completions"
+    return b + "/v1/chat/completions"
+
+
 class OpenAIProvider(AIProvider):
     name = "openai"
 
-    def __init__(self, api_key: str, model: str = DEFAULT_MODEL, timeout: float = 30.0) -> None:
+    def __init__(
+        self,
+        api_key: str,
+        model: str | None = None,
+        timeout: float = 30.0,
+        base_url: str | None = None,
+    ) -> None:
         self._key = api_key
-        self._model = model
+        self._model = model or settings.openai_model or DEFAULT_MODEL
         self._timeout = timeout
+        self._url = _chat_url(base_url or settings.openai_base_url)
 
     def _headers(self) -> dict[str, str]:
         return {
@@ -28,11 +51,12 @@ class OpenAIProvider(AIProvider):
     def validate_key(self) -> bool:
         try:
             resp = httpx.post(
-                OPENAI_URL,
+                self._url,
                 headers=self._headers(),
                 json={
                     "model": self._model,
                     "max_tokens": 1,
+                    "stream": False,
                     "messages": [{"role": "user", "content": "ping"}],
                 },
                 timeout=self._timeout,
@@ -71,6 +95,7 @@ class OpenAIProvider(AIProvider):
             "model": self._model,
             "max_tokens": max_tokens,
             "temperature": temperature,
+            "stream": False,
             "messages": [
                 {"role": "system", "content": system},
                 *[{"role": m.role, "content": m.content} for m in messages],
@@ -78,7 +103,7 @@ class OpenAIProvider(AIProvider):
         }
         try:
             resp = httpx.post(
-                OPENAI_URL, headers=self._headers(), json=payload, timeout=self._timeout
+                self._url, headers=self._headers(), json=payload, timeout=self._timeout
             )
         except httpx.HTTPError as exc:
             raise AIError(f"openai request failed: {exc}") from exc

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../api/endpoints";
 
 // Proof-of-Pwn: a signed, server-verifiable PASS receipt (HMAC-signed by the
@@ -32,42 +33,104 @@ export function ProofCard({ submissionId }: { submissionId: number }) {
   const digest = String(payload.evidence_sha256 ?? "");
 
   return (
-    <div className="mt-4 rounded-md border border-phosphor/40 bg-phosphor/5 p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <span className="font-mono text-[11px] uppercase tracking-widest text-phosphor">
-          ✦ Proof-of-Pwn
-        </span>
-        {verified === true && (
-          <span className="font-mono text-[10px] text-phosphor">verified ✓ /verify</span>
-        )}
-        {verified === false && (
-          <span className="font-mono text-[10px] text-signal-red">signature invalid</span>
-        )}
+    <Certificate
+      payload={payload}
+      digest={digest}
+      verified={verified}
+      footer={
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            className="btn-ghost btn-sm flex-1"
+            onClick={() => {
+              navigator.clipboard?.writeText(token);
+              setCopied(true);
+              window.setTimeout(() => setCopied(false), 1500);
+            }}
+          >
+            {copied ? "copied ✓" : "copy certificate token"}
+          </button>
+          <Link to="/verify" className="btn-ghost btn-sm" target="_blank" rel="noreferrer">
+            open /verify ↗
+          </Link>
+        </div>
+      }
+    />
+  );
+}
+
+// The certificate surface itself. Shared with the public /verify page so a
+// Proof-of-Pwn looks identical wherever it is rendered.
+export function Certificate({
+  payload,
+  digest,
+  verified,
+  footer,
+}: {
+  payload: Record<string, unknown>;
+  digest: string;
+  verified: boolean | null;
+  footer?: ReactNode;
+}) {
+  const invalid = verified === false;
+  const fingerprint = digest.slice(0, 32).match(/.{1,4}/g) ?? [];
+
+  return (
+    <div
+      className={`relative mt-5 overflow-hidden rounded-xl border p-[3px] ${
+        invalid ? "border-signal-red/50" : "border-phosphor/50 shadow-glow"
+      }`}
+      role="group"
+      aria-label="Proof-of-Pwn certificate"
+    >
+      {/* inner hairline frame — the "printed certificate" border */}
+      <div className={`rounded-lg border border-dashed p-4 ${invalid ? "border-signal-red/30" : "border-phosphor/30 bg-phosphor/[0.03]"}`}>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className={`font-mono text-2xs uppercase ${invalid ? "text-signal-red" : "text-phosphor"}`}>
+              <span aria-hidden>✦ </span>Proof-of-Pwn
+            </p>
+            <p className="mt-0.5 text-[15px] font-semibold tracking-tight text-zinc-50">
+              {String(payload.task_title)}
+            </p>
+            <p className="mt-0.5 font-mono text-xs text-zinc-400">
+              cleared by <span className="text-zinc-100">{String(payload.learner)}</span>
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <span className={`seal ${invalid ? "seal-invalid" : ""}`} role="img" aria-label={invalid ? "signature invalid" : verified ? "signature verified" : "signature pending"}>
+              {invalid ? "✕" : "✓"}
+            </span>
+            <span className={`font-mono text-2xs uppercase ${invalid ? "text-signal-red" : verified ? "text-phosphor" : "text-zinc-400"}`}>
+              {invalid ? "invalid" : verified ? "verified" : "checking"}
+            </span>
+          </div>
+        </div>
+
+        <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 border-t border-ink-500/60 pt-3 font-mono text-xs">
+          <dt className="text-zinc-400">score</dt>
+          <dd className="font-bold text-phosphor">{String(payload.score)} pts</dd>
+          <dt className="text-zinc-400">issued</dt>
+          <dd className="truncate text-zinc-200">{String(payload.issued_at)}</dd>
+          <dt className="text-zinc-400">evidence</dt>
+          <dd className="min-w-0">
+            <span className="block text-2xs uppercase text-zinc-400">sha256</span>
+            <span className="grid grid-cols-4 gap-x-2 text-zinc-200 sm:grid-cols-8" title={digest}>
+              {fingerprint.map((chunk, i) => (
+                <span key={i} className={i % 2 === 0 ? "text-zinc-200" : "text-zinc-400"}>
+                  {chunk}
+                </span>
+              ))}
+              {digest.length > 32 && (
+                <span className="text-zinc-500" aria-hidden>
+                  …
+                </span>
+              )}
+            </span>
+          </dd>
+        </dl>
+
+        {footer && <div className="mt-4">{footer}</div>}
       </div>
-      <dl className="grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-[11px] text-zinc-400">
-        <dt className="text-zinc-600">learner</dt>
-        <dd className="text-zinc-200">{String(payload.learner)}</dd>
-        <dt className="text-zinc-600">task</dt>
-        <dd className="truncate text-zinc-200">{String(payload.task_title)}</dd>
-        <dt className="text-zinc-600">score</dt>
-        <dd className="text-phosphor">{String(payload.score)} pts</dd>
-        <dt className="text-zinc-600">evidence</dt>
-        <dd className="truncate text-zinc-200" title={digest}>
-          sha256:{digest.slice(0, 16)}…
-        </dd>
-        <dt className="text-zinc-600">issued</dt>
-        <dd className="truncate text-zinc-200">{String(payload.issued_at)}</dd>
-      </dl>
-      <button
-        className="btn-ghost mt-3 w-full text-[11px]"
-        onClick={() => {
-          navigator.clipboard?.writeText(token);
-          setCopied(true);
-          window.setTimeout(() => setCopied(false), 1500);
-        }}
-      >
-        {copied ? "copied ✓" : "copy certificate token"}
-      </button>
     </div>
   );
 }

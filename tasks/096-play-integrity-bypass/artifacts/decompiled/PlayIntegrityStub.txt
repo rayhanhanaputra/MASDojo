@@ -1,0 +1,34 @@
+// Decompiled — org.masdojo.vaultbank.PlayIntegrityStub  (RASP: attestation gate)
+//
+// TRAINING STUB: this makes NO network call and performs NO real Google Play
+// Integrity / SafetyNet attestation. It only mimics the SHAPE of a verdict so the
+// bypass can be practised offline. The flaw it models is real, though: the app
+// trusts a verdict it computed *locally* instead of verifying a server-signed
+// token, so the whole decision is attacker-controlled.
+
+package org.masdojo.vaultbank;
+
+public final class PlayIntegrityStub {
+
+    static final class Verdict {
+        boolean deviceIntegrity;   // "MEETS_DEVICE_INTEGRITY"
+        boolean basicIntegrity;    // "MEETS_BASIC_INTEGRITY"
+        boolean ctsProfileMatch;   // "ctsProfileMatch"
+    }
+
+    private static Verdict localVerdict() {
+        // clean = not emulator && not rooted && no su/test-keys
+        // (all computed in-process — no signature, no server)
+        ...
+    }
+
+    // The single gate the reward trusts. Unlocks on a PASSING (true) verdict.
+    public static boolean attestationPassed() {
+        Verdict v = localVerdict();
+        return v.deviceIntegrity && v.basicIntegrity && v.ctsProfileMatch;
+    }
+}
+
+// RaspLabActivity gates on it:
+//   if (PlayIntegrityStub.attestationPassed()) { Log.i("VaultBank","MASDOJO_UNLOCK_ATT:"+ATTEST_FLAG); }
+//   else                                       { Log.w("VaultBank","MASDOJO_DENIED_ATT: ..."); }

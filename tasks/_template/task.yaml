@@ -7,7 +7,7 @@ title: "Human-readable Task Title"
 module: "0"                          # module label for grouping/ordering
 order_index: 0                       # order within the module
 domain: "foundations"                # foundations | static-re | storage | crypto |
-                                     # network | api-dynamic | platform | rasp-bypass | capstone
+                                     # network | api-dynamic | platform | rasp-bypass | privacy | capstone
 masvs: ["MASVS-CODE"]                # one or more MASVS v2 controls
 mastg_refs: ["MASTG-TECH-XXXX"]      # verify exact ids against the live MASTG
 difficulty: 1                        # 1..5

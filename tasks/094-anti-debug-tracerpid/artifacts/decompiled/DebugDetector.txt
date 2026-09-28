@@ -1,0 +1,23 @@
+// Decompiled — org.masdojo.vaultbank.DebugDetector  (RASP: anti-debug gate)
+// Unlike Debug.isDebuggerConnected() (JDWP only), this reads TracerPid from
+// /proc/self/status, so ANY ptrace attach (native debugger, strace, Frida's
+// ptrace attach) makes TracerPid != 0 and trips the gate. It is still one
+// in-process boolean.
+
+package org.masdojo.vaultbank;
+
+public final class DebugDetector {
+
+    // true  -> "a tracer is attached" -> reward stays locked
+    // false -> "no tracer"            -> reward unlocks
+    public static boolean isBeingTraced() {
+        String status = readFile("/proc/self/status");
+        // find the "TracerPid:" line and parse the number after it
+        int tracer = parseTracerPid(status);   // 0 == nobody tracing us
+        return tracer != 0;
+    }
+}
+
+// RaspLabActivity gates on it:
+//   if (!DebugDetector.isBeingTraced()) { Log.i("VaultBank","MASDOJO_UNLOCK_DBG:"+DEBUG_FLAG); }
+//   else                                { Log.w("VaultBank","MASDOJO_DENIED_DBG: ..."); }
