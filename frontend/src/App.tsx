@@ -8,14 +8,18 @@ import { TaskPage } from "./pages/TaskPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { VerifyPage } from "./pages/VerifyPage";
+import { Spinner, Wordmark } from "./components/ui";
 import type { ReactNode } from "react";
 
 function Protected({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) {
     return (
-      <div className="grid h-full place-items-center font-mono text-phosphor-dim">
-        booting dojo…
+      <div className="grid h-full place-items-center px-5">
+        <div className="flex flex-col items-center gap-4 animate-rise">
+          <Wordmark size="lg" />
+          <Spinner label="booting dojo…" />
+        </div>
       </div>
     );
   }

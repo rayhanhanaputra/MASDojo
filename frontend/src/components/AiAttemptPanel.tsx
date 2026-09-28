@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "../api/endpoints";
 import { ApiError } from "../api/client";
 import type { Submission } from "../api/types";
+import { Spinner } from "./ui";
 
 const TERMINAL = new Set(["passed", "failed", "error"]);
 
@@ -59,49 +60,68 @@ export function AiAttemptPanel({ taskId }: { taskId: string }) {
   const verdict = sub && TERMINAL.has(sub.status) ? sub.status : null;
 
   return (
-    <div className="mt-4 border-t border-ink-500/50 pt-3">
-      <button className="btn-ghost text-xs" onClick={run} disabled={busy}>
-        {busy ? "AI attempting…" : "✦ Let the AI try (the grader judges)"}
+    <div className="mt-4 border-t border-ink-500/50 pt-4">
+      <button
+        className="btn-ghost btn-sm w-full border-signal-violet/40 text-signal-violet hover:border-signal-violet hover:bg-signal-violet/10 hover:text-signal-violet"
+        onClick={run}
+        disabled={busy}
+      >
+        <span aria-hidden>✦</span>
+        {busy ? "AI attempting…" : "Let the AI try — the grader judges"}
       </button>
       {err && <p className="mt-2 font-mono text-xs text-signal-amber">{err}</p>}
 
       {candidate && (
-        <div className="mt-3 space-y-2">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-600">
-              AI proposed ({field})
-            </p>
-            <pre className="mt-1 max-h-32 overflow-auto rounded-md bg-ink-900/80 px-3 py-2 font-mono text-[11px] text-zinc-300">
+        <div className="mt-3 space-y-3 animate-rise">
+          {/* two-column face-off: the model's claim vs the emulator's ruling */}
+          <div className="overflow-hidden rounded-lg border border-ink-500/60">
+            <div className="flex items-center justify-between border-b border-ink-500/60 bg-signal-violet/[0.06] px-3 py-1.5 font-mono text-2xs uppercase">
+              <span className="text-signal-violet">
+                <span aria-hidden>✦ </span>AI proposed
+              </span>
+              <span className="text-zinc-500">{field}</span>
+            </div>
+            <pre className="max-h-32 overflow-auto bg-ink-950 px-3 py-2 font-mono text-xs text-zinc-200">
               {candidate}
             </pre>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-600">
-              grader verdict
-            </span>
-            {!verdict && <span className="font-mono text-xs text-signal-cyan">grading…</span>}
-            {verdict === "passed" && (
-              <span className="font-mono text-xs font-bold text-phosphor">
-                AI was right ✓ (verified)
+            <div
+              className={`flex items-center justify-between gap-2 border-t px-3 py-2 ${
+                verdict === "passed"
+                  ? "border-phosphor/40 bg-phosphor/[0.06]"
+                  : verdict === "failed"
+                    ? "border-signal-red/40 bg-signal-red/[0.06]"
+                    : verdict === "error"
+                      ? "border-signal-amber/40 bg-signal-amber/[0.06]"
+                      : "border-ink-500/60 bg-ink-800"
+              }`}
+            >
+              <span className="font-mono text-2xs uppercase text-zinc-400">
+                <span aria-hidden className="text-phosphor-dim">▣ </span>emulator verdict
               </span>
-            )}
-            {verdict === "failed" && (
-              <span className="font-mono text-xs font-bold text-signal-red">
-                AI was wrong ✕ — don't trust it unverified
-              </span>
-            )}
-            {verdict === "error" && (
-              <span className="font-mono text-xs font-bold text-signal-amber">grader error</span>
-            )}
+              {!verdict && <Spinner label="grading…" />}
+              {verdict === "passed" && (
+                <span className="font-mono text-xs font-bold text-phosphor">
+                  ✓ AI was right — verified
+                </span>
+              )}
+              {verdict === "failed" && (
+                <span className="font-mono text-xs font-bold text-signal-red">
+                  ✕ AI was wrong — don't trust it unverified
+                </span>
+              )}
+              {verdict === "error" && (
+                <span className="font-mono text-xs font-bold text-signal-amber">! grader error</span>
+              )}
+            </div>
           </div>
 
           {verdict && sub?.evidence && (
-            <p className="rounded-md bg-ink-900/70 px-3 py-2 font-mono text-[11px] text-zinc-400">
+            <p className="panel-inset px-3 py-2 font-mono text-xs leading-relaxed text-zinc-300">
+              <span className="text-phosphor-dim">$ </span>
               {sub.evidence}
             </p>
           )}
-          <p className="text-[11px] leading-relaxed text-zinc-500">{note}</p>
+          <p className="text-[11px] leading-relaxed text-zinc-400">{note}</p>
         </div>
       )}
     </div>
