@@ -64,13 +64,11 @@
   }
   body {
     @apply bg-ink-900 text-zinc-200 font-sans antialiased;
-    /* Faint blueprint grid + a phosphor "monitor glow" pooled at the top edge. */
+    /* A single faint blueprint grid — no glow pool, no scanlines. */
     background-image:
-      radial-gradient(90% 40% at 50% -10%, rgba(57, 255, 139, 0.08) 0%, transparent 60%),
-      linear-gradient(rgba(57, 255, 139, 0.028) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(57, 255, 139, 0.028) 1px, transparent 1px);
+      linear-gradient(rgba(57, 255, 139, 0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(57, 255, 139, 0.022) 1px, transparent 1px);
     background-size:
-      100% 100%,
       32px 32px,
       32px 32px;
     background-attachment: fixed;
@@ -114,35 +112,6 @@
   }
   .panel-inset {
     @apply rounded-lg border border-ink-500/50 bg-ink-900/70;
-  }
-  /* Corner-bracket "reticle" motif for hero / verdict surfaces. */
-  .reticle {
-    position: relative;
-  }
-  .reticle::before,
-  .reticle::after {
-    content: "";
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border-color: theme("colors.phosphor.DEFAULT");
-    border-style: solid;
-    opacity: 0.75;
-    pointer-events: none;
-  }
-  .reticle::before {
-    top: 8px;
-    left: 8px;
-    border-width: 1.5px 0 0 1.5px;
-  }
-  .reticle::after {
-    bottom: 8px;
-    right: 8px;
-    border-width: 0 1.5px 1.5px 0;
-  }
-  .reticle-red::before,
-  .reticle-red::after {
-    border-color: theme("colors.signal.red");
   }
 
   /* ---------- buttons ---------- */
@@ -207,74 +176,6 @@
   }
   .chip-fail {
     @apply chip border-signal-red/50 bg-signal-red/10 text-signal-red;
-  }
-
-  /* ---------- the flight-recorder console ---------- */
-  .console {
-    @apply relative overflow-hidden rounded-lg border border-phosphor/25 bg-ink-950 shadow-console;
-  }
-  .console::after {
-    /* CRT scanlines, kept faint so text stays crisp. */
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0) 0px,
-      rgba(0, 0, 0, 0) 2px,
-      rgba(0, 0, 0, 0.18) 3px
-    );
-    mix-blend-mode: multiply;
-  }
-  .console-text {
-    text-shadow: 0 0 6px rgba(57, 255, 139, 0.25);
-  }
-  .console-sweep {
-    /* A faint phosphor band that drifts down the full height of its container. */
-    @apply pointer-events-none absolute inset-0 bg-gradient-to-b from-phosphor/[0.08] from-0%
-      via-transparent via-30% to-transparent animate-scan;
-  }
-
-  /* ---------- verdict stamp ---------- */
-  .stamp {
-    /* pr is one tracking-unit narrower than pl so the wide letter-spacing's trailing
-       gap doesn't make the word sit off-centre inside the stamp. */
-    @apply inline-flex items-center gap-2 rounded border-2 py-1 pl-3 pr-2 font-mono text-lg font-bold
-      uppercase leading-none tracking-[0.25em] animate-stamp;
-  }
-  .stamp-pass {
-    @apply stamp border-phosphor text-phosphor;
-    text-shadow: 0 0 14px rgba(57, 255, 139, 0.55);
-    box-shadow:
-      inset 0 0 0 1px rgba(57, 255, 139, 0.35),
-      0 0 24px -6px rgba(57, 255, 139, 0.6);
-  }
-  .stamp-fail {
-    @apply stamp border-signal-red text-signal-red;
-    text-shadow: 0 0 14px rgba(255, 92, 92, 0.45);
-    box-shadow: inset 0 0 0 1px rgba(255, 92, 92, 0.35);
-  }
-  .stamp-error {
-    @apply stamp border-signal-amber text-signal-amber;
-  }
-
-  /* ---------- Proof-of-Pwn seal ---------- */
-  .seal {
-    @apply grid h-14 w-14 shrink-0 place-items-center rounded-full border-2 border-phosphor/70
-      font-mono text-xl font-bold text-phosphor;
-    box-shadow:
-      inset 0 0 0 3px theme("colors.ink.900"),
-      inset 0 0 0 4px rgba(57, 255, 139, 0.55),
-      0 0 22px -6px rgba(57, 255, 139, 0.7);
-    text-shadow: 0 0 10px rgba(57, 255, 139, 0.6);
-  }
-  .seal-invalid {
-    @apply border-signal-red/70 text-signal-red;
-    box-shadow:
-      inset 0 0 0 3px theme("colors.ink.900"),
-      inset 0 0 0 4px rgba(255, 92, 92, 0.5);
-    text-shadow: none;
   }
 
   /* ---------- skeleton loading ---------- */

@@ -3,7 +3,6 @@ import { api } from "../api/endpoints";
 import { ApiError } from "../api/client";
 import type { EvidenceItem, Submission } from "../api/types";
 import { MentorMark, Panel, Spinner } from "./ui";
-import { ProofCard } from "./ProofCard";
 import { GradingConsole } from "./GradingConsole";
 
 // Live grading verdict, with per-check evidence and an optional post-task
@@ -28,9 +27,9 @@ export function GradePanel({
     <Panel
       className={`animate-rise ${
         passed
-          ? "reticle border-phosphor/60 shadow-glow-lg"
+          ? "border-phosphor/50"
           : failed
-            ? "reticle reticle-red border-signal-red/50 shadow-glow-red"
+            ? "border-signal-red/50"
             : running
               ? "border-signal-cyan/30"
               : ""
@@ -119,16 +118,14 @@ export function GradePanel({
         </p>
       )}
 
-      {passed && <ProofCard submissionId={submission.id} />}
-
       {passed && graderImplemented && <ReviewBlock taskId={taskId} />}
     </Panel>
   );
 }
 
-// The proof-of-technique flight recorder: the structured artifacts (baseline vs
-// hooked logcat, frida trace, timeline) that prove the technique actually took
-// effect — not just that a flag string matched.
+// The evidence bundle: the structured artifacts (baseline vs hooked logcat,
+// frida trace, timeline) that show the technique actually took effect — not
+// just that a flag string matched.
 function EvidenceBundle({ items }: { items: EvidenceItem[] }) {
   const [open, setOpen] = useState<number | null>(0);
   const icon: Record<string, string> = {
@@ -142,7 +139,7 @@ function EvidenceBundle({ items }: { items: EvidenceItem[] }) {
     <div className="mt-4 overflow-hidden rounded-lg border border-signal-cyan/30">
       <div className="flex items-center justify-between border-b border-signal-cyan/20 bg-signal-cyan/[0.06] px-3 py-1.5 font-mono text-2xs uppercase text-signal-cyan">
         <span>
-          <span aria-hidden>▤ </span>evidence bundle · proof of technique
+          <span aria-hidden>▤ </span>evidence bundle · what the technique produced
         </span>
         <span className="text-signal-cyan/70">{items.length} artifacts</span>
       </div>
@@ -180,11 +177,14 @@ function EvidenceBundle({ items }: { items: EvidenceItem[] }) {
   );
 }
 
+// Flat verdict badge: a glyph plus text, color-coded, no rotated stamp or glow.
 function Verdict({ status, score }: { status: Submission["status"]; score: number }) {
+  const base =
+    "inline-flex items-center gap-2 rounded-md border px-3 py-1 font-mono text-sm font-semibold uppercase tracking-wide";
   if (status === "passed")
     return (
       <span className="flex items-center gap-3">
-        <span className="stamp-pass" role="status">
+        <span className={`${base} border-phosphor/60 bg-phosphor/10 text-phosphor`} role="status">
           <span aria-hidden>✓</span>pass
         </span>
         <span className="font-mono text-sm text-zinc-300">
@@ -194,19 +194,19 @@ function Verdict({ status, score }: { status: Submission["status"]; score: numbe
     );
   if (status === "failed")
     return (
-      <span className="stamp-fail" role="status">
+      <span className={`${base} border-signal-red/60 bg-signal-red/10 text-signal-red`} role="status">
         <span aria-hidden>✕</span>fail
       </span>
     );
   if (status === "error")
     return (
-      <span className="stamp-error" role="status">
+      <span className={`${base} border-signal-amber/60 bg-signal-amber/10 text-signal-amber`} role="status">
         <span aria-hidden>!</span>error
       </span>
     );
   return (
     <span className="chip border-signal-cyan/50 bg-signal-cyan/10 text-signal-cyan" role="status">
-      <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-signal-cyan animate-blink" />
+      <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-signal-cyan" />
       {status}
     </span>
   );

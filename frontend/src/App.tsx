@@ -7,7 +7,6 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { TaskPage } from "./pages/TaskPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ProfilePage } from "./pages/ProfilePage";
-import { VerifyPage } from "./pages/VerifyPage";
 import { Spinner, Wordmark } from "./components/ui";
 import type { ReactNode } from "react";
 
@@ -36,7 +35,6 @@ export default function App() {
         path="/register"
         element={soloMode ? <Navigate to="/" replace /> : <RegisterPage />}
       />
-      <Route path="/verify" element={<VerifyPage />} />
       <Route
         element={
           <Protected>
