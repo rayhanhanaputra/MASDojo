@@ -216,6 +216,28 @@ export interface DomainMastery {
   highest_difficulty_cleared: number;
 }
 
+export interface ModuleProgress {
+  module: string;
+  tasks_total: number;
+  tasks_passed: number;
+}
+
+export interface TaskStat {
+  task_id: string;
+  title: string;
+  module: string;
+  domain: string;
+  difficulty: number;
+  success_type: string;
+  status: "passed" | "attempted" | "not_started";
+  best_score: number;
+  attempts: number;
+  hint_tier_used: number;
+  time_to_solve_sec: number | null;
+  last_activity: string | null;
+  passed_at: string | null;
+}
+
 export interface ProfileStats {
   display_name: string;
   tasks_passed: number;
@@ -223,5 +245,16 @@ export interface ProfileStats {
   total_score: number;
   total_attempts: number;
   total_hints_used: number;
+  tasks_attempted: number;
+  completion_pct: number;
+  pass_rate: number;
+  avg_attempts_per_pass: number;
+  highest_difficulty_cleared: number;
+  avg_time_to_solve_min: number;
+  masvs_covered: string[];
+  first_active: string | null;
+  last_active: string | null;
   domains: DomainMastery[];
+  modules: ModuleProgress[];
+  tasks: TaskStat[];
 }

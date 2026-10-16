@@ -15,6 +15,7 @@ import os
 import shlex
 import signal
 import struct
+import subprocess
 import termios
 
 from loguru import logger
@@ -89,11 +90,44 @@ def _resolve_ws_user(token: str | None, db: Session) -> User | None:
     return user if user and user.is_active else None
 
 
-def _command_for(serial: str | None) -> list[str]:
-    cmd = settings.lab_shell_command
-    if "%(serial)s" in cmd:
-        cmd = cmd % {"serial": serial or ""}
-    return shlex.split(cmd)
+def _lab_container_running() -> bool:
+    """True if the isolated lab container is up and reachable via docker."""
+    if not settings.lab_container:
+        return False
+    try:
+        out = subprocess.run(
+            ["docker", "inspect", "-f", "{{.State.Running}}", settings.lab_container],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return out.returncode == 0 and out.stdout.strip() == "true"
+
+
+def _resolve_command(serial: str | None, user_id: int, solo: bool) -> list[str] | None:
+    """Build the terminal command. Prefer an exec into the isolated lab
+    container (no backend secrets); fall back to a placeholder shell only in
+    solo mode. Returns None when no safe shell is available (hosted + no lab),
+    so we never drop a learner into the secret-bearing backend container."""
+    inner = settings.lab_shell_command
+    if "%(serial)s" in inner:
+        inner = inner % {"serial": serial or ""}
+
+    if _lab_container_running():
+        # Per-user scratch dir inside the isolated workstation.
+        workdir = f"/work/{user_id}"
+        bootstrap = f"mkdir -p {shlex.quote(workdir)} && cd {shlex.quote(workdir)} && exec {inner}"
+        return ["docker", "exec", "-i", settings.lab_container, "bash", "-lc", bootstrap]
+
+    if solo:
+        # Single local operator on their own machine: the placeholder shell in
+        # the backend container is acceptable (no other users to protect from).
+        return shlex.split(inner)
+
+    # Hosted with no lab workstation: refuse rather than expose backend secrets.
+    return None
 
 
 @router.websocket("/terminal")
@@ -115,8 +149,18 @@ async def terminal(
         await ws.close(code=1008)
         return
 
+    solo = instance_config.effective_solo_mode(db)
+    argv = _resolve_command(sess.device_serial, user.id, solo)
+    if argv is None:
+        await ws.accept()
+        await ws.send_text(
+            "\r\n[lab] no isolated lab workstation is running. Start it with "
+            "`docker compose --profile lab up -d lab`.\r\n"
+        )
+        await ws.close(code=1011)
+        return
+
     await ws.accept()
-    argv = _command_for(sess.device_serial)
 
     # Spawn the command on a PTY so interactive tools (frida, adb shell) behave.
     master_fd, slave_fd = os.openpty()

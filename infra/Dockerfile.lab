@@ -1,0 +1,50 @@
+# MASDojo interactive lab workstation.
+#
+# An ISOLATED analyst environment the learner reaches through the in-browser
+# terminal. It carries the pentest toolchain (editors, frida, adb, jadx,
+# apktool, strings, ...) and the target materials, but NONE of the backend
+# secrets (no JWT_SECRET / MASTER_KEY / API keys / DB URL) - the backend execs a
+# shell in here so a learner shell never sits in the API container.
+FROM eclipse-temurin:17-jre-jammy
+
+ARG JADX_VERSION=1.5.0
+ARG APKTOOL_VERSION=2.9.3
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        nano vim less bash ca-certificates curl unzip file xxd \
+        binutils python3 python3-pip git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Android platform-tools (adb) for driving a device/emulator.
+RUN curl -fsSL https://dl.google.com/android/repository/platform-tools-latest-linux.zip -o /tmp/pt.zip \
+    && unzip -q /tmp/pt.zip -d /opt && rm /tmp/pt.zip \
+    && ln -s /opt/platform-tools/adb /usr/local/bin/adb
+
+# jadx (decompiler).
+RUN curl -fsSL "https://github.com/skylot/jadx/releases/download/v${JADX_VERSION}/jadx-${JADX_VERSION}.zip" -o /tmp/jadx.zip \
+    && unzip -q /tmp/jadx.zip -d /opt/jadx && rm /tmp/jadx.zip \
+    && ln -s /opt/jadx/bin/jadx /usr/local/bin/jadx
+
+# apktool (decode/rebuild resources).
+RUN curl -fsSL "https://github.com/iBotPeaches/Apktool/releases/download/v${APKTOOL_VERSION}/apktool_${APKTOOL_VERSION}.jar" -o /opt/apktool.jar \
+    && printf '#!/bin/sh\nexec java -jar /opt/apktool.jar "$@"\n' > /usr/local/bin/apktool \
+    && chmod +x /usr/local/bin/apktool
+
+# Frida CLI tooling (frida, frida-ps, frida-trace, ...).
+RUN pip3 install --no-cache-dir frida-tools
+
+# Unprivileged user; /work is the learner's scratch space (per-user subdir made
+# by the terminal bridge on connect).
+RUN useradd -m -s /bin/bash labuser && mkdir -p /work && chown labuser:labuser /work
+USER labuser
+WORKDIR /work
+
+# A friendly banner + handy paths for the learner.
+RUN printf '%s\n' \
+  'echo "MASDojo lab workstation. Tools: jadx, apktool, adb, frida, strings, python3, nano, vim."' \
+  'echo "Target APK: /targets/app/MASDojo.apk   Task artifacts: /targets/tasks/<id>/artifacts"' \
+  > /home/labuser/.bashrc_msd && echo '. ~/.bashrc_msd' >> /home/labuser/.bashrc
+
+CMD ["sleep", "infinity"]

@@ -61,6 +61,11 @@ class Settings(BaseSettings):
     lab_shell_command: str = "/usr/bin/bash --login"
     # A lab session auto-expires after this many minutes.
     lab_session_ttl_min: int = 60
+    # Name of the isolated lab container to exec the terminal into (via the
+    # docker socket). When empty or the container isn't running, the terminal
+    # falls back to the placeholder shell in SOLO mode only - never in hosted,
+    # where that would expose backend secrets. Env: LAB_CONTAINER.
+    lab_container: str = ""
 
     # Runner-related (read here so the backend can surface limits in the API)
     grading_job_timeout_sec: int = 420
