@@ -58,9 +58,7 @@ def _load_grader_module(package_dir: Path) -> ModuleType:
     grade_py = package_dir / "grader" / "grade.py"
     if not grade_py.is_file():
         raise GraderLoadError(f"no grader at {grade_py}")
-    spec = importlib.util.spec_from_file_location(
-        f"masdojo_grader_{package_dir.name}", grade_py
-    )
+    spec = importlib.util.spec_from_file_location(f"masdojo_grader_{package_dir.name}", grade_py)
     if spec is None or spec.loader is None:  # pragma: no cover - defensive
         raise GraderLoadError(f"could not load grader spec for {grade_py}")
     module = importlib.util.module_from_spec(spec)
@@ -198,7 +196,9 @@ class GradeRunner:
         flow_path = config.artifacts_dir / f"{package_dir.name}.flows"
 
         emit("starting mitmproxy + bundled mock backend", phase="network")
-        with _BundledBackend(package_dir), MitmProxyRecorder(config.mitm_port, flow_path) as recorder:
+        with _BundledBackend(package_dir), MitmProxyRecorder(
+            config.mitm_port, flow_path
+        ) as recorder:
             # Route the device's HTTP(S) traffic through mitmproxy.
             adb.shell(f"settings put global http_proxy 10.0.2.2:{config.mitm_port}")
             if package:

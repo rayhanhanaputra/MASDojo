@@ -128,7 +128,9 @@ def list_active(db: Session) -> list[LabSession]:
     """All currently-active sessions (admin view of who is bound to what)."""
     now = _now()
     rows = list(
-        db.scalars(select(LabSession).where(LabSession.status == "active").order_by(LabSession.id.desc()))
+        db.scalars(
+            select(LabSession).where(LabSession.status == "active").order_by(LabSession.id.desc())
+        )
     )
     live = []
     for s in rows:

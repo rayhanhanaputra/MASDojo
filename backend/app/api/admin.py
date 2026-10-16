@@ -46,8 +46,8 @@ def _config_view(cfg) -> InstanceConfigView:
 
 
 def _active_admin_count(db: Session, exclude_id: int | None = None) -> int:
-    stmt = select(func.count()).select_from(User).where(
-        User.role == "admin", User.is_active.is_(True)
+    stmt = (
+        select(func.count()).select_from(User).where(User.role == "admin", User.is_active.is_(True))
     )
     if exclude_id is not None:
         stmt = stmt.where(User.id != exclude_id)
@@ -75,10 +75,14 @@ def list_lab_sessions(
     _admin: User = Depends(require_role("admin")),
 ) -> list[LabSessionAdminView]:
     sessions = lab_session.list_active(db)
-    emails = {
-        u.id: u.email
-        for u in db.scalars(select(User).where(User.id.in_([s.user_id for s in sessions])))
-    } if sessions else {}
+    emails = (
+        {
+            u.id: u.email
+            for u in db.scalars(select(User).where(User.id.in_([s.user_id for s in sessions])))
+        }
+        if sessions
+        else {}
+    )
     return [
         LabSessionAdminView(
             id=s.id,

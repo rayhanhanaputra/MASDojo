@@ -91,8 +91,9 @@ class GradeResult:
     ) -> "GradeResult":
         """Build a result that passes only if every check passed."""
         passed = all(c.passed for c in checks)
-        return cls(passed=passed, evidence=evidence, checks=checks,
-                   evidence_items=evidence_items or [])
+        return cls(
+            passed=passed, evidence=evidence, checks=checks, evidence_items=evidence_items or []
+        )
 
 
 class Artifacts:

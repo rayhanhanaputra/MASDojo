@@ -13,7 +13,6 @@ from typing import Any
 
 import yaml
 from loguru import logger
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings

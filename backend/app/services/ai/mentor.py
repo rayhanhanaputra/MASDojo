@@ -8,7 +8,6 @@ attempts (the same gate the static hints use).
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session

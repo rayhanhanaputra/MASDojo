@@ -110,7 +110,9 @@ def _check_runner_and_emulator(client) -> list[dict]:
                 "(docker compose logs runner / runner-dryrun)",
             )
         )
-        checks.append(_c("emulator", "down", "no live runner, so no device", "bring the runner back up"))
+        checks.append(
+            _c("emulator", "down", "no live runner, so no device", "bring the runner back up")
+        )
     else:
         checks.append(
             _c(
@@ -130,7 +132,9 @@ def _check_lab(db: Session) -> dict:
     admin_on = instance_config.lab_enabled(db)
     if env_on and admin_on:
         return _c("lab_playground", "ok", settings.lab_shell_command)
-    reason = "disabled by admin (Instance settings)" if env_on else "disabled by env (LAB_ENABLED=false)"
+    reason = (
+        "disabled by admin (Instance settings)" if env_on else "disabled by env (LAB_ENABLED=false)"
+    )
     return _c("lab_playground", "disabled", reason, "enable it in Admin > Instance settings")
 
 

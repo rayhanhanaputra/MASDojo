@@ -10,7 +10,6 @@ task package on disk and are not editable here.
 from __future__ import annotations
 
 import zipfile
-from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from loguru import logger
@@ -18,7 +17,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import require_role
-from app.core.config import settings
 from app.db.session import get_db
 from app.models.task import Task
 from app.models.user import User
@@ -41,6 +39,7 @@ _MAX_APK_BYTES = 200 * 1024 * 1024
 def _expected_value_of(task: Task) -> str:
     ov = task.expected_override or {}
     return str(ov.get("value") or ov.get("flag") or ov.get("secret") or "")
+
 
 # Presentation/content fields an edit touches; changing any of them locks the
 # task against seeder overwrite (via instructor_edited).

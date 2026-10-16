@@ -244,7 +244,9 @@ class Worker:
                 job = self._pop_job()
                 if job is None:
                     continue
-                logger.info("picked up job {} (submission {})", job.get("job_id"), job.get("submission_id"))
+                logger.info(
+                    "picked up job {} (submission {})", job.get("job_id"), job.get("submission_id")
+                )
                 self._handle(job)
         finally:
             self._stop_device()

@@ -39,12 +39,11 @@ def _max_dt(a, b):
 def compute(db: Session, user: User) -> ProfileStats:
     tasks = list(db.scalars(select(Task)).all())
     progress_by_id = {
-        p.task_id: p
-        for p in db.scalars(select(Progress).where(Progress.user_id == user.id)).all()
+        p.task_id: p for p in db.scalars(select(Progress).where(Progress.user_id == user.id)).all()
     }
-    total_hints = db.scalar(
-        select(func.count(HintUsage.id)).where(HintUsage.user_id == user.id)
-    ) or 0
+    total_hints = (
+        db.scalar(select(func.count(HintUsage.id)).where(HintUsage.user_id == user.id)) or 0
+    )
 
     by_domain: dict[str, list[Task]] = defaultdict(list)
     by_module: dict[str, list[Task]] = defaultdict(list)
@@ -146,9 +145,9 @@ def compute(db: Session, user: User) -> ProfileStats:
         pass_rate=round(100 * tasks_passed / tasks_attempted, 1) if tasks_attempted else 0.0,
         avg_attempts_per_pass=round(total_attempts / tasks_passed, 1) if tasks_passed else 0.0,
         highest_difficulty_cleared=highest_diff,
-        avg_time_to_solve_min=round(sum(solve_times) / len(solve_times) / 60, 1)
-        if solve_times
-        else 0.0,
+        avg_time_to_solve_min=(
+            round(sum(solve_times) / len(solve_times) / 60, 1) if solve_times else 0.0
+        ),
         masvs_covered=sorted(masvs),
         first_active=first_active,
         last_active=last_active,
