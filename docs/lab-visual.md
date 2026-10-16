@@ -49,3 +49,12 @@ LAB_STREAM_URL=https://<runner-host>:<webrtc-port>/
 - The visual view is an addition to, not a replacement for, the isolated
   terminal container - it never exposes backend secrets.
 - Leave `LAB_STREAM_URL` empty for CLI-only installs (the default).
+- The backend reaches the lab container through the mounted docker socket. The
+  learner only ever gets the exec'd shell inside the isolated lab container (no
+  socket, no secrets); the socket sits in the trusted backend. For a hardened
+  multi-tenant deployment, front the socket with a scoped
+  [`docker-socket-proxy`](https://github.com/Tecnativa/docker-socket-proxy)
+  allowing only `exec`, so a backend compromise can't drive the whole daemon.
+- Device serials from the runner heartbeat are validated against a strict
+  charset and shell-quoted before use, so a poisoned heartbeat can't inject
+  shell or URL syntax into the terminal command or the stream URL.

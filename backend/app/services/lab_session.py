@@ -8,6 +8,7 @@ no device is allocated the terminal falls back to the placeholder shell.
 from __future__ import annotations
 
 import json
+import re
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -22,6 +23,10 @@ from app.services.queue import get_redis
 
 HEARTBEAT_KEY = "masdojo:runner:heartbeat"
 HEARTBEAT_STALE_SEC = 25
+# A valid adb serial: alphanumerics and a few separators only. Rejecting anything
+# else stops a poisoned heartbeat from smuggling shell/URL metacharacters into
+# the terminal command or the visual-stream URL downstream.
+_SERIAL_RE = re.compile(r"^[A-Za-z0-9._:-]{1,64}$")
 
 
 def _now() -> datetime:
@@ -46,7 +51,12 @@ def _available_device() -> str | None:
         return None
     if hb.get("mode") == "dry-run":
         return None
-    return hb.get("device")
+    device = hb.get("device")
+    if device and _SERIAL_RE.match(device):
+        return device
+    if device:
+        logger.warning("ignoring malformed device serial from heartbeat: {!r}", device)
+    return None
 
 
 def _expire_if_stale(db: Session, s: LabSession | None) -> LabSession | None:

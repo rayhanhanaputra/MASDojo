@@ -8,17 +8,42 @@ transparently overrides the committed package.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from app.core.config import settings
 
+# Task ids are slugs. Enforcing this before building any path blocks traversal
+# (".." / absolute / separators) from a crafted id reaching the filesystem.
+_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+class UnsafeTaskId(ValueError):
+    """Raised when a task id can't be used to build a filesystem path."""
+
+
+def _checked(task_id: str) -> str:
+    if not _SLUG_RE.match(task_id or ""):
+        raise UnsafeTaskId(f"unsafe task id: {task_id!r}")
+    return task_id
+
+
+def _under(base: Path, task_id: str) -> Path:
+    """Resolve <base>/<task_id> and confirm it stays inside base (defence in
+    depth against symlinks / traversal even after the slug check)."""
+    base = base.resolve()
+    target = (base / _checked(task_id)).resolve()
+    if base != target and base not in target.parents:
+        raise UnsafeTaskId(f"task path escapes its root: {task_id!r}")
+    return target
+
 
 def store_dir(task_id: str) -> Path:
-    return (Path(settings.task_store_dir) / task_id).resolve()
+    return _under(Path(settings.task_store_dir), task_id)
 
 
 def package_dir(task_id: str) -> Path:
-    return (Path(settings.tasks_dir) / task_id).resolve()
+    return _under(Path(settings.tasks_dir), task_id)
 
 
 def apk_path(task_id: str) -> Path | None:

@@ -74,6 +74,9 @@ def _load_one(meta: dict[str, Any], package: Path, tasks_root: Path) -> dict[str
         "is_reference": bool(meta.get("is_reference", False)),
         "grader_status": _grader_status(package, meta.get("grader_status")),
         "package_path": str(rel),
+        # Seeded-from-disk tasks are always "package" source; this never
+        # overwrites an authored task (those have no on-disk package to seed).
+        "source": "package",
     }
 
 

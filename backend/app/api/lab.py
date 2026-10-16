@@ -17,6 +17,7 @@ import signal
 import struct
 import subprocess
 import termios
+import urllib.parse
 
 from loguru import logger
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket, status
@@ -42,7 +43,7 @@ def _view(sess) -> LabSessionView:
     """Serialize a session, resolving the visual stream URL for this device."""
     stream = settings.lab_stream_url or None
     if stream and "%(serial)s" in stream:
-        stream = stream % {"serial": sess.device_serial or ""}
+        stream = stream % {"serial": urllib.parse.quote(sess.device_serial or "", safe="")}
     return LabSessionView(
         id=sess.id,
         task_id=sess.task_id,
@@ -128,7 +129,10 @@ def _resolve_command(serial: str | None, user_id: int, solo: bool) -> list[str] 
     so we never drop a learner into the secret-bearing backend container."""
     inner = settings.lab_shell_command
     if "%(serial)s" in inner:
-        inner = inner % {"serial": serial or ""}
+        # Shell-quote the serial: it originates from the runner heartbeat / DB,
+        # not a trusted literal, so it must not be able to inject shell syntax
+        # into the adb command (e.g. `adb -s %(serial)s shell`).
+        inner = inner % {"serial": shlex.quote(serial or "")}
 
     if _lab_container_running():
         # Per-user scratch dir inside the isolated workstation.
@@ -176,6 +180,12 @@ async def terminal(
         return
 
     await ws.accept()
+    logger.info(
+        "lab terminal opened: session={} user={} device={}",
+        sess.id,
+        user.id,
+        sess.device_serial or "placeholder",
+    )
 
     # Spawn the command on a PTY so interactive tools (frida, adb shell) behave.
     master_fd, slave_fd = os.openpty()

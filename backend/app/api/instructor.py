@@ -59,9 +59,12 @@ def _material_info(task_id: str) -> tuple[bool, int]:
     """(has target APK, number of committed challenge artifacts) for a task.
 
     Resolves store-first so an uploaded APK / authored task reports correctly."""
-    has_apk = task_assets.apk_path(task_id) is not None
-    adir = task_assets.artifacts_dir(task_id)
-    count = sum(1 for p in adir.rglob("*") if p.is_file()) if adir.is_dir() else 0
+    try:
+        has_apk = task_assets.apk_path(task_id) is not None
+        adir = task_assets.artifacts_dir(task_id)
+        count = sum(1 for p in adir.rglob("*") if p.is_file()) if adir.is_dir() else 0
+    except task_assets.UnsafeTaskId:
+        return False, 0
     return has_apk, count
 
 
