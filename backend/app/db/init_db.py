@@ -39,6 +39,12 @@ def wait_for_db(max_attempts: int = 30, delay_sec: float = 1.0) -> None:
 _COLUMN_PATCHES = (
     "ALTER TABLE submissions ADD COLUMN IF NOT EXISTS evidence_bundle JSON DEFAULT '[]'",
     "ALTER TABLE submissions ADD COLUMN IF NOT EXISTS ai_generated BOOLEAN DEFAULT FALSE",
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS base_url VARCHAR(512)",
+    "ALTER TABLE api_keys ADD COLUMN IF NOT EXISTS model VARCHAR(128)",
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'learner'",
+    "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT TRUE",
+    "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS instructor_edited BOOLEAN NOT NULL DEFAULT FALSE",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_enabled BOOLEAN NOT NULL DEFAULT TRUE",
 )
 
 

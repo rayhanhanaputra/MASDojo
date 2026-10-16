@@ -29,4 +29,6 @@ class UserPublic(BaseModel):
     id: int
     email: EmailStr
     display_name: str
+    role: str = "learner"
+    is_active: bool = True
     created_at: datetime

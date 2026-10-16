@@ -21,6 +21,8 @@ def _status(record) -> ApiKeyStatus:
         configured=True,
         provider=record.provider,
         masked_key=record.masked_key,
+        base_url=record.base_url,
+        model=record.model,
         last_validated_at=record.last_validated_at,
     )
 
@@ -41,7 +43,9 @@ def set_ai_key(
 ) -> ApiKeyStatus:
     """Validate the key with a cheap provider call, then store it encrypted."""
     try:
-        record = key_manager.set_key(db, user, body.provider, body.api_key)
+        record = key_manager.set_key(
+            db, user, body.provider, body.api_key, body.base_url, body.model
+        )
     except key_manager.KeyValidationError as exc:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(exc))
     return _status(record)

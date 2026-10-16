@@ -4,13 +4,17 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from sqlalchemy.orm import Session
 
 from app.api import (
+    admin,
     auth,
     downloads,
+    instructor,
+    lab,
     mentor,
     pathway,
     settings as settings_api,
@@ -20,6 +24,8 @@ from app.api import (
 )
 from app.core.config import settings
 from app.core.logging import configure_logging
+from app.db.session import get_db
+from app.services import instance_config
 
 
 @asynccontextmanager
@@ -59,10 +65,12 @@ def health() -> dict[str, str]:
 
 
 @app.get("/config", tags=["meta"])
-def public_config() -> dict[str, object]:
+def public_config(db: Session = Depends(get_db)) -> dict[str, object]:
     """Public front-end config. `solo_mode` tells the UI to skip login and go
-    straight to the curriculum for a single local participant."""
-    return {"solo_mode": settings.solo_mode}
+    straight to the curriculum for a single local participant;
+    `registration_open` gates the hosted-mode sign-up form."""
+    cfg = instance_config.get_config(db)
+    return {"solo_mode": cfg.solo_mode, "registration_open": cfg.registration_open}
 
 
 app.include_router(auth.router)
@@ -73,3 +81,6 @@ app.include_router(pathway.router)
 app.include_router(settings_api.router)
 app.include_router(mentor.router)
 app.include_router(downloads.router)
+app.include_router(admin.router)
+app.include_router(instructor.router)
+app.include_router(lab.router)

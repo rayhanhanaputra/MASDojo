@@ -13,7 +13,6 @@ from datetime import datetime, timezone
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.core.crypto import decrypt_secret, encrypt_secret, mask_key
 from app.models.api_key import ApiKey
 from app.models.user import User
@@ -29,11 +28,26 @@ def get_record(db: Session, user: User) -> ApiKey | None:
     return user.api_key
 
 
-def set_key(db: Session, user: User, provider: str, api_key: str) -> ApiKey:
-    """Validate then persist (encrypted) the user's provider key."""
-    # Validate with the user's own key before storing anything.
-    if not make_provider(provider, api_key).validate_key():
-        raise KeyValidationError("the provider rejected this API key")
+def set_key(
+    db: Session,
+    user: User,
+    provider: str,
+    api_key: str,
+    base_url: str | None = None,
+    model: str | None = None,
+) -> ApiKey:
+    """Validate then persist (encrypted) the user's provider key.
+
+    `base_url`/`model` are optional overrides for a custom OpenAI/Anthropic-
+    compatible gateway (e.g. an LLM router like elelem). Blank strings are
+    normalised to None so the install-level default is used instead.
+    """
+    base_url = (base_url or "").strip() or None
+    model = (model or "").strip() or None
+    # Validate against the *same* endpoint/model we will store, so a bad gateway
+    # URL or a model the gateway doesn't serve is rejected at entry, not later.
+    if not make_provider(provider, api_key, base_url=base_url, model=model).validate_key():
+        raise KeyValidationError("the provider rejected this API key, endpoint, or model")
 
     now = datetime.now(timezone.utc)
     record = user.api_key
@@ -43,6 +57,8 @@ def set_key(db: Session, user: User, provider: str, api_key: str) -> ApiKey:
     record.provider = provider
     record.encrypted_key = encrypt_secret(api_key)
     record.masked_key = mask_key(api_key)
+    record.base_url = base_url
+    record.model = model
     record.last_validated_at = now
     db.commit()
     db.refresh(record)
@@ -68,18 +84,16 @@ def get_provider(db: Session, user: User) -> AIProvider | None:
     """
     record = user.api_key
     if record is None:
-        # Install-level fallback for SOLO_MODE / workshop demos: when the user
-        # hasn't set their own key in-app but the operator configured an
-        # install-level key (OPENAI_API_KEY / ANTHROPIC_API_KEY, optionally with
-        # a custom *_BASE_URL for a proxy/gateway), use it so the mentor works
-        # out of the box. Per-user BYOK still takes precedence.
-        fallback = settings.mentor_fallback
-        if fallback:
-            return make_provider(*fallback)
-        return None
+        # Install-level fallback: when the user hasn't set their own key in-app,
+        # use the admin-configured instance fallback (or the env default it was
+        # seeded from) so the mentor works out of the box. Per-user BYOK still
+        # takes precedence. Imported lazily to avoid an import cycle.
+        from app.services import instance_config
+
+        return instance_config.fallback_provider(db)
     try:
         key = decrypt_secret(record.encrypted_key)
     except ValueError:
         logger.error("could not decrypt stored key for user {}", user.id)
         return None
-    return make_provider(record.provider, key)
+    return make_provider(record.provider, key, base_url=record.base_url, model=record.model)

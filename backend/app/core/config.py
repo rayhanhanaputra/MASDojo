@@ -41,10 +41,26 @@ class Settings(BaseSettings):
     # local profile, straight into the curriculum. Keep false for the multi-user
     # hosted deployment.
     solo_mode: bool = False
+    # Comma-separated emails that are granted the "admin" role on registration
+    # (hosted mode bootstrap). As a fallback, the very first registered user
+    # also becomes admin so a fresh self-host always has one. Env: ADMIN_EMAILS.
+    admin_emails: str = ""
     # Per-install differentiator mixed into seeded-challenge seeds so each
     # participant's targets differ even in solo mode (a single fixed profile).
     # `make env` generates a random value; empty = no differentiation.
     install_salt: str = ""
+
+    # ── Interactive lab playground ──────────────────────────────────────────
+    # Enable the live terminal playground. The emulator-backed path needs a KVM
+    # host; without one the terminal still works against the placeholder shell.
+    lab_enabled: bool = True
+    # Command spawned for a lab terminal. Placeholder default is a shell inside
+    # the backend container; on a KVM host set this to attach to the session
+    # device, e.g. "adb -s emulator-5554 shell". %(serial)s is substituted with
+    # the session's device serial when present.
+    lab_shell_command: str = "/usr/bin/bash --login"
+    # A lab session auto-expires after this many minutes.
+    lab_session_ttl_min: int = 60
 
     # Runner-related (read here so the backend can surface limits in the API)
     grading_job_timeout_sec: int = 420
@@ -98,6 +114,10 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def admin_email_set(self) -> set[str]:
+        return {e.strip().lower() for e in self.admin_emails.split(",") if e.strip()}
 
     def insecure_defaults(self) -> list[str]:
         """Return the names of any security secret still set to its placeholder."""

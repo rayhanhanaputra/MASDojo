@@ -39,3 +39,11 @@ class Task(Base, TimestampMixin):
     grader_status: Mapped[str] = mapped_column(String(20), default="todo")
     # Relative path of the task package on disk (for the runner to load).
     package_path: Mapped[str] = mapped_column(String(255), default="")
+
+    # ── Instructor-managed presentation (hosted mode) ───────────────────────
+    # Visible to learners? Instructors can unpublish a task to hide it.
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    # Set once an instructor edits presentation fields in-app. When True the
+    # seeder preserves those fields on re-seed instead of clobbering them from
+    # YAML (technical fields like graders/hints are still refreshed).
+    instructor_edited: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_user, has_min_role
 from app.core.config import settings
 from app.core.seeds import derive_seed, generate_challenge
 from app.db.session import get_db
@@ -33,16 +33,25 @@ def _hint_count(task: Task) -> int:
 
 
 @router.get("", response_model=list[TaskSummary])
-def list_tasks(db: Session = Depends(get_db)) -> list[Task]:
-    return list(
-        db.scalars(select(Task).order_by(Task.module, Task.order_index, Task.id)).all()
-    )
+def list_tasks(
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_optional_user),
+) -> list[Task]:
+    stmt = select(Task).order_by(Task.module, Task.order_index, Task.id)
+    # Learners only see published tasks; instructors/admins (and solo) see all.
+    if not has_min_role(user, "instructor"):
+        stmt = stmt.where(Task.is_published.is_(True))
+    return list(db.scalars(stmt).all())
 
 
 @router.get("/{task_id}", response_model=TaskDetail)
-def get_task(task_id: str, db: Session = Depends(get_db)) -> TaskDetail:
+def get_task(
+    task_id: str,
+    db: Session = Depends(get_db),
+    user: User | None = Depends(get_optional_user),
+) -> TaskDetail:
     task = db.get(Task, task_id)
-    if not task:
+    if not task or (not task.is_published and not has_min_role(user, "instructor")):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Task not found")
     return TaskDetail(
         **{c.name: getattr(task, c.name) for c in Task.__table__.columns if c.name != "hints"},

@@ -24,6 +24,9 @@ class User(Base, TimestampMixin):
     display_name: Mapped[str] = mapped_column(String(80), nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    # Access role: "learner" (default) | "instructor" (manage tasks) | "admin"
+    # (manage users, implies instructor). Only meaningful in hosted mode.
+    role: Mapped[str] = mapped_column(String(20), nullable=False, default="learner")
 
     api_key: Mapped["ApiKey | None"] = relationship(
         back_populates="user", uselist=False, cascade="all, delete-orphan"

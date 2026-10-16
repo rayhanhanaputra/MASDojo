@@ -35,7 +35,9 @@ class AnthropicProvider(AIProvider):
         self,
         api_key: str,
         model: str | None = None,
-        timeout: float = 30.0,
+        # Generous enough for reasoning models behind a gateway, which can take
+        # well over 30s to return a full completion.
+        timeout: float = 60.0,
         base_url: str | None = None,
     ) -> None:
         self._key = api_key

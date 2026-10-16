@@ -160,12 +160,36 @@ class Worker:
         return payload, user_id
 
     # ── main loop ─────────────────────────────────────────────────────────
+    def _mode(self) -> str:
+        if config.dry_run:
+            return "dry-run"
+        return "attach" if config.attach_mode else "emulator"
+
+    def _heartbeat(self) -> None:
+        """Publish a short-lived liveness record so the backend's system check
+        can tell whether a runner (and its device) is actually up."""
+        try:
+            self._redis.set(
+                "masdojo:runner:heartbeat",
+                json.dumps(
+                    {
+                        "mode": self._mode(),
+                        "device": None if config.dry_run else config.emulator_serial,
+                        "ts": time.time(),
+                    }
+                ),
+                ex=20,
+            )
+        except redis.exceptions.RedisError:
+            pass
+
     def run(self) -> None:
         self._install_signal_handlers()
         logger.info("MASDojo runner starting; queue='{}'", config.grading_queue)
         self._start_device()
         try:
             while self._running:
+                self._heartbeat()
                 job = self._pop_job()
                 if job is None:
                     continue

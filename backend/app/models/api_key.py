@@ -30,6 +30,11 @@ class ApiKey(Base, TimestampMixin):
     provider: Mapped[str] = mapped_column(String(20), nullable=False)
     encrypted_key: Mapped[str] = mapped_column(String(1024), nullable=False)
     masked_key: Mapped[str] = mapped_column(String(40), nullable=False)
+    # Optional per-user overrides for an OpenAI/Anthropic-compatible gateway
+    # (proxy, LLM router like elelem). NULL means use the install-level default
+    # from settings. Neither is a secret, so both are safe to return to the UI.
+    base_url: Mapped[str | None] = mapped_column(String(512))
+    model: Mapped[str | None] = mapped_column(String(128))
     last_validated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     user: Mapped["User"] = relationship(back_populates="api_key")

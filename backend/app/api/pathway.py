@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, has_min_role
 from app.db.session import get_db
 from app.models.progress import Progress
 from app.models.user import User
@@ -24,6 +24,9 @@ def skill_map(
     user: User = Depends(get_current_user),
 ) -> SkillMap:
     nodes, recommended = _engine.skill_map(db, user.id)
+    # Learners don't see unpublished tasks in the skill map; staff see all.
+    if not has_min_role(user, "instructor"):
+        nodes = [(t, state) for t, state in nodes if t.is_published]
 
     progress = {
         p.task_id: p

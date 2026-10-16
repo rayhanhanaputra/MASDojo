@@ -21,3 +21,15 @@ class ProfileStats(BaseModel):
     total_attempts: int
     total_hints_used: int
     domains: list[DomainMastery]
+
+
+class RosterEntry(BaseModel):
+    """One row in the staff roster: a learner and their headline progress."""
+
+    id: int
+    email: str
+    display_name: str
+    role: str
+    tasks_passed: int
+    tasks_total: int
+    total_score: int

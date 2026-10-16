@@ -56,7 +56,7 @@ def _seed_task(**overrides):
 
 
 def test_key_stored_encrypted_and_only_masked_is_returned(client: TestClient, auth_headers, monkeypatch):
-    monkeypatch.setattr("app.services.key_manager.make_provider", lambda p, k: _FakeProvider(True))
+    monkeypatch.setattr("app.services.key_manager.make_provider", lambda p, k, **kw: _FakeProvider(True))
 
     raw = "sk-ant-supersecret-0123456789"
     r = client.put("/settings/ai-key", json={"provider": "anthropic", "api_key": raw}, headers=auth_headers)
@@ -76,13 +76,13 @@ def test_key_stored_encrypted_and_only_masked_is_returned(client: TestClient, au
 
 
 def test_invalid_key_is_rejected(client: TestClient, auth_headers, monkeypatch):
-    monkeypatch.setattr("app.services.key_manager.make_provider", lambda p, k: _FakeProvider(False))
+    monkeypatch.setattr("app.services.key_manager.make_provider", lambda p, k, **kw: _FakeProvider(False))
     r = client.put("/settings/ai-key", json={"provider": "openai", "api_key": "sk-bad-000000"}, headers=auth_headers)
     assert r.status_code == 400
 
 
 def test_remove_key(client: TestClient, auth_headers, monkeypatch):
-    monkeypatch.setattr("app.services.key_manager.make_provider", lambda p, k: _FakeProvider(True))
+    monkeypatch.setattr("app.services.key_manager.make_provider", lambda p, k, **kw: _FakeProvider(True))
     client.put("/settings/ai-key", json={"provider": "anthropic", "api_key": "sk-ant-abcdef123456"}, headers=auth_headers)
     assert client.delete("/settings/ai-key", headers=auth_headers).status_code == 204
     assert client.get("/settings/ai-key", headers=auth_headers).json()["configured"] is False

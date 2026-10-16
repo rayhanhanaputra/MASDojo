@@ -22,6 +22,13 @@ from app.models.task import Task
 
 HINT_FILES = {1: "h1.md", 2: "h2.md", 3: "h3.md", 4: "solution.md"}
 
+# Presentation fields an instructor may override in-app. When a task is
+# instructor_edited, the seeder leaves these alone on re-seed and refreshes only
+# the technical fields owned by the package on disk.
+_INSTRUCTOR_OWNED = frozenset(
+    {"title", "module", "order_index", "difficulty", "time_estimate_min", "objective", "hints"}
+)
+
 
 def _read_hints(package: Path) -> dict[str, str]:
     """Read available hint tiers from a package's hints/ directory."""
@@ -100,7 +107,13 @@ def seed(db: Session, tasks_root: Path) -> int:
 
         existing = db.get(Task, values["id"])
         if existing:
+            # Preserve instructor edits: once a task is instructor_edited, keep
+            # its presentation fields and re-seed only the technical ones owned
+            # by the package on disk (grader, hints, schema, etc.).
+            skip = _INSTRUCTOR_OWNED if existing.instructor_edited else frozenset()
             for key, val in values.items():
+                if key in skip:
+                    continue
                 setattr(existing, key, val)
         else:
             db.add(Task(**values))
