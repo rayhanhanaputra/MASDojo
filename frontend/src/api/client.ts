@@ -68,11 +68,32 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
   }
 
   if (!resp.ok) {
-    const detail =
-      payload && typeof payload === "object" && "detail" in payload
-        ? String((payload as { detail: unknown }).detail)
-        : `Request failed (${resp.status})`;
-    throw new ApiError(resp.status, detail);
+    throw new ApiError(resp.status, formatDetail(payload, resp.status));
   }
   return payload as T;
+}
+
+/** Turn a FastAPI error body into a readable message. `detail` may be a string
+ * or, for 422 validation errors, an array of {loc, msg} objects (which would
+ * otherwise stringify to "[object Object]"). */
+function formatDetail(payload: unknown, status: number): string {
+  const fallback = `Request failed (${status})`;
+  if (!payload || typeof payload !== "object") return fallback;
+  const detail = (payload as { detail?: unknown }).detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    const msgs = detail
+      .map((d) => {
+        if (d && typeof d === "object" && "msg" in d) {
+          const loc = (d as { loc?: unknown[] }).loc;
+          const field = Array.isArray(loc) ? loc.slice(1).join(".") : "";
+          const msg = String((d as { msg: unknown }).msg);
+          return field ? `${field}: ${msg}` : msg;
+        }
+        return typeof d === "string" ? d : "";
+      })
+      .filter(Boolean);
+    if (msgs.length) return msgs.join("; ");
+  }
+  return fallback;
 }

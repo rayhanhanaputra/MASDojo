@@ -1,5 +1,59 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import type { NodeState, SubmissionStatus, SuccessType } from "../api/types";
+
+/* ------------------------------------------------------------------ */
+/* Modal                                                               */
+/* ------------------------------------------------------------------ */
+
+/** A centered modal dialog. Closes on backdrop click or Escape. Use this
+ * instead of window.alert/confirm for anything the user must read or confirm. */
+export function Modal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  // Portal to <body> so the dialog escapes any ancestor stacking context (our
+  // .panel uses backdrop-blur, which would otherwise trap a fixed/z-indexed
+  // child and let sibling panels paint over it).
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] grid max-h-screen place-items-center overflow-y-auto bg-ink-900/70 p-4 backdrop-blur-sm animate-rise"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onClick={onClose}
+    >
+      <div
+        className="panel my-auto w-full max-w-md space-y-4 p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="label mb-0">{title}</h2>
+          <button
+            className="btn-ghost btn-sm"
+            aria-label="close dialog"
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>,
+    document.body,
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /* Brand                                                               */

@@ -44,7 +44,7 @@ export function ChallengeFiles({ taskId }: { taskId: string }) {
       <Panel>
         <h2 className="label">Get the target</h2>
         <p className="text-sm leading-relaxed text-zinc-400">
-          This task has no per-task files — you work it against the practice target,{" "}
+          This task has no per-task files; you work it against the practice target,{" "}
           <span className="font-mono text-zinc-200">MASDojo.apk</span>. Download and install it,
           analyse it with your own tools, then submit what you recover below.
         </p>

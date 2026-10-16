@@ -7,12 +7,22 @@ export function SettingsPage() {
   const [status, setStatus] = useState<ApiKeyStatus | null>(null);
   const [provider, setProvider] = useState<Provider>("anthropic");
   const [key, setKey] = useState("");
+  const [baseUrl, setBaseUrl] = useState("");
+  const [model, setModel] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
 
   function load() {
-    api.getAiKey().then(setStatus).catch((e) => setError(e.message));
+    api
+      .getAiKey()
+      .then((s) => {
+        setStatus(s);
+        if (s.provider) setProvider(s.provider);
+        setBaseUrl(s.base_url ?? "");
+        setModel(s.model ?? "");
+      })
+      .catch((e) => setError(e.message));
   }
   useEffect(load, []);
 
@@ -22,7 +32,7 @@ export function SettingsPage() {
     setOk("");
     setBusy(true);
     try {
-      const s = await api.setAiKey(provider, key.trim());
+      const s = await api.setAiKey(provider, key.trim(), baseUrl.trim(), model.trim());
       setStatus(s);
       setKey("");
       setOk("Key validated and stored (encrypted).");
@@ -39,7 +49,16 @@ export function SettingsPage() {
     setOk("");
     try {
       await api.deleteAiKey();
-      setStatus({ configured: false, provider: null, masked_key: null, last_validated_at: null });
+      setStatus({
+        configured: false,
+        provider: null,
+        masked_key: null,
+        base_url: null,
+        model: null,
+        last_validated_at: null,
+      });
+      setBaseUrl("");
+      setModel("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not remove key");
     } finally {
@@ -94,6 +113,12 @@ export function SettingsPage() {
                   {status.last_validated_at &&
                     ` · validated ${new Date(status.last_validated_at).toLocaleDateString()}`}
                 </p>
+                {(status.base_url || status.model) && (
+                  <p className="font-mono text-xs text-zinc-500">
+                    {status.base_url ?? "default endpoint"}
+                    {status.model && ` · ${status.model}`}
+                  </p>
+                )}
               </div>
             </div>
             <button
@@ -107,7 +132,7 @@ export function SettingsPage() {
         ) : (
           <p className="flex items-start gap-3 rounded-lg border border-dashed border-ink-400 bg-ink-900/50 px-4 py-3 text-sm text-zinc-400">
             <span aria-hidden className="font-mono text-zinc-500">○</span>
-            No key configured — AI features are disabled. The emulator grader still works.
+            No key configured. AI features are disabled, but the emulator grader still works.
           </p>
         )}
 
@@ -143,6 +168,47 @@ export function SettingsPage() {
               />
             </div>
           </div>
+
+          <details className="rounded-lg border border-dashed border-ink-400 bg-ink-900/40 px-4 py-3">
+            <summary className="label mb-0 cursor-pointer select-none text-zinc-300">
+              Custom endpoint (optional)
+            </summary>
+            <p className="mt-2 text-xs text-zinc-500">
+              Point at any OpenAI/Anthropic-compatible gateway or LLM router (e.g. a
+              self-hosted proxy). Leave blank to use the official API. The model must be one
+              the endpoint serves.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <div className="min-w-[14rem] flex-1">
+                <label className="label" htmlFor="ai-base-url">
+                  Base URL
+                </label>
+                <input
+                  id="ai-base-url"
+                  className="input font-mono"
+                  type="url"
+                  autoComplete="off"
+                  placeholder={provider === "anthropic" ? "https://host/v1" : "https://host/v1"}
+                  value={baseUrl}
+                  onChange={(e) => setBaseUrl(e.target.value)}
+                />
+              </div>
+              <div className="min-w-[10rem] flex-1">
+                <label className="label" htmlFor="ai-model">
+                  Model
+                </label>
+                <input
+                  id="ai-model"
+                  className="input font-mono"
+                  type="text"
+                  autoComplete="off"
+                  placeholder={provider === "anthropic" ? "claude-sonnet-4-6" : "gpt-4o"}
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                />
+              </div>
+            </div>
+          </details>
           {error && <ErrorText>{error}</ErrorText>}
           {ok && (
             <p className="flex items-center gap-2 rounded-md border border-phosphor/30 bg-phosphor/5 px-3 py-2 font-mono text-xs text-phosphor" role="status">

@@ -58,7 +58,7 @@ export function GradePanel({
             label={
               submission.status === "queued"
                 ? "queued for the emulator…"
-                : "running on the emulator — live steps above"
+                : "running on the emulator, live steps above"
             }
           />
         </div>
@@ -100,7 +100,7 @@ export function GradePanel({
                 </span>
                 <span className="min-w-0 text-zinc-200">
                   {c.name}
-                  {c.detail && <span className="text-zinc-400"> — {c.detail}</span>}
+                  {c.detail && <span className="text-zinc-400">{c.detail}</span>}
                 </span>
               </li>
             ))}

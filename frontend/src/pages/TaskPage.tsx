@@ -19,6 +19,7 @@ import { ChallengeFiles } from "../components/ChallengeFiles";
 import { GradePanel } from "../components/GradePanel";
 import { HintPanel } from "../components/HintPanel";
 import { AiAttemptPanel } from "../components/AiAttemptPanel";
+import { LabTerminal } from "../components/LabTerminal";
 
 const TERMINAL = new Set(["passed", "failed", "error"]);
 
@@ -28,6 +29,7 @@ export function TaskPage() {
   const [error, setError] = useState("");
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [history, setHistory] = useState<Submission[]>([]);
+  const [labOpen, setLabOpen] = useState(false);
   const pollRef = useRef<number | null>(null);
 
   const refreshHistory = useCallback(() => {
@@ -95,7 +97,7 @@ export function TaskPage() {
                 {task.title}
               </h1>
               {task.is_reference && (
-                <span className="chip-flag" title="reference task — live grader implemented">
+                <span className="chip-flag" title="reference task: live grader implemented">
                   <span aria-hidden>★</span>reference
                 </span>
               )}
@@ -134,7 +136,7 @@ export function TaskPage() {
           <p className="eyebrow mb-2">
             how this task is graded
             <span className="ml-2 normal-case tracking-normal">
-              — a real emulator runs every submission
+              a real emulator runs every submission
             </span>
           </p>
           <GraderPipeline type={task.success_type} status={submission?.status ?? null} />
@@ -161,6 +163,25 @@ export function TaskPage() {
           </Panel>
 
           <ChallengeFiles taskId={taskId} />
+
+          <Panel>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="label mb-0">Interactive lab</h2>
+              {!labOpen && (
+                <button className="btn-ghost btn-sm" onClick={() => setLabOpen(true)}>
+                  Open lab
+                </button>
+              )}
+            </div>
+            {labOpen ? (
+              <LabTerminal taskId={taskId!} onClose={() => setLabOpen(false)} />
+            ) : (
+              <p className="text-sm text-zinc-400">
+                Open a live terminal to develop your exploit (adb / frida) against the target,
+                then submit the result below for grading.
+              </p>
+            )}
+          </Panel>
 
           <Panel className={submission ? "" : "border-phosphor/25"}>
             <div className="mb-3 flex items-center justify-between">
@@ -203,7 +224,7 @@ export function TaskPage() {
             </div>
             <p className="text-xs leading-relaxed text-zinc-400">
               Let the AI attempt this task with no access to your files, then watch the emulator
-              grader judge its answer. The grader is the source of truth — not the model.
+              grader judge its answer. The grader is the source of truth, not the model.
             </p>
             <AiAttemptPanel taskId={taskId} />
           </Panel>

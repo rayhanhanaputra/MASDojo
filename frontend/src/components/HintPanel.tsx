@@ -173,7 +173,7 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
           <MentorMark />
         </div>
         <p className="mb-2 mt-1.5 text-xs leading-relaxed text-zinc-400">
-          Paste decompiled smali/Kotlin or a Frida error — the mentor explains it without solving
+          Paste decompiled smali/Kotlin or a Frida error, and the mentor explains it without solving
           the task.
         </p>
         <textarea

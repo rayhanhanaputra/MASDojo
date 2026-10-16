@@ -253,7 +253,7 @@ function NodeRow({
               {node.title}
             </span>
             {node.is_reference && (
-              <span className="font-mono text-xs text-signal-amber" title="reference task — live grader implemented">
+              <span className="font-mono text-xs text-signal-amber" title="reference task: live grader implemented">
                 ★
               </span>
             )}

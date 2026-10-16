@@ -5,12 +5,20 @@ import type {
   ApiKeyStatus,
   HintResponse,
   Provider,
+  InstanceConfig,
+  LabSessionAdminView,
   ProfileStats,
+  Role,
+  RosterEntry,
   SkillMap,
+  SystemCheckItem,
   Submission,
   TaskDetail,
+  TaskManageView,
   TaskSummary,
+  TaskUpdate,
   TokenResponse,
+  UserAdminView,
   UserPublic,
 } from "./types";
 
@@ -63,8 +71,16 @@ export const api = {
 
   // settings (BYOK)
   getAiKey: () => request<ApiKeyStatus>("/settings/ai-key"),
-  setAiKey: (provider: Provider, api_key: string) =>
-    request<ApiKeyStatus>("/settings/ai-key", { method: "PUT", body: { provider, api_key } }),
+  setAiKey: (
+    provider: Provider,
+    api_key: string,
+    base_url?: string,
+    model?: string,
+  ) =>
+    request<ApiKeyStatus>("/settings/ai-key", {
+      method: "PUT",
+      body: { provider, api_key, base_url: base_url || null, model: model || null },
+    }),
   deleteAiKey: () => request<void>("/settings/ai-key", { method: "DELETE" }),
 
   // mentor
@@ -89,4 +105,57 @@ export const api = {
 
   // stats
   stats: () => request<ProfileStats>("/stats"),
+  userStats: (userId: number) => request<ProfileStats>(`/stats/users/${userId}`),
+  roster: () => request<RosterEntry[]>("/stats/roster"),
+
+  // interactive lab playground
+  labStartSession: (task_id: string) =>
+    request<{ id: number; task_id: string; status: string; device_serial: string | null; expires_at: string }>(
+      "/lab/sessions",
+      { method: "POST", body: { task_id } },
+    ),
+  labEndSession: () => request<void>("/lab/sessions/current", { method: "DELETE" }),
+
+  // admin: system health + instance settings (mode, registration, lab, AI)
+  adminSystemCheck: () => request<SystemCheckItem[]>("/admin/system"),
+  adminLabSessions: () => request<LabSessionAdminView[]>("/admin/lab/sessions"),
+  adminGetSettings: () => request<InstanceConfig>("/admin/settings"),
+  adminUpdateSettings: (patch: { registration_open?: boolean; lab_enabled?: boolean }) =>
+    request<InstanceConfig>("/admin/settings", { method: "PATCH", body: patch }),
+  adminSwitchToHosted: (email: string, display_name: string, password: string) =>
+    request<InstanceConfig>("/admin/settings/switch-to-hosted", {
+      method: "POST",
+      body: { email, display_name, password },
+    }),
+  adminSwitchToSolo: () =>
+    request<InstanceConfig>("/admin/settings/switch-to-solo", { method: "POST" }),
+  adminSetFallback: (
+    provider: "anthropic" | "openai",
+    api_key: string,
+    base_url?: string,
+    model?: string,
+  ) =>
+    request<InstanceConfig>("/admin/settings/ai-fallback", {
+      method: "PUT",
+      body: { provider, api_key, base_url: base_url || null, model: model || null },
+    }),
+  adminClearFallback: () =>
+    request<InstanceConfig>("/admin/settings/ai-fallback", { method: "DELETE" }),
+
+  // admin (manage users) — requires admin role
+  adminListUsers: () => request<UserAdminView[]>("/admin/users"),
+  adminSetRole: (userId: number, role: Role) =>
+    request<UserAdminView>(`/admin/users/${userId}/role`, { method: "PATCH", body: { role } }),
+  adminSetActive: (userId: number, is_active: boolean) =>
+    request<UserAdminView>(`/admin/users/${userId}/active`, {
+      method: "PATCH",
+      body: { is_active },
+    }),
+  adminDeleteUser: (userId: number) =>
+    request<void>(`/admin/users/${userId}`, { method: "DELETE" }),
+
+  // instructor (manage tasks) — requires instructor role
+  instructorListTasks: () => request<TaskManageView[]>("/instructor/tasks"),
+  instructorUpdateTask: (taskId: string, patch: TaskUpdate) =>
+    request<TaskManageView>(`/instructor/tasks/${taskId}`, { method: "PATCH", body: patch }),
 };

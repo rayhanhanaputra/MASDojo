@@ -1,10 +1,90 @@
 // Shapes mirror the backend Pydantic models.
 
+export type Role = "learner" | "instructor" | "admin";
+
 export interface UserPublic {
   id: number;
   email: string;
   display_name: string;
+  role: Role;
+  is_active: boolean;
   created_at: string;
+}
+
+export interface SystemCheckItem {
+  component: string;
+  status: "ok" | "warn" | "down" | "disabled";
+  detail: string;
+  hint: string;
+}
+
+export interface LabSessionAdminView {
+  id: number;
+  user_id: number;
+  user_email: string;
+  task_id: string;
+  device_serial: string | null;
+  expires_at: string;
+}
+
+export interface RosterEntry {
+  id: number;
+  email: string;
+  display_name: string;
+  role: Role;
+  tasks_passed: number;
+  tasks_total: number;
+  total_score: number;
+}
+
+export interface InstanceConfig {
+  solo_mode: boolean;
+  registration_open: boolean;
+  lab_enabled: boolean;
+  ai_fallback_configured: boolean;
+  ai_fallback_provider: "anthropic" | "openai" | null;
+  ai_fallback_masked: string | null;
+  ai_fallback_base_url: string | null;
+  ai_fallback_model: string | null;
+}
+
+export interface UserAdminView {
+  id: number;
+  email: string;
+  display_name: string;
+  role: Role;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface TaskManageView {
+  id: string;
+  title: string;
+  module: string;
+  order_index: number;
+  domain: string;
+  difficulty: number;
+  time_estimate_min: number;
+  objective: string;
+  success_type: SuccessType;
+  grader_status: string;
+  is_reference: boolean;
+  is_published: boolean;
+  instructor_edited: boolean;
+  hints: Record<string, string>;
+  has_target_apk: boolean;
+  artifact_count: number;
+}
+
+export interface TaskUpdate {
+  title?: string;
+  module?: string;
+  order_index?: number;
+  difficulty?: number;
+  time_estimate_min?: number;
+  objective?: string;
+  is_published?: boolean;
+  hints?: { h1?: string; h2?: string; h3?: string; solution?: string };
 }
 
 export interface TokenResponse {
@@ -101,6 +181,8 @@ export interface ApiKeyStatus {
   configured: boolean;
   provider: Provider | null;
   masked_key: string | null;
+  base_url: string | null;
+  model: string | null;
   last_validated_at: string | null;
 }
 

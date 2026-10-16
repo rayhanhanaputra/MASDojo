@@ -67,7 +67,7 @@ export function AiAttemptPanel({ taskId }: { taskId: string }) {
         disabled={busy}
       >
         <span aria-hidden>✦</span>
-        {busy ? "AI attempting…" : "Let the AI try — the grader judges"}
+        {busy ? "AI attempting…" : "Let the AI try, the grader judges"}
       </button>
       {err && <p className="mt-2 font-mono text-xs text-signal-amber">{err}</p>}
 
@@ -101,12 +101,12 @@ export function AiAttemptPanel({ taskId }: { taskId: string }) {
               {!verdict && <Spinner label="grading…" />}
               {verdict === "passed" && (
                 <span className="font-mono text-xs font-bold text-phosphor">
-                  ✓ AI was right — verified
+                  ✓ AI was right, verified
                 </span>
               )}
               {verdict === "failed" && (
                 <span className="font-mono text-xs font-bold text-signal-red">
-                  ✕ AI was wrong — don't trust it unverified
+                  ✕ AI was wrong, don't trust it unverified
                 </span>
               )}
               {verdict === "error" && (

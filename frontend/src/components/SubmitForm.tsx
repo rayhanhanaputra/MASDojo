@@ -50,7 +50,7 @@ export function SubmitForm({
       <p className="flex items-start gap-2 rounded-md border border-signal-amber/30 bg-signal-amber/5 px-3 py-2.5 text-sm text-signal-amber">
         <span aria-hidden>⚠</span>
         <span>
-          This task is scaffolded — its grader isn't implemented yet. Try one of the ★ reference
+          This task is scaffolded, its grader isn't implemented yet. Try one of the ★ reference
           tasks to see live grading.
         </span>
       </p>

@@ -2,15 +2,28 @@ import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { Wordmark } from "./ui";
 
-const navItems = [
+const BASE_NAV = [
   { to: "/", label: "Skill map", end: true },
   { to: "/profile", label: "Profile" },
   { to: "/settings", label: "Settings" },
 ];
 
+const RANK = { learner: 0, instructor: 1, admin: 2 } as const;
+
 export function Layout() {
   const { user, logout, soloMode } = useAuth();
   const navigate = useNavigate();
+
+  // Role-gated nav. The solo profile is an admin, so staff links also appear in
+  // solo mode — that's how the operator reaches Admin → Instance settings to
+  // switch to hosted mode.
+  const rank = user ? RANK[user.role] ?? 0 : 0;
+  const navItems = [
+    ...BASE_NAV,
+    ...(rank >= RANK.instructor ? [{ to: "/instructor", label: "Tasks" }] : []),
+    ...(rank >= RANK.instructor ? [{ to: "/students", label: "Students" }] : []),
+    ...(rank >= RANK.admin ? [{ to: "/admin", label: "Admin" }] : []),
+  ];
 
   return (
     <div className="flex min-h-full flex-col">
