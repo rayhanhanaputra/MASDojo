@@ -13,7 +13,7 @@ prereqs:
 objective: >
   Before any real work, prove your lab is wired up: adb sees the emulator,
   frida-server responds, and traffic routes through your proxy. Once the checks
-  are green the healthcheck prints a readiness token — base64-encoded. Decode it
+  are green the healthcheck prints a readiness token - base64-encoded. Decode it
   and submit the result.
 success_type: static_assert
 submission_schema:

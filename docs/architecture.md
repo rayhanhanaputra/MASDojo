@@ -47,12 +47,12 @@ returns a PASS/FAIL with concrete evidence.
    clean snapshot, installs `target.apk`, and runs the task's `grade(ctx)` under a
    **hard wall-clock timeout**.
 4. Per `success_type` the runner prepares the device differently:
-   - `static_assert` / `flag` — compares the submission against the task's
+   - `static_assert` / `flag` - compares the submission against the task's
      server-side expected values (and, when the APK is present, confirms the value
      is genuinely embedded).
-   - `frida_assert` — spawns the app with the learner's Frida script injected and
+   - `frida_assert` - spawns the app with the learner's Frida script injected and
      observes the effect (e.g. an unlock marker in logcat).
-   - `network_assert` — starts the bundled mock backend + an mitmproxy recorder,
+   - `network_assert` - starts the bundled mock backend + an mitmproxy recorder,
      proxies the emulator, triggers the app, and parses the captured flows.
 5. The runner writes the `GradeResult` back to Postgres (submission status,
    evidence, per-check results, score; and updates `progress` on a pass).

@@ -8,7 +8,7 @@ mastg_refs: ["MASTG-TECH-0144"]
 difficulty: 4
 prereqs: ["041-hook-method-runtime-flag", "042-flip-boolean-gate"]
 objective: >
-  The VaultGuard app refuses to reveal its premium vault on a rooted device — and
+  The VaultGuard app refuses to reveal its premium vault on a rooted device - and
   it considers the emulator rooted. Write a Frida script that defeats the root
   check so the gated feature unlocks. The runner injects your script at app
   startup and verifies the vault was unlocked.

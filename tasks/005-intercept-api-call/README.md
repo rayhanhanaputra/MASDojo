@@ -1,4 +1,4 @@
-# 005 — Intercept & Capture the API Call  ⭐ reference task
+# 005 - Intercept & Capture the API Call  ⭐ reference task
 
 **Grader type:** `network_assert` · **MASVS:** MASVS-NETWORK-1
 

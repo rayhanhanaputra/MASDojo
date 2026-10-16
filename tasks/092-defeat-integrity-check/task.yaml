@@ -13,7 +13,7 @@ prereqs:
 - 009-root-detection-bypass
 objective: >
   You've patched VaultBank's app, but a signature/integrity check refuses to run
-  the tampered build. Defeat the check — flip the branch or hook it — to reach the
+  the tampered build. Defeat the check - flip the branch or hook it - to reach the
   guarded path, and recover the reward it returns. The app keeps that reward
   XOR-obfuscated in the binary, so reconstruct it from the smali.
 success_type: flag

@@ -19,8 +19,8 @@ prereqs:
 objective: >
   The capstone. Your client wants the VaultBank "master vault" reached. It sits
   behind the live API (http://localhost:8091) at /admin/vault and is released only
-  to an admin. Chain the course — recon/RE, local storage & crypto, interception &
-  pinning bypass, and auth abuse — culminating in forging an alg:none admin token
+  to an admin. Chain the course - recon/RE, local storage & crypto, interception &
+  pinning bypass, and auth abuse - culminating in forging an alg:none admin token
   to reach the vault. Recover the flag it holds. It is in no file; you must exploit.
 
 success_type: flag

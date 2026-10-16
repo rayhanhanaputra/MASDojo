@@ -1,6 +1,6 @@
 package org.masdojo.vaultbank;
 
-// Decompiled — org.masdojo.vaultbank.AntiTamper
+// Decompiled - org.masdojo.vaultbank.AntiTamper
 object AntiTamper {
     boolean isInstrumented() {
         // scans /proc/self/maps for frida/gum markers, looks for a dropped

@@ -11,7 +11,7 @@ difficulty: 5
 prereqs:
 - 091-anti-frida-anti-debug
 objective: >
-  VaultBank hunts for a debugger the hard way — it reads TracerPid from
+  VaultBank hunts for a debugger the hard way - it reads TracerPid from
   /proc/self/status, so a native debugger, strace, or a Frida ptrace attach all
   trip it, not just a JDWP debugger. Defeat the ptrace/TracerPid check so you can
   keep a tracer attached and still unlock the guarded reward.

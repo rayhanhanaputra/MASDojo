@@ -12,7 +12,7 @@ prereqs:
 - 081-exported-component-deeplink
 objective: >
   VaultBank ships a "privilege helper" broadcast receiver that mints an elevation
-  grant — but it is exported with no permission and never checks who called it, so
+  grant - but it is exported with no permission and never checks who called it, so
   any app (or `adb shell am broadcast`) can invoke the protected action and obtain
   an effect it shouldn't. Confirm the component is reachable by a low-privileged
   caller and recover the elevation grant it hands out; the app obfuscates the

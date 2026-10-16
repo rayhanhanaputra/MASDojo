@@ -4,7 +4,7 @@
 Java.perform(function () {
   var Emu = Java.use('org.masdojo.vaultbank.EmulatorDetector');
   Emu.isEmulator.implementation = function () {
-    return false;   // report "physical device" — the reward unlocks
+    return false;   // report "physical device" - the reward unlocks
   };
 });
 ```

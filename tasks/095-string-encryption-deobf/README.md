@@ -1,4 +1,4 @@
-# 095-string-encryption-deobf — Defeat String Encryption (Anti-Static-Analysis)
+# 095-string-encryption-deobf - Defeat String Encryption (Anti-Static-Analysis)
 
 **Grader type:** `static_assert` (seeded) · **MASVS:** MASVS-RESILIENCE-3 · **MASTG:** MASTG-TECH-0023 · status: **implemented**
 
@@ -14,7 +14,7 @@ The challenge is seeded per-learner (`challenge/generate.py`): the learner
 downloads a decompiled `StringVault` with a per-seed key and encrypted table.
 `grader/grade.py` (`grade_seeded_recovered`) regenerates that learner's answer
 from their seed and constant-time compares. The plaintext reward never appears
-verbatim in the challenge files — recovering it *is* proof the learner reversed
+verbatim in the challenge files - recovering it *is* proof the learner reversed
 the obfuscation, and a value from another learner won't pass.
 
 This is the RASP curriculum's static-analysis task (no device needed), rounding

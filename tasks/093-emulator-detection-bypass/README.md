@@ -1,4 +1,4 @@
-# 093-emulator-detection-bypass — Emulator / Sandbox Detection Bypass
+# 093-emulator-detection-bypass - Emulator / Sandbox Detection Bypass
 
 **Grader type:** `frida_assert` · **MASVS:** MASVS-RESILIENCE-1 · **MASTG:** MASTG-TECH-0043 · status: **implemented**
 
@@ -13,7 +13,7 @@ runtime. `RaspLabActivity` gates its emulator reward on it.
 `grader/grade.py` uses `grade_frida_script`. In dry-run the submitted script is
 statically validated (does it hook `EmulatorDetector.isEmulator()` and force
 `false`?). On a KVM host, launch `.RaspLabActivity` and confirm the emulator
-gate logs `MASDOJO_UNLOCK_EMU:<flag>` only after the hook — the baseline run logs
+gate logs `MASDOJO_UNLOCK_EMU:<flag>` only after the hook - the baseline run logs
 `MASDOJO_DENIED_EMU`.
 
 Per the derive-the-answer principle the decompiled artifact shows only the

@@ -1,7 +1,7 @@
 # MASVS Coverage
 
 The full task → MASVS → MASTG mapping for the MASDojo curriculum. **Every one of
-the 30 tasks is implemented with a real payload-detection grader** — the system
+the 30 tasks is implemented with a real payload-detection grader** - the system
 that verifies the learner genuinely applied the technique, not just that they
 found the right shape. Three ⭐ reference tasks (`001`/`005`/`009`) additionally
 drive a live Android emulator; most others are solvable and gradeable **now, in
@@ -9,7 +9,7 @@ dry-run** from committed artifacts (obfuscated code/resources, encoded prefs/log
 dumps, packed backups, real ciphertext, captured traffic), while the API-abuse
 and capstone tasks exploit the bundled live `vulnapi`.
 
-**No copy-paste.** The challenge files never contain the answer verbatim — the
+**No copy-paste.** The challenge files never contain the answer verbatim - the
 learner must *apply the technique* to derive it: base64/XOR-deobfuscate a value
 in decompiled code, reconstruct an obfuscated string in smali, unpack a
 gzip'd/tar backup, decrypt a real ciphertext, triage which third-party request
@@ -18,15 +18,15 @@ are also per-learner, so a derived answer can't be shared either.
 
 How each technique is detected:
 
-- **Static / storage / platform / network analysis** — the learner submits the
+- **Static / storage / platform / network analysis** - the learner submits the
   value they *derived* (decoded, deobfuscated, unpacked, or triaged from the
   challenge files); the grader constant-time compares it to the seed-specific
   answer. The answer is never in the files verbatim, so guessing the format
   doesn't help.
-- **Cryptography** — the learner submits the plaintext they decrypted; it can't
+- **Cryptography** - the learner submits the plaintext they decrypted; it can't
   be guessed, so a correct value *is* proof they performed the decryption. The
   committed ciphertext is real (CI decrypts it to the flag).
-- **Frida** — the learner submits a script; on a KVM host it is injected and its
+- **Frida** - the learner submits a script; on a KVM host it is injected and its
   runtime effect asserted, and in dry-run it is statically validated (does it
   hook the right class + method and enforce the required behaviour?).
 
@@ -40,7 +40,7 @@ rejecting a wrong one, or the prerequisite DAG has a dangling id or cycle.
 
 > **MASTG ids:** the reverse-engineering, dynamic-instrumentation, network-
 > interception, and root/pinning-bypass techniques below were verified against
-> the **current** MASTG (mas.owasp.org) — e.g. `MASTG-TECH-0023` Reviewing
+> the **current** MASTG (mas.owasp.org) - e.g. `MASTG-TECH-0023` Reviewing
 > Decompiled Java Code, `MASTG-TECH-0043` Method Hooking, `MASTG-TECH-0011`
 > Setting Up an Interception Proxy, `MASTG-TECH-0012` Bypassing Certificate
 > Pinning, `MASTG-TECH-0144` Bypassing Root Detection, `MASTG-TECH-0004`
@@ -108,12 +108,12 @@ All 8 MASVS v2 categories are covered.
 All 30 tasks pass their own PASS/FAIL detection test in dry-run
 (`runner/tests/test_all_tasks_gradeable.py`).
 
-## Module 9 — RASP technique tour
+## Module 9 - RASP technique tour
 
 Module 9 is a full Runtime Application Self-Protection technique tour: each major
 RASP class is its own task with its own bypass objective, all against the bundled
 `vaultbank` target. Every check is a single in-process decision, which is exactly
-why each is defeatable — the lesson being that client-side RASP raises the bar but
+why each is defeatable - the lesson being that client-side RASP raises the bar but
 is not a trust boundary.
 
 | Technique | Task | Bypass |

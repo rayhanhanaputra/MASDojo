@@ -1,13 +1,13 @@
-# 094-anti-debug-tracerpid — Anti-Debug (TracerPid) Bypass
+# 094-anti-debug-tracerpid - Anti-Debug (TracerPid) Bypass
 
 **Grader type:** `frida_assert` · **MASVS:** MASVS-RESILIENCE-4 · **MASTG:** MASTG-TECH-0043 · status: **implemented**
 
 ## The vulnerability
 `org.masdojo.vaultbank.DebugDetector.isBeingTraced()` (in `apps/vaultbank`)
 implements anti-dynamic-analysis by reading `TracerPid` from
-`/proc/self/status`. This is stronger than `Debug.isDebuggerConnected()` — it
+`/proc/self/status`. This is stronger than `Debug.isDebuggerConnected()` - it
 catches any ptrace-based tracer (native debugger, `strace`, a Frida ptrace
-attach), not just a JDWP debugger — but it is still a single in-process boolean
+attach), not just a JDWP debugger - but it is still a single in-process boolean
 and is defeated by hooking that one method.
 
 ## How the grader proves it

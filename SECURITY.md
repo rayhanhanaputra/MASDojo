@@ -6,17 +6,17 @@ reporting.
 ## Intentionally vulnerable by design
 
 The target apps under [`apps/`](apps/), the bundled API under [`vulnapi/`](vulnapi/),
-and every challenge in [`tasks/`](tasks/) are **deliberately insecure** — that is
+and every challenge in [`tasks/`](tasks/) are **deliberately insecure** - that is
 the point of the exercises. Hardcoded secrets, weak crypto, IDOR, missing
 pinning, exported components, and similar issues in those directories are **not
-vulnerabilities to report** — they are the curriculum. They contain no real data
+vulnerabilities to report** - they are the curriculum. They contain no real data
 and target no real backend.
 
 ## Reporting a real vulnerability
 
-If you find a genuine security issue in the **platform itself** — the backend
+If you find a genuine security issue in the **platform itself** - the backend
 API, the grading runner, authentication, the BYOK key handling, or the
-Proof-of-Pwn signing — please report it privately:
+Proof-of-Pwn signing - please report it privately:
 
 - Email: **hanaputrarayhan@gmail.com**
 - Do not open a public issue for platform vulnerabilities.

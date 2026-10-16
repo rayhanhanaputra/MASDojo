@@ -4,7 +4,7 @@
    ```bash
    jadx -d securenotes_src tasks/001-find-hardcoded-secret/app/target.apk
    ```
-2. The app embeds its API key two ways — as a `BuildConfig` field and as a
+2. The app embeds its API key two ways - as a `BuildConfig` field and as a
    constant in `ApiClient`. Both contain the same value:
    ```
    grep -rn "msd_live_sk_" securenotes_src/

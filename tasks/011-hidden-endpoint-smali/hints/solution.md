@@ -2,4 +2,4 @@
 ```python
 print(bytes(b ^ key for b in bytes.fromhex(ENC)).decode())
 ```
-Submit the recovered `/internal/v1/admin/...` path. Seeded per learner — no shared answer.
+Submit the recovered `/internal/v1/admin/...` path. Seeded per learner - no shared answer.

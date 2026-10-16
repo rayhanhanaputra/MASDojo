@@ -1,4 +1,4 @@
-// Decompiled — org.masdojo.vaultbank.DebugDetector  (RASP: anti-debug gate)
+// Decompiled - org.masdojo.vaultbank.DebugDetector  (RASP: anti-debug gate)
 // Unlike Debug.isDebuggerConnected() (JDWP only), this reads TracerPid from
 // /proc/self/status, so ANY ptrace attach (native debugger, strace, Frida's
 // ptrace attach) makes TracerPid != 0 and trips the gate. It is still one

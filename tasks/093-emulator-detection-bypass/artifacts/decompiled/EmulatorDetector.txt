@@ -1,4 +1,4 @@
-// Decompiled — org.masdojo.vaultbank.EmulatorDetector  (RASP: emulator/sandbox gate)
+// Decompiled - org.masdojo.vaultbank.EmulatorDetector  (RASP: emulator/sandbox gate)
 // The RASP lab denies each reward when its check reports a hostile environment.
 // This gate's whole decision is the single boolean returned by isEmulator().
 

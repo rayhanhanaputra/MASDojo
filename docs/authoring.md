@@ -78,9 +78,9 @@ what passed or failed. Use `constant_time_equals` for flag/secret comparisons.
 
 ### Worked references (read these)
 
-- `tasks/001-find-hardcoded-secret` — `static_assert`
-- `tasks/005-intercept-api-call` — `network_assert` (with a bundled mock backend)
-- `tasks/009-root-detection-bypass` — `frida_assert`
+- `tasks/001-find-hardcoded-secret` - `static_assert`
+- `tasks/005-intercept-api-call` - `network_assert` (with a bundled mock backend)
+- `tasks/009-root-detection-bypass` - `frida_assert`
 
 ## The target app
 

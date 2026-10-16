@@ -12,7 +12,7 @@ prereqs: []
 objective: >
   First contact with VaultBank's "Recon" build. You've decoded the APK
   (`apktool d`) and have its manifest and resources. Go through them the way you
-  would on any engagement — note the components and permissions, then dig through
+  would on any engagement - note the components and permissions, then dig through
   the strings. A leftover debug secret is hiding among them, but it's
   base64-encoded, not plaintext. Find the odd one out and decode it.
 success_type: static_assert

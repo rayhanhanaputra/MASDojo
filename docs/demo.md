@@ -24,7 +24,7 @@ Confirm the runner booted the AVD and saved its clean snapshot (runner logs:
 > real Android emulator. When you think you've solved a task, it boots a device,
 > installs the vulnerable app, applies your exploit, and tells you PASS or FAIL
 > with evidence. It's self-hosted, MASVS/MASTG-aligned, and the AI mentor is
-> bring-your-own-key — so it's free to run."
+> bring-your-own-key - so it's free to run."
 
 ## The flow
 

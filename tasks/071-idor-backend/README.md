@@ -1,4 +1,4 @@
-# 071-idor-backend — IDOR on the Backend
+# 071-idor-backend - IDOR on the Backend
 
 **Grader type:** `network_assert` · **MASVS:** MASVS-AUTH-1 · status: **implemented**
 
@@ -8,6 +8,6 @@ grader that verifies a submission is `grader/grade.py` (success type: `network_a
 the escalating hints plus full walkthrough are under `hints/`.
 
 Per the repo's derive-the-answer principle, no learner-visible file (artifact,
-hint tier 1–3, or decompiled snippet) contains the answer verbatim — the learner
+hint tier 1–3, or decompiled snippet) contains the answer verbatim - the learner
 must apply the technique to recover it. Server-side expected values, when used,
 live in `grader/expected.json` and are never shipped to the client.

@@ -1,4 +1,4 @@
-// Decompiled — org.masdojo.vaultbank.PlayIntegrityStub  (RASP: attestation gate)
+// Decompiled - org.masdojo.vaultbank.PlayIntegrityStub  (RASP: attestation gate)
 //
 // TRAINING STUB: this makes NO network call and performs NO real Google Play
 // Integrity / SafetyNet attestation. It only mimics the SHAPE of a verdict so the
@@ -18,7 +18,7 @@ public final class PlayIntegrityStub {
 
     private static Verdict localVerdict() {
         // clean = not emulator && not rooted && no su/test-keys
-        // (all computed in-process — no signature, no server)
+        // (all computed in-process - no signature, no server)
         ...
     }
 

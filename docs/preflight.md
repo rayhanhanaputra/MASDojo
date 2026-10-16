@@ -1,14 +1,14 @@
-# Pre-flight — set up your machine before the workshop
+# Pre-flight - set up your machine before the workshop
 
 Everything in MASDojo runs on **your own laptop**. Do this **before** the session
 so we spend class time hacking, not installing. Budget ~30–45 min the first time.
 
-> One-command check at any point: **`make doctor`** — it tells you exactly what's
+> One-command check at any point: **`make doctor`** - it tells you exactly what's
 > missing and how to fix it.
 
 ## 0. Machine requirements
 
-- **Hardware virtualization enabled** (Apple Silicon, or Intel VT-x / AMD-V) —
+- **Hardware virtualization enabled** (Apple Silicon, or Intel VT-x / AMD-V) -
   required for the Android emulator.
 - **16 GB RAM recommended** (8 GB works but is tight with emulator + Docker).
 - **~40 GB free disk.**
@@ -57,13 +57,13 @@ Fix anything red, then re-run `make doctor` until it's all green.
 ## 3. Bring up the platform (browser-only labs)
 
 ```bash
-make solo          # http://localhost:5173  (no login — straight into the curriculum)
+make solo          # http://localhost:5173  (no login - straight into the curriculum)
 ```
 This already gives you **Lab 1** (reverse-engineering & secrets) and **Lab 3**
-(API abuse against the bundled vulnerable API at `http://localhost:8091`) —
+(API abuse against the bundled vulnerable API at `http://localhost:8091`) -
 neither needs an emulator.
 
-## 4. Prepare the emulator (for Lab 2 — live Frida/RASP)
+## 4. Prepare the emulator (for Lab 2 - live Frida/RASP)
 
 ```bash
 make avd-up        # creates a rooted AVD + launches a matching frida-server
@@ -77,31 +77,31 @@ When `make avd-check` prints **Ready**, you're set for the workshop.
 
 ## Troubleshooting
 
-**`make doctor` says `adb`/`emulator`/`sdkmanager` missing** — `ANDROID_SDK_ROOT`
+**`make doctor` says `adb`/`emulator`/`sdkmanager` missing** - `ANDROID_SDK_ROOT`
 isn't set or its tool dirs aren't on `PATH`. See the export lines in step 1.
 
-**`sdkmanager` licenses error** — accept them: `yes | sdkmanager --licenses`.
+**`sdkmanager` licenses error** - accept them: `yes | sdkmanager --licenses`.
 
-**Emulator won't boot / is extremely slow** — hardware virtualization is off or
+**Emulator won't boot / is extremely slow** - hardware virtualization is off or
 unavailable. macOS: no action on Apple Silicon. Linux: ensure `/dev/kvm` exists
 (`ls -l /dev/kvm`) and your user is in the `kvm` group. Windows: enable WHPX and
 run under WSL2.
 
-**`avd-up` fails downloading frida-server** — you're offline or behind a proxy.
+**`avd-up` fails downloading frida-server** - you're offline or behind a proxy.
 Pre-download `frida-server-<ver>-android-<arch>.xz` from the Frida GitHub
 releases and re-run; the version is `FRIDA_VERSION` (default 16.4.8).
 
-**`frida-ps -U` / grading can't see frida** — the frida-server version must match
+**`frida-ps -U` / grading can't see frida** - the frida-server version must match
 your `frida-tools`. Align them, or re-run `make avd-up` (it uses the pinned
 version). Confirm it's running: `adb shell pidof frida-server`.
 
-**`adb root` says "cannot run as root"** — you created a `google_play` AVD.
+**`adb root` says "cannot run as root"** - you created a `google_play` AVD.
 `avd-up` uses a `google_apis` image (rootable); recreate with `make avd-up`.
 
-**Port already in use (5173 / 8000 / 8091 / 5432 / 6379)** — stop whatever's
+**Port already in use (5173 / 8000 / 8091 / 5432 / 6379)** - stop whatever's
 using it, or `make down` a previous MASDojo, then bring it back up.
 
-**Windows quirks** — run the whole stack inside WSL2. The emulator is happiest
+**Windows quirks** - run the whole stack inside WSL2. The emulator is happiest
 launched from WSL2 with nested virtualization on, or run adb/emulator on the
 Windows host and point `ANDROID_SDK_ROOT` at it.
 

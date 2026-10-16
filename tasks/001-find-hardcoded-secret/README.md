@@ -1,4 +1,4 @@
-# 001 — Find the Hardcoded API Secret  ⭐ reference task
+# 001 - Find the Hardcoded API Secret  ⭐ reference task
 
 **Grader type:** `static_assert` · **MASVS:** MASVS-STORAGE-1
 

@@ -1,4 +1,4 @@
-# 009 — Root Detection Bypass  ⭐ reference task
+# 009 - Root Detection Bypass  ⭐ reference task
 
 **Grader type:** `frida_assert` · **MASVS:** MASVS-RESILIENCE-1
 

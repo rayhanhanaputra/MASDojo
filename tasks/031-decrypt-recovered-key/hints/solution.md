@@ -10,4 +10,4 @@ d = Cipher(algorithms.AES(key), modes.CBC(iv)).decryptor()
 pt = d.update(ct) + d.finalize()
 print(pt[:-pt[-1]].decode())
 ```
-→ `FLAG{d3crypt_w1th_r3c0v3r3d_k3y}`. You can only get this by actually decrypting — submit it.
+→ `FLAG{d3crypt_w1th_r3c0v3r3d_k3y}`. You can only get this by actually decrypting - submit it.

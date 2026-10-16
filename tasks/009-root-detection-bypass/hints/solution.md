@@ -24,6 +24,6 @@ The grader sees that marker in logcat and passes the task.
 
 **Why this is a finding.** Per MASVS-RESILIENCE-1, client-side root detection is
 a speed bump, not a security control: an attacker who controls the device can
-rewrite the verdict at runtime. Defenses must assume the check can be bypassed —
+rewrite the verdict at runtime. Defenses must assume the check can be bypassed -
 combine multiple signals, attest server-side, and never gate genuinely sensitive
 operations on a client-only boolean.

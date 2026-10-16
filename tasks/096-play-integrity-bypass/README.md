@@ -1,4 +1,4 @@
-# 096-play-integrity-bypass — Forge a Play-Integrity / Attestation Verdict
+# 096-play-integrity-bypass - Forge a Play-Integrity / Attestation Verdict
 
 **Grader type:** `frida_assert` · **MASVS:** MASVS-RESILIENCE-1 · **MASTG:** MASTG-TECH-0043 · status: **implemented**
 

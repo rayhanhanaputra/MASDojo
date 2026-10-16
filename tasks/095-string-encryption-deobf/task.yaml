@@ -12,7 +12,7 @@ prereqs:
 - 091-anti-frida-anti-debug
 objective: >
   To keep secrets out of a `strings` dump, VaultBank stores them XOR-encrypted and
-  decodes them at runtime. Obfuscation is a speed bump, not a control — the key
+  decodes them at runtime. Obfuscation is a speed bump, not a control - the key
   and ciphertext both ship in the binary. Read the decompiled decode routine,
   replay the same XOR against the encrypted entry, and recover the hidden reward.
 success_type: static_assert

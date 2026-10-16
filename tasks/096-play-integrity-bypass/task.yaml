@@ -12,7 +12,7 @@ prereqs:
 - 092-defeat-integrity-check
 objective: >
   VaultBank guards its highest-value reward behind a Play-Integrity /
-  SafetyNet-style attestation verdict — but it trusts a verdict it computes
+  SafetyNet-style attestation verdict - but it trusts a verdict it computes
   locally, never a server-signed token. Because the "genuine device" decision
   never leaves the process, hook the attestation gate so it reports a passing
   verdict and unlock the reward.

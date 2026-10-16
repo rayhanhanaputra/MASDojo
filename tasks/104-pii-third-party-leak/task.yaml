@@ -8,7 +8,7 @@ mastg_refs: ["MASTG-TEST-0206"]  # Determining Whether Sensitive Data Is Sent to
 difficulty: 3
 prereqs: ["021-secrets-in-prefs"]
 objective: >
-  On startup VaultBank fires off several requests — to its own backend and to
+  On startup VaultBank fires off several requests - to its own backend and to
   third-party SDKs (ads, analytics). One of the third-party trackers exfiltrates
   the user's email, and it's encoded in the body. Triage the capture: tell
   first-party from third-party hosts, find the request leaking PII, and decode it

@@ -1,17 +1,17 @@
-# 084-confused-deputy-privesc — Confused-Deputy Privilege Re-Delegation
+# 084-confused-deputy-privesc - Confused-Deputy Privilege Re-Delegation
 
 **Grader type:** `flag` (seeded) · **MASVS:** MASVS-PLATFORM-1 · **MASTG:** MASTG-TECH-0029 · status: **implemented**
 
 ## The vulnerability
 `org.masdojo.vaultbank.GrantReceiver` (in `apps/vaultbank`) is a "privilege
 helper" `BroadcastReceiver` exported with **no `android:permission`** and no
-caller verification. Its `onReceive()` performs a privileged action — minting an
-elevation grant that unlocks the admin capability — for *whoever* sends the
+caller verification. Its `onReceive()` performs a privileged action - minting an
+elevation grant that unlocks the admin capability - for *whoever* sends the
 `org.masdojo.vaultbank.action.ELEVATE` intent. A lower-privileged caller (another
 app, or `adb shell am broadcast`) can therefore obtain an effect it should never
 have: the app re-delegates its own privilege to the caller. This is a userland
 confused-deputy / permission re-delegation local escalation, confined entirely to
-the training app — no kernel, no CVE, no real privilege boundary crossed.
+the training app - no kernel, no CVE, no real privilege boundary crossed.
 
 The secure version guards the receiver with a signature-level permission and
 checks the caller, or simply does not export a privilege-granting action.

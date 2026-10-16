@@ -7,5 +7,5 @@ print(bytes(b ^ KEY for b in bytes.fromhex(ENC)).decode())
 ```
 
 That prints your `FLAG{str1ng_3ncrypt10n_...}`. Submit it. The value is seeded per
-learner and never appears in cleartext in the challenge files — recovering it is
+learner and never appears in cleartext in the challenge files - recovering it is
 proof you reversed the obfuscation.

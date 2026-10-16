@@ -11,6 +11,6 @@ Java.perform(function () {
 
 The Java-layer hook is enough because the app funnels the whole decision through
 `isBeingTraced()`. (A deeper alternative: intercept the `TracerPid:` read so it
-always parses 0 — useful when the check is inlined in native code.) The dry-run
+always parses 0 - useful when the check is inlined in native code.) The dry-run
 grader confirms the hook targets `DebugDetector.isBeingTraced()` and forces
 `false`; on a KVM host it also checks for `MASDOJO_UNLOCK_DBG:<flag>`.
