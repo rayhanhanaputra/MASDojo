@@ -64,3 +64,33 @@ auth path is unchanged).
 - Attach mode grades against live device state (no per-job snapshot restore).
   For a single participant working sequentially this is fine; the shared,
   snapshot-isolated path is the KVM deployment (see `deploy-kvm.md`).
+
+## macOS (Apple Silicon): live grading without KVM
+
+KVM is a Linux-only kernel feature (`/dev/kvm`), so the dockerized `runner`
+service never starts on a Mac. That does **not** mean the Mac can't run an
+emulator - it runs one natively via Apple's Hypervisor.framework. Use the
+host-runner (attach) path instead of the KVM runner:
+
+```bash
+make solo                 # db + redis + backend + frontend in Docker (no runner)
+make avd-up               # native rooted AVD + frida-server (uses the Android SDK)
+make runner-host          # runner on the host, attached to the native emulator
+```
+
+Two gotchas seen on Apple Silicon:
+
+- **Frida versions must match exactly.** The client (the host runner's
+  `frida` and the lab container's `frida-tools`) and the device's
+  `frida-server` must be the same version, or injection fails. `make avd-up`
+  pins a known server; if you install a newer client, push the matching
+  `frida-server-<version>-android-arm64` to `/data/local/tmp/frida-server`.
+- **A native Postgres/Redis on the default port shadows the Docker one.** If you
+  also run a local Postgres on `5432`, `localhost:5432` hits *it*, not the
+  container (whose role won't exist). Point the host runner at the Mac's LAN IP
+  (`ipconfig getifaddr en0`) instead of `localhost` in `DATABASE_URL` /
+  `REDIS_URL`, or remap the container's published ports.
+
+The visual emulator view is free here: the native emulator already shows a
+window. The in-browser "device screen" tab (`LAB_STREAM_URL`, see
+`lab-visual.md`) is for headless hosted runners.
