@@ -115,11 +115,34 @@ class Worker:
         events.emit(f"job picked up for {task_id}", phase="queue")
         self._results.mark_running(submission_id)
         try:
-            package_dir = self._resolve_package(job["package_path"])
             submission, user_id = self._fetch_submission(submission_id)
             seed = derive_seed(user_id, task_id) if user_id is not None else ""
+
+            # Instructor authoring: a task may be authored in-app (no on-disk
+            # package) or carry a DB answer-key / uploaded APK that overrides the
+            # committed package. Resolve those here; fall back to the package.
+            tmeta = self._task_meta(task_id)
+            store_dir = config.task_store_root / task_id
+            store_apk = store_dir / "app" / "target.apk"
+            apk_override = store_apk if store_apk.is_file() else None
+            expected_override = tmeta.get("expected_override") if tmeta else None
+            if tmeta and tmeta.get("source") == "authored":
+                package_dir = store_dir
+                meta_override = {"success_type": tmeta.get("success_type", "flag")}
+            else:
+                package_dir = self._resolve_package(job["package_path"])
+                meta_override = None
+
             with hard_timeout(timeout):
-                result = self._runner.grade(package_dir, submission, emit=events.emit, seed=seed)
+                result = self._runner.grade(
+                    package_dir,
+                    submission,
+                    emit=events.emit,
+                    seed=seed,
+                    meta_override=meta_override,
+                    expected_override=expected_override,
+                    apk_override=apk_override,
+                )
             for check in result.checks:
                 events.emit(
                     f"{'PASS' if check.passed else 'FAIL'} · {check.name}"
@@ -138,6 +161,34 @@ class Worker:
             self._results.record_error(submission_id, f"{type(exc).__name__}: {exc}")
             events.emit(f"{type(exc).__name__}: {exc}", level="error", phase="error")
             events.done("error")
+
+    def _task_meta(self, task_id: str) -> dict[str, Any] | None:
+        """Task source/success_type/answer-key override from the DB, or None.
+
+        Tolerant of a DB whose authoring columns aren't migrated yet (the backend
+        adds them at startup): on any error we fall back to on-disk behaviour.
+        """
+        from sqlalchemy import create_engine, text
+
+        try:
+            engine = create_engine(config.database_url, future=True)
+            with engine.connect() as conn:
+                row = conn.execute(
+                    text("SELECT source, success_type, expected_override FROM tasks WHERE id=:id"),
+                    {"id": task_id},
+                ).first()
+        except Exception as exc:  # noqa: BLE001 - authoring columns may be absent
+            logger.warning("task meta lookup failed for {} ({}); using package", task_id, exc)
+            return None
+        if row is None:
+            return None
+        src, success_type, exp = row[0], row[1], row[2]
+        if exp is not None and not isinstance(exp, dict):
+            try:
+                exp = json.loads(exp)
+            except (TypeError, json.JSONDecodeError):
+                exp = None
+        return {"source": src, "success_type": success_type, "expected_override": exp}
 
     def _fetch_submission(self, submission_id: int) -> tuple[dict[str, Any], int | None]:
         """Return (payload, user_id) for the submission.

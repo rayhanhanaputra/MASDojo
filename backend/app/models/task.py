@@ -47,3 +47,12 @@ class Task(Base, TimestampMixin):
     # seeder preserves those fields on re-seed instead of clobbering them from
     # YAML (technical fields like graders/hints are still refreshed).
     instructor_edited: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # ── Instructor authoring (UI-created / overridden tasks) ────────────────
+    # "package" (seeded from tasks/ on disk) | "authored" (created in-app).
+    source: Mapped[str] = mapped_column(String(12), nullable=False, default="package")
+    # Server-side answer key override for comparison graders (flag /
+    # static_assert / network_assert). When set, the runner compares against
+    # this instead of grader/expected.json, e.g. {"flag": "FLAG{...}"}. Never
+    # sent to learners. NULL = use the on-disk expected.json.
+    expected_override: Mapped[dict | None] = mapped_column(JSON)

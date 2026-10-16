@@ -68,6 +68,12 @@ class Settings(BaseSettings):
     # Where curriculum task packages live (mounted read-only in compose).
     tasks_dir: Path = Field(default=Path("tasks"))
 
+    # Writable store for instructor-authored / APK-overridden tasks. Mounted
+    # read-write in the backend and read-only in the runner. Per task:
+    # <task_store_dir>/<task_id>/app/target.apk and /artifacts/*. When a file
+    # exists here it takes precedence over the read-only tasks_dir package.
+    task_store_dir: Path = Field(default=Path("task-store"))
+
     # The all-in-one vulnerable target APK, served for download once built via
     # `infra/build-apps.sh vaultbank` (mounted read-only in compose).
     target_apk_path: Path = Field(default=Path("apps/vaultbank/MASDojo.apk"))

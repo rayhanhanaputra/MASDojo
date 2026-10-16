@@ -29,6 +29,31 @@ class GraderLoadError(RuntimeError):
     pass
 
 
+class _GenericGrader:
+    """A grade(ctx) shim backed by a built-in data-driven grader, for authored
+    tasks that ship no grade.py of their own."""
+
+    def __init__(self, fn: Any) -> None:
+        self.grade = fn
+
+
+def _load_or_generic(package_dir: Path, success_type: str):
+    """Load the task's grade.py, or fall back to a built-in grader keyed by
+    success type for authored (UI-created) tasks without one."""
+    grade_py = package_dir / "grader" / "grade.py"
+    if grade_py.is_file():
+        return _load_grader_module(package_dir)
+    from runner import graders
+
+    builtin = {"flag": graders.grade_flag, "static_assert": graders.grade_static}.get(success_type)
+    if builtin is None:
+        raise GraderLoadError(
+            f"authored tasks support flag/static_assert only (got {success_type!r}); "
+            "device-driven tasks need a code grader in the repo"
+        )
+    return _GenericGrader(builtin)
+
+
 def _load_grader_module(package_dir: Path) -> ModuleType:
     grade_py = package_dir / "grader" / "grade.py"
     if not grade_py.is_file():
@@ -94,13 +119,21 @@ class GradeRunner:
         submission: dict[str, Any],
         emit: Any = None,
         seed: str = "",
+        meta_override: dict[str, Any] | None = None,
+        expected_override: dict[str, Any] | None = None,
+        apk_override: Path | None = None,
     ) -> GradeResult:
         emit = emit or (lambda *a, **k: None)
         self._seed = seed
-        meta = _read_meta(package_dir)
+        # DB-stored answer key (edited flag / authored task) wins over disk.
+        self._expected_override = expected_override
+        # Authored tasks carry no on-disk task.yaml; their meta comes from the DB.
+        meta = meta_override if meta_override is not None else _read_meta(package_dir)
         success_type = meta.get("success_type", "flag")
         emit(f"loading grader for {package_dir.name} ({success_type})", phase="setup")
-        module = _load_grader_module(package_dir)
+        # Authored (UI-created) tasks have no grade.py; grade them with the
+        # built-in data-driven grader for their success type.
+        module = _load_or_generic(package_dir, success_type)
 
         adb = self._emulator.adb if self._emulator else None
         live = self._emulator is not None and not config.dry_run
@@ -110,7 +143,7 @@ class GradeRunner:
         # network_assert tasks graded from committed captures) grade without a
         # device — so a host/attach-mode runner never tries to install a
         # nonexistent APK.
-        apk = package_dir / "app" / "target.apk"
+        apk = apk_override if apk_override is not None else package_dir / "app" / "target.apk"
         device_task = success_type in {"frida_assert", "network_assert"} and apk.is_file()
 
         if not live or not device_task:
@@ -118,15 +151,20 @@ class GradeRunner:
                 logger.info("grading {} without a live device", package_dir.name)
             emit("comparing against expected values (no device needed)", phase="grade")
             ctx = GradingContext.build(
-                submission=submission, package_dir=package_dir, log=logger, emit=emit, seed=seed
+                submission=submission,
+                package_dir=package_dir,
+                log=logger,
+                emit=emit,
+                seed=seed,
+                expected_override=expected_override,
             )
             return self._call(module, ctx)
 
         # Live device path: restore a clean snapshot and install the target.
         emit("restoring clean AVD snapshot", phase="device")
         self._emulator.restore_snapshot()
-        emit(f"adb install {package_dir.name}/app/target.apk", phase="device")
-        adb.install(package_dir / "app" / "target.apk")
+        emit(f"adb install {apk.name}", phase="device")
+        adb.install(apk)
 
         if success_type == "network_assert":
             return self._grade_network(module, meta, package_dir, submission, adb, emit)
@@ -147,6 +185,7 @@ class GradeRunner:
             frida=frida,
             emit=emit,
             seed=self._seed,
+            expected_override=getattr(self, "_expected_override", None),
         )
         return self._call(module, ctx)
 
@@ -180,6 +219,7 @@ class GradeRunner:
             network=capture,
             emit=emit,
             seed=self._seed,
+            expected_override=getattr(self, "_expected_override", None),
         )
         return self._call(module, ctx)
 

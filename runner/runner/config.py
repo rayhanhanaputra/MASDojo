@@ -23,6 +23,9 @@ class RunnerConfig:
     )
 
     tasks_root: Path = Path(os.environ.get("TASKS_ROOT", "/app/tasks"))
+    # Writable store for instructor-authored / APK-overridden tasks (read-only
+    # mount on the runner). A file here wins over the tasks_root package.
+    task_store_root: Path = Path(os.environ.get("TASK_STORE_ROOT", "/app/task-store"))
     artifacts_dir: Path = Path(os.environ.get("ARTIFACTS_DIR", "/app/artifacts"))
 
     job_timeout_sec: int = _int("GRADING_JOB_TIMEOUT_SEC", 420)

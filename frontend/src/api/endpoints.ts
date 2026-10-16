@@ -1,6 +1,6 @@
 // Typed endpoint helpers, one per backend route used by the UI.
 
-import { authedFetch, request } from "./client";
+import { authedFetch, request, uploadForm } from "./client";
 import type {
   ApiKeyStatus,
   HintResponse,
@@ -13,6 +13,7 @@ import type {
   SkillMap,
   SystemCheckItem,
   Submission,
+  TaskCreate,
   TaskDetail,
   TaskManageView,
   TaskSummary,
@@ -158,4 +159,13 @@ export const api = {
   instructorListTasks: () => request<TaskManageView[]>("/instructor/tasks"),
   instructorUpdateTask: (taskId: string, patch: TaskUpdate) =>
     request<TaskManageView>(`/instructor/tasks/${taskId}`, { method: "PATCH", body: patch }),
+  instructorCreateTask: (body: TaskCreate) =>
+    request<TaskManageView>("/instructor/tasks", { method: "POST", body }),
+  instructorDeleteTask: (taskId: string) =>
+    request<void>(`/instructor/tasks/${taskId}`, { method: "DELETE" }),
+  instructorUploadApk: (taskId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return uploadForm<TaskManageView>(`/instructor/tasks/${taskId}/apk`, form);
+  },
 };

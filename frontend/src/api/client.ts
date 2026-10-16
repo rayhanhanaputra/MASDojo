@@ -30,6 +30,20 @@ interface RequestOptions {
   auth?: boolean;
 }
 
+/** Authenticated multipart upload (FormData). Returns the parsed JSON body. */
+export async function uploadForm<T>(path: string, form: FormData): Promise<T> {
+  const token = getToken();
+  const resp = await fetch(`${BASE_URL}${path}`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  const text = await resp.text();
+  const payload = text ? JSON.parse(text) : null;
+  if (!resp.ok) throw new ApiError(resp.status, formatDetail(payload, resp.status));
+  return payload as T;
+}
+
 /** Authenticated raw fetch — for non-JSON responses (e.g. artifact files). */
 export async function authedFetch(path: string): Promise<Response> {
   const token = getToken();

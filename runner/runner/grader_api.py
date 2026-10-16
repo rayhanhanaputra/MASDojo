@@ -102,14 +102,19 @@ class Artifacts:
     frontend). Graders read them through here so secrets stay server-side.
     """
 
-    def __init__(self, package_dir: Path) -> None:
+    def __init__(self, package_dir: Path, expected_override: dict[str, Any] | None = None) -> None:
         self._dir = package_dir
+        self._override = expected_override
 
     @property
     def apk_path(self) -> Path:
         return self._dir / "app" / "target.apk"
 
     def expected(self) -> dict[str, Any]:
+        # An instructor-set answer key (stored in the DB) wins over the on-disk
+        # expected.json, so edited flags / authored tasks grade correctly.
+        if self._override:
+            return dict(self._override)
         path = self._dir / "grader" / "expected.json"
         if not path.is_file():
             return {}
@@ -173,13 +178,14 @@ class GradingContext:
         network: Any = None,
         emit: Any = None,
         seed: str = "",
+        expected_override: dict[str, Any] | None = None,
     ) -> "GradingContext":
         # Use explicit None checks: a live facet can be legitimately falsy (an
         # empty NetworkCapture has len 0) and must not be replaced by a null stub.
         return cls(
             submission=submission,
             package_dir=package_dir,
-            artifacts=Artifacts(package_dir),
+            artifacts=Artifacts(package_dir, expected_override),
             log=log,
             adb=adb if adb is not None else _NullDevice("adb"),
             frida=frida if frida is not None else _NullDevice("frida"),

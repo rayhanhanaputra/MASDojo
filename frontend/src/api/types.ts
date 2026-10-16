@@ -71,6 +71,9 @@ export interface TaskManageView {
   is_reference: boolean;
   is_published: boolean;
   instructor_edited: boolean;
+  source: string;
+  submission_schema: Record<string, unknown>;
+  expected_value: string;
   hints: Record<string, string>;
   has_target_apk: boolean;
   artifact_count: number;
@@ -84,6 +87,25 @@ export interface TaskUpdate {
   time_estimate_min?: number;
   objective?: string;
   is_published?: boolean;
+  hints?: { h1?: string; h2?: string; h3?: string; solution?: string };
+  expected_value?: string;
+  success_type?: string;
+  submission_schema?: Record<string, unknown>;
+}
+
+export interface TaskCreate {
+  id: string;
+  title: string;
+  module: string;
+  domain: string;
+  success_type: "flag" | "static_assert";
+  objective?: string;
+  difficulty?: number;
+  time_estimate_min?: number;
+  masvs?: string[];
+  order_index?: number;
+  submission_schema?: Record<string, unknown>;
+  expected_value: string;
   hints?: { h1?: string; h2?: string; h3?: string; solution?: string };
 }
 
