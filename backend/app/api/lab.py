@@ -38,6 +38,21 @@ def _ensure_enabled(db: Session) -> None:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "the lab playground is disabled")
 
 
+def _view(sess) -> LabSessionView:
+    """Serialize a session, resolving the visual stream URL for this device."""
+    stream = settings.lab_stream_url or None
+    if stream and "%(serial)s" in stream:
+        stream = stream % {"serial": sess.device_serial or ""}
+    return LabSessionView(
+        id=sess.id,
+        task_id=sess.task_id,
+        status=sess.status,
+        device_serial=sess.device_serial,
+        expires_at=sess.expires_at,
+        stream_url=stream,
+    )
+
+
 @router.post("/sessions", response_model=LabSessionView)
 def start_session(
     body: LabSessionCreate,
@@ -45,7 +60,7 @@ def start_session(
     user: User = Depends(get_current_user),
 ) -> LabSessionView:
     _ensure_enabled(db)
-    return lab_session.create(db, user, body.task_id)
+    return _view(lab_session.create(db, user, body.task_id))
 
 
 @router.get("/sessions/current", response_model=LabSessionView)
@@ -57,7 +72,7 @@ def current_session(
     s = lab_session.get_active(db, user)
     if s is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "no active lab session")
-    return s
+    return _view(s)
 
 
 @router.delete("/sessions/current", status_code=status.HTTP_204_NO_CONTENT)

@@ -111,10 +111,14 @@ export const api = {
 
   // interactive lab playground
   labStartSession: (task_id: string) =>
-    request<{ id: number; task_id: string; status: string; device_serial: string | null; expires_at: string }>(
-      "/lab/sessions",
-      { method: "POST", body: { task_id } },
-    ),
+    request<{
+      id: number;
+      task_id: string;
+      status: string;
+      device_serial: string | null;
+      expires_at: string;
+      stream_url: string | null;
+    }>("/lab/sessions", { method: "POST", body: { task_id } }),
   labEndSession: () => request<void>("/lab/sessions/current", { method: "DELETE" }),
 
   // admin: system health + instance settings (mode, registration, lab, AI)

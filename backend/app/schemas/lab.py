@@ -15,6 +15,9 @@ class LabSessionView(BaseModel):
     status: str
     device_serial: str | None = None
     expires_at: datetime
+    # Visual device-screen URL (scrcpy-web / emulator WebRTC), or null for CLI
+    # only. Set by the operator via LAB_STREAM_URL on a KVM runner.
+    stream_url: str | None = None
 
 
 class LabSessionCreate(BaseModel):

@@ -18,6 +18,8 @@ export function LabTerminal({ taskId, onClose }: { taskId: string; onClose: () =
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [error, setError] = useState("");
   const [connecting, setConnecting] = useState(true);
+  const [streamUrl, setStreamUrl] = useState<string | null>(null);
+  const [view, setView] = useState<"terminal" | "screen">("terminal");
 
   useEffect(() => {
     let term: Terminal | null = null;
@@ -28,7 +30,9 @@ export function LabTerminal({ taskId, onClose }: { taskId: string; onClose: () =
     (async () => {
       try {
         const session = await api.labStartSession(taskId);
-        if (disposed || !hostRef.current) return;
+        if (disposed) return;
+        setStreamUrl(session.stream_url ?? null);
+        if (!hostRef.current) return;
 
         term = new Terminal({
           fontSize: 13,
@@ -90,15 +94,32 @@ export function LabTerminal({ taskId, onClose }: { taskId: string; onClose: () =
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-2xs uppercase text-zinc-500">
-          interactive lab · adb / frida shell
-        </span>
+        <div className="flex gap-1">
+          {(["terminal", "screen"] as const).map((v) => (
+            <button
+              key={v}
+              className={`rounded-md px-2.5 py-1 font-mono text-2xs uppercase ${
+                view === v ? "bg-ink-700 text-phosphor" : "text-zinc-500"
+              }`}
+              onClick={() => setView(v)}
+            >
+              {v === "terminal" ? "terminal · adb/frida" : "device screen"}
+            </button>
+          ))}
+        </div>
         <button className="btn-ghost btn-sm" onClick={stop}>
           End session
         </button>
       </div>
       {error && <ErrorText>{error}</ErrorText>}
-      <div className="relative rounded-lg border border-ink-500/60 bg-[#0a0e0a] p-2">
+
+      {/* Terminal host stays mounted (hidden, not unmounted) so xterm survives
+          tab switches. */}
+      <div
+        className={`relative rounded-lg border border-ink-500/60 bg-[#0a0e0a] p-2 ${
+          view === "terminal" ? "" : "hidden"
+        }`}
+      >
         {connecting && !error && (
           <div className="absolute inset-0 z-10 grid place-items-center bg-[#0a0e0a]/80">
             <Spinner label="connecting to lab…" />
@@ -106,6 +127,27 @@ export function LabTerminal({ taskId, onClose }: { taskId: string; onClose: () =
         )}
         <div ref={hostRef} className="h-80 w-full" />
       </div>
+
+      {view === "screen" &&
+        (streamUrl ? (
+          <iframe
+            title="device screen"
+            src={streamUrl}
+            className="h-96 w-full rounded-lg border border-ink-500/60 bg-black"
+          />
+        ) : (
+          <div className="grid h-80 place-items-center rounded-lg border border-dashed border-ink-400 bg-ink-900/40 p-6 text-center">
+            <div>
+              <p className="text-sm text-zinc-300">No device screen available</p>
+              <p className="mt-1 font-mono text-xs text-zinc-500">
+                The visual emulator view needs a KVM runner with a live device and
+                LAB_STREAM_URL configured (scrcpy-web / emulator WebRTC). The terminal works
+                regardless.
+              </p>
+            </div>
+          </div>
+        ))}
+
       <p className="font-mono text-2xs text-zinc-600">
         Develop your exploit here, then submit it above. The grader verifies it on a clean device.
       </p>

@@ -66,6 +66,11 @@ class Settings(BaseSettings):
     # falls back to the placeholder shell in SOLO mode only - never in hosted,
     # where that would expose backend secrets. Env: LAB_CONTAINER.
     lab_container: str = ""
+    # URL of a visual device-screen stream (scrcpy-web / emulator WebRTC) shown
+    # beside the terminal so the learner can see and tap the emulator. Requires a
+    # KVM runner with a live emulator; empty = CLI only. %(serial)s is
+    # substituted with the session device serial. Env: LAB_STREAM_URL.
+    lab_stream_url: str = ""
 
     # Runner-related (read here so the backend can surface limits in the API)
     grading_job_timeout_sec: int = 420
