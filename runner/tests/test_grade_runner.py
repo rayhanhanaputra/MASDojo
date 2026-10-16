@@ -59,12 +59,29 @@ def test_flag_grader_fails_on_wrong_submission(tmp_path: Path):
     assert result.checks[0].passed is False
 
 
-def test_missing_grader_raises(tmp_path: Path):
+def test_missing_grader_for_device_type_raises(tmp_path: Path):
+    # A device-driven task with no grade.py can't be graded generically.
     pkg = tmp_path / "empty"
     (pkg).mkdir()
-    (pkg / "task.yaml").write_text("id: empty\nsuccess_type: flag\n")
+    (pkg / "task.yaml").write_text("id: empty\nsuccess_type: frida_assert\n")
     with pytest.raises(GraderLoadError):
         GradeRunner(emulator=None).grade(pkg, {})
+
+
+def test_missing_grader_for_flag_uses_generic(tmp_path: Path):
+    # An authored flag task ships no grade.py; the built-in generic grader runs
+    # against the DB answer key (expected_override).
+    pkg = tmp_path / "authored"
+    (pkg).mkdir()
+    (pkg / "task.yaml").write_text("id: authored\nsuccess_type: flag\n")
+    ok = GradeRunner(emulator=None).grade(
+        pkg, {"flag": "FLAG{x}"}, expected_override={"value": "FLAG{x}"}
+    )
+    assert ok.passed is True
+    bad = GradeRunner(emulator=None).grade(
+        pkg, {"flag": "FLAG{wrong}"}, expected_override={"value": "FLAG{x}"}
+    )
+    assert bad.passed is False
 
 
 def test_grader_must_return_grade_result(tmp_path: Path):
