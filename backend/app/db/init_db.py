@@ -55,6 +55,20 @@ _COLUMN_PATCHES = (
     "VARCHAR(64) NOT NULL DEFAULT 'emulator-5554'",
     "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_emulator_boot_timeout_sec "
     "INTEGER NOT NULL DEFAULT 180",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_session_ttl_min "
+    "INTEGER NOT NULL DEFAULT 60",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_mem_limit "
+    "VARCHAR(16) NOT NULL DEFAULT '512m'",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_cpu_limit "
+    "VARCHAR(8) NOT NULL DEFAULT '1.5'",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_pids_limit "
+    "INTEGER NOT NULL DEFAULT 256",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_stream_url "
+    "VARCHAR(512) NOT NULL DEFAULT ''",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS grading_job_timeout_sec "
+    "INTEGER NOT NULL DEFAULT 420",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS mentor_rate_limit_per_hour "
+    "INTEGER NOT NULL DEFAULT 30",
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS source VARCHAR(12) NOT NULL DEFAULT 'package'",
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS expected_override JSON",
     # One active lab session per user (defence against a create race).

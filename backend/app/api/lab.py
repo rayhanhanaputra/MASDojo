@@ -39,9 +39,9 @@ def _ensure_enabled(db: Session) -> None:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "the lab playground is disabled")
 
 
-def _view(sess) -> LabSessionView:
+def _view(sess, db: Session) -> LabSessionView:
     """Serialize a session, resolving the visual stream URL for this device."""
-    stream = settings.lab_stream_url or None
+    stream = instance_config.get_config(db).lab_stream_url or None
     if stream and "%(serial)s" in stream:
         stream = stream % {"serial": urllib.parse.quote(sess.device_serial or "", safe="")}
     return LabSessionView(
@@ -61,7 +61,7 @@ def start_session(
     user: User = Depends(get_current_user),
 ) -> LabSessionView:
     _ensure_enabled(db)
-    return _view(lab_session.create(db, user, body.task_id))
+    return _view(lab_session.create(db, user, body.task_id), db)
 
 
 @router.get("/sessions/current", response_model=LabSessionView)
@@ -73,7 +73,7 @@ def current_session(
     s = lab_session.get_active(db, user)
     if s is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "no active lab session")
-    return _view(s)
+    return _view(s, db)
 
 
 @router.delete("/sessions/current", status_code=status.HTTP_204_NO_CONTENT)
@@ -152,7 +152,15 @@ def _resolve_command(sess, solo: bool, db: Session) -> tuple[list[str] | None, s
                     "[lab] device access is enabled but no device is available "
                     "(the KVM device pool is not provisioned). Static-analysis tools only."
                 )
-        name = docker_lab.ensure_session_container(sess.id, network=network, adb_socket=adb_socket)
+        cfg = instance_config.get_config(db)
+        name = docker_lab.ensure_session_container(
+            sess.id,
+            network=network,
+            adb_socket=adb_socket,
+            mem=cfg.lab_mem_limit,
+            cpus=cfg.lab_cpu_limit,
+            pids=cfg.lab_pids_limit,
+        )
         if not name:
             return None, None
         bootstrap = f"cd /work && exec {_inner_command(serial)}"

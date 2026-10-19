@@ -25,6 +25,7 @@ from app.schemas.mentor import (
 )
 from app.services import key_manager
 from app.services.ai import mentor
+from app.services import instance_config
 from app.services.ai.provider import AIError
 from app.services.queue import enqueue_grading_job
 from app.services.ratelimit import enforce_mentor_rate_limit
@@ -52,7 +53,7 @@ def _require_provider(db: Session, user: User):
     provider = key_manager.get_provider(db, user)
     if provider is None:
         raise _NO_KEY
-    enforce_mentor_rate_limit(user.id)
+    enforce_mentor_rate_limit(user.id, instance_config.get_config(db).mentor_rate_limit_per_hour)
     return provider
 
 
@@ -104,9 +105,7 @@ def attempt(
     """
     task = _require_task(db, body.task_id)
     if task.grader_status != "implemented":
-        raise HTTPException(
-            status.HTTP_409_CONFLICT, "This task's grader is not implemented yet."
-        )
+        raise HTTPException(status.HTTP_409_CONFLICT, "This task's grader is not implemented yet.")
     provider = _require_provider(db, user)
     try:
         payload, _raw = mentor.propose_solution(task, provider)
@@ -123,7 +122,12 @@ def attempt(
     )
     db.add(submission)
     db.flush()  # assign submission.id
-    submission.job_id = enqueue_grading_job(submission.id, task.id, task.package_path)
+    submission.job_id = enqueue_grading_job(
+        submission.id,
+        task.id,
+        task.package_path,
+        instance_config.get_config(db).grading_job_timeout_sec,
+    )
     db.commit()
     db.refresh(submission)
     return AttemptResponse(

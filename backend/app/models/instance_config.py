@@ -46,6 +46,19 @@ class InstanceConfig(Base, TimestampMixin):
     )
     lab_emulator_boot_timeout_sec: Mapped[int] = mapped_column(Integer, nullable=False, default=180)
 
+    # ── Runtime tuning (admin-configurable, no redeploy) ────────────────────
+    # Lab session lifetime and per-session container resource caps.
+    lab_session_ttl_min: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
+    lab_mem_limit: Mapped[str] = mapped_column(String(16), nullable=False, default="512m")
+    lab_cpu_limit: Mapped[str] = mapped_column(String(8), nullable=False, default="1.5")
+    lab_pids_limit: Mapped[int] = mapped_column(Integer, nullable=False, default=256)
+    # In-browser visual device-screen URL (scrcpy / WebRTC); %(serial)s is
+    # substituted per session. Empty = CLI only.
+    lab_stream_url: Mapped[str] = mapped_column(String(512), nullable=False, default="")
+    # Grading job wall-clock budget, and the AI mentor per-user hourly cap.
+    grading_job_timeout_sec: Mapped[int] = mapped_column(Integer, nullable=False, default=420)
+    mentor_rate_limit_per_hour: Mapped[int] = mapped_column(Integer, nullable=False, default=30)
+
     # Install-level AI mentor fallback, used when a user has no personal key.
     # provider is "anthropic" | "openai"; key is encrypted at rest.
     ai_fallback_provider: Mapped[str | None] = mapped_column(String(20))

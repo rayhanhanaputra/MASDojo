@@ -53,6 +53,13 @@ class InstanceConfigView(BaseModel):
     lab_emulator_adb_port: int
     lab_emulator_serial: str
     lab_emulator_boot_timeout_sec: int
+    lab_session_ttl_min: int
+    lab_mem_limit: str
+    lab_cpu_limit: str
+    lab_pids_limit: int
+    lab_stream_url: str
+    grading_job_timeout_sec: int
+    mentor_rate_limit_per_hour: int
     ai_fallback_configured: bool
     ai_fallback_provider: AiProvider | None = None
     ai_fallback_masked: str | None = None
@@ -71,6 +78,13 @@ class InstanceConfigUpdate(BaseModel):
     lab_emulator_adb_port: int | None = Field(default=None, ge=1, le=65535)
     lab_emulator_serial: str | None = Field(default=None, max_length=64)
     lab_emulator_boot_timeout_sec: int | None = Field(default=None, ge=10, le=1800)
+    lab_session_ttl_min: int | None = Field(default=None, ge=1, le=1440)
+    lab_mem_limit: str | None = Field(default=None, max_length=16)
+    lab_cpu_limit: str | None = Field(default=None, max_length=8)
+    lab_pids_limit: int | None = Field(default=None, ge=16, le=8192)
+    lab_stream_url: str | None = Field(default=None, max_length=512)
+    grading_job_timeout_sec: int | None = Field(default=None, ge=30, le=3600)
+    mentor_rate_limit_per_hour: int | None = Field(default=None, ge=1, le=100000)
 
 
 class SwitchToHosted(BaseModel):

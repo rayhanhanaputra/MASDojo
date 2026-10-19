@@ -17,6 +17,7 @@ from app.db.session import SessionLocal
 from app.models.progress import Progress
 from app.models.task import Task
 from app.models.user import User
+from app.services import instance_config
 from app.services.ai.anthropic_provider import AnthropicProvider
 from app.services.ai.provider import AIProvider, ChatMessage
 
@@ -73,17 +74,39 @@ class _FakeRedis:
 
 def _seed_task(passed_by: int | None = None):
     with SessionLocal() as db:
-        db.add(Task(
-            id="t1", title="T", module="1", order_index=1, domain="static-re",
-            masvs=["MASVS-STORAGE-1"], mastg_refs=["X"], difficulty=2, prereqs=[],
-            objective="o", success_type="static_assert", submission_schema={"value": "string"},
-            hints={}, is_reference=True, grader_status="implemented", package_path="tasks/t1",
-        ))
+        db.add(
+            Task(
+                id="t1",
+                title="T",
+                module="1",
+                order_index=1,
+                domain="static-re",
+                masvs=["MASVS-STORAGE-1"],
+                mastg_refs=["X"],
+                difficulty=2,
+                prereqs=[],
+                objective="o",
+                success_type="static_assert",
+                submission_schema={"value": "string"},
+                hints={},
+                is_reference=True,
+                grader_status="implemented",
+                package_path="tasks/t1",
+            )
+        )
         if passed_by is not None:
-            db.add(Progress(
-                user_id=passed_by, task_id="t1", domain="static-re", difficulty=2,
-                attempts=1, passed=True, best_score=100, passed_at=datetime.now(timezone.utc),
-            ))
+            db.add(
+                Progress(
+                    user_id=passed_by,
+                    task_id="t1",
+                    domain="static-re",
+                    difficulty=2,
+                    attempts=1,
+                    passed=True,
+                    best_score=100,
+                    passed_at=datetime.now(timezone.utc),
+                )
+            )
         db.commit()
 
 
@@ -109,10 +132,18 @@ def test_review_requires_pass(client: TestClient, auth_headers, monkeypatch):
 
 def _make_passed(user_id: int):
     with SessionLocal() as db:
-        db.add(Progress(
-            user_id=user_id, task_id="t1", domain="static-re", difficulty=2,
-            attempts=1, passed=True, best_score=100, passed_at=datetime.now(timezone.utc),
-        ))
+        db.add(
+            Progress(
+                user_id=user_id,
+                task_id="t1",
+                domain="static-re",
+                difficulty=2,
+                attempts=1,
+                passed=True,
+                best_score=100,
+                passed_at=datetime.now(timezone.utc),
+            )
+        )
         db.commit()
 
 
@@ -122,10 +153,16 @@ def test_mentor_rate_limit(client: TestClient, auth_headers, monkeypatch):
     monkeypatch.setattr("app.api.mentor.key_manager.get_provider", lambda db, u: _FakeProvider())
     monkeypatch.setattr("app.services.ratelimit.get_redis", lambda: _FakeRedis.instance)
     _FakeRedis.instance = _FakeRedis()
-    monkeypatch.setattr("app.services.ratelimit.settings.mentor_rate_limit_per_hour", 2)
+    # The limit is read live from the instance config and passed into the limiter;
+    # set it to 2 on the real config row so the mentor endpoint enforces that.
+    with SessionLocal() as s:
+        instance_config.get_config(s).mentor_rate_limit_per_hour = 2
+        s.commit()
 
     codes = [
-        client.post("/mentor/explain", json={"task_id": "t1", "snippet": "x"}, headers=auth_headers).status_code
+        client.post(
+            "/mentor/explain", json={"task_id": "t1", "snippet": "x"}, headers=auth_headers
+        ).status_code
         for _ in range(3)
     ]
     assert codes[0] == 200 and codes[1] == 200

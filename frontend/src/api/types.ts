@@ -46,6 +46,14 @@ export interface InstanceConfig {
   lab_emulator_adb_port: number;
   lab_emulator_serial: string;
   lab_emulator_boot_timeout_sec: number;
+  // Runtime tuning (admin-configurable; no redeploy)
+  lab_session_ttl_min: number;
+  lab_mem_limit: string;
+  lab_cpu_limit: string;
+  lab_pids_limit: number;
+  lab_stream_url: string;
+  grading_job_timeout_sec: number;
+  mentor_rate_limit_per_hour: number;
   ai_fallback_configured: boolean;
   ai_fallback_provider: "anthropic" | "openai" | null;
   ai_fallback_masked: string | null;

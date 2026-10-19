@@ -26,7 +26,9 @@ def get_redis() -> redis.Redis:
     return _client
 
 
-def enqueue_grading_job(submission_id: int, task_id: str, package_path: str) -> str:
+def enqueue_grading_job(
+    submission_id: int, task_id: str, package_path: str, timeout_sec: int
+) -> str:
     """Push a grading job and return its id."""
     job_id = uuid.uuid4().hex
     job = {
@@ -34,7 +36,7 @@ def enqueue_grading_job(submission_id: int, task_id: str, package_path: str) -> 
         "submission_id": submission_id,
         "task_id": task_id,
         "package_path": package_path,
-        "timeout_sec": settings.grading_job_timeout_sec,
+        "timeout_sec": timeout_sec,
     }
     client = get_redis()
     client.rpush(settings.grading_queue, json.dumps(job))

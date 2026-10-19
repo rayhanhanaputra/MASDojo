@@ -41,9 +41,9 @@ def test_register_login_me(client: TestClient):
     )
     assert r.status_code == 201
     assert r.json()["email"] == "x@y.com"  # normalised
-    token = client.post(
-        "/auth/login", json={"email": "x@y.com", "password": "password123"}
-    ).json()["access_token"]
+    token = client.post("/auth/login", json={"email": "x@y.com", "password": "password123"}).json()[
+        "access_token"
+    ]
     me = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert me.json()["display_name"] == "Z"
 
@@ -79,7 +79,7 @@ def test_submit_validates_payload_and_enqueues(client: TestClient, auth_headers,
 
     enqueued = {}
 
-    def fake_enqueue(submission_id, task_id, package_path):
+    def fake_enqueue(submission_id, task_id, package_path, timeout_sec):
         enqueued["submission_id"] = submission_id
         return "job-xyz"
 

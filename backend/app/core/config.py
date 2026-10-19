@@ -59,38 +59,26 @@ class Settings(BaseSettings):
     # device, e.g. "adb -s emulator-5554 shell". %(serial)s is substituted with
     # the session's device serial when present.
     lab_shell_command: str = "/usr/bin/bash --login"
-    # A lab session auto-expires after this many minutes.
-    lab_session_ttl_min: int = 60
     # Name of the isolated lab container to exec the terminal into (via the
     # docker socket). When empty or the container isn't running, the terminal
     # falls back to the placeholder shell in SOLO mode only - never in hosted,
     # where that would expose backend secrets. Env: LAB_CONTAINER.
     lab_container: str = ""
-    # URL of a visual device-screen stream (scrcpy-web / emulator WebRTC) shown
-    # beside the terminal so the learner can see and tap the emulator. Requires a
-    # KVM runner with a live emulator; empty = CLI only. %(serial)s is
-    # substituted with the session device serial. Env: LAB_STREAM_URL.
-    lab_stream_url: str = ""
     # ── Per-session isolated lab (hosted mode) ──
     # In hosted mode each lab session runs in its own ephemeral, hardened
     # container (built from this image) instead of a shared one, so learners
     # can't see each other's files/processes. Solo mode keeps the shared path.
     lab_image: str = "masdojo-lab"
-    lab_mem_limit: str = "512m"
-    lab_cpu_limit: str = "1.5"
-    lab_pids_limit: int = 256
     # Host path of the repo + the task-store docker volume name, so per-session
     # `docker run` can mount the committed targets (daemon resolves these
     # host-side). Set HOST_REPO_DIR=${PWD} and the volume name in compose.
     host_repo_dir: str = ""
     lab_task_store_volume: str = "masdojo_task-store"
-    # The device-pool settings (allow-device, emulator image / adb port / serial
-    # / boot timeout) are admin-configurable at runtime, not env - they live on
-    # the instance config in the DB so an operator can set them from Admin ->
-    # Instance settings without a redeploy.
-
-    # Runner-related (read here so the backend can surface limits in the API)
-    grading_job_timeout_sec: int = 420
+    # Runtime-tuned settings - lab session TTL, per-session resource caps, the
+    # visual stream URL, grading job timeout, device pool (image/port/serial/
+    # boot timeout), and the mentor rate limit - are admin-configurable on the
+    # instance config in the DB, not env (set them from Admin -> Instance
+    # settings without a redeploy).
 
     # Where curriculum task packages live (mounted read-only in compose).
     tasks_dir: Path = Field(default=Path("tasks"))
@@ -107,9 +95,6 @@ class Settings(BaseSettings):
 
     # Escape hatch for local dev only: allow boot with the placeholder secrets.
     allow_insecure_defaults: bool = False
-
-    # Per-user hourly cap on AI mentor calls (BYOK credit protection).
-    mentor_rate_limit_per_hour: int = 30
 
     # ── AI mentor (BYOK) ──
     # Anthropic-compatible endpoint. Point this at a proxy/gateway (e.g. an

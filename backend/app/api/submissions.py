@@ -13,7 +13,6 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.core.security import create_stream_token, decode_access_token
 from app.db.session import SessionLocal
 from app.services.queue import get_redis
@@ -31,6 +30,7 @@ from app.models.submission import (
 from app.models.task import Task
 from app.models.user import User
 from app.schemas.submission import SubmissionPublic, SubmitRequest
+from app.services import instance_config
 from app.services.queue import enqueue_grading_job
 
 router = APIRouter(prefix="/submissions", tags=["submissions"])
@@ -110,7 +110,12 @@ def submit(
             progress.first_attempt_at = now
 
     db.flush()  # assign submission.id
-    job_id = enqueue_grading_job(submission.id, task_id, task.package_path)
+    job_id = enqueue_grading_job(
+        submission.id,
+        task_id,
+        task.package_path,
+        instance_config.get_config(db).grading_job_timeout_sec,
+    )
     submission.job_id = job_id
     db.commit()
     db.refresh(submission)
@@ -175,6 +180,7 @@ def stream_grading_events(
         if not submission or submission.user_id != user_id:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
         already_terminal = submission.status in _TERMINAL
+        job_timeout = instance_config.get_config(db).grading_job_timeout_sec
 
     channel = f"masdojo:events:{submission_id}"
     replay_key = f"masdojo:eventlog:{submission_id}"
@@ -201,7 +207,7 @@ def stream_grading_events(
 
         pubsub = client.pubsub()
         pubsub.subscribe(channel)
-        deadline = time.time() + settings.grading_job_timeout_sec + 30
+        deadline = time.time() + job_timeout + 30
         try:
             while time.time() < deadline:
                 msg = pubsub.get_message(timeout=1.0, ignore_subscribe_messages=True)

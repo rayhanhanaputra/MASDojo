@@ -11,13 +11,11 @@ from __future__ import annotations
 from fastapi import HTTPException, status
 from loguru import logger
 
-from app.core.config import settings
 from app.services.queue import get_redis
 
 
-def enforce_mentor_rate_limit(user_id: int) -> None:
+def enforce_mentor_rate_limit(user_id: int, limit: int) -> None:
     """Raise 429 if the user has exceeded the hourly mentor-call budget."""
-    limit = settings.mentor_rate_limit_per_hour
     if limit <= 0:
         return
     key = f"masdojo:mentor:rl:{user_id}"

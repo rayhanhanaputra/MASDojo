@@ -72,7 +72,12 @@ def is_running(name: str) -> bool:
 
 
 def ensure_session_container(
-    session_id: int, network: str = "none", adb_socket: str | None = None
+    session_id: int,
+    network: str = "none",
+    adb_socket: str | None = None,
+    mem: str = "512m",
+    cpus: str = "1.5",
+    pids: int = 256,
 ) -> str | None:
     """Create (or reuse) the hardened per-session container; return its name.
 
@@ -105,10 +110,10 @@ def ensure_session_container(
         "--security-opt",
         "no-new-privileges",
         # Resource caps so one learner can't DoS the host.
-        f"--memory={settings.lab_mem_limit}",
-        f"--memory-swap={settings.lab_mem_limit}",
-        f"--cpus={settings.lab_cpu_limit}",
-        f"--pids-limit={settings.lab_pids_limit}",
+        f"--memory={mem}",
+        f"--memory-swap={mem}",
+        f"--cpus={cpus}",
+        f"--pids-limit={int(pids)}",
         "--ulimit",
         "nofile=2048:4096",
         "--ulimit",

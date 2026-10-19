@@ -17,10 +17,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
 from app.models.lab_session import LabSession
 from app.models.user import User
-from app.services import device_pool, docker_lab
+from app.services import device_pool, docker_lab, instance_config
 from app.services.queue import get_redis
 
 
@@ -129,7 +128,7 @@ def create(db: Session, user: User, task_id: str) -> LabSession:
         task_id=task_id,
         status="active",
         device_serial=_available_device(),
-        expires_at=_now() + timedelta(minutes=settings.lab_session_ttl_min),
+        expires_at=_now() + timedelta(minutes=instance_config.get_config(db).lab_session_ttl_min),
     )
     db.add(s)
     try:

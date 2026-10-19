@@ -133,6 +133,13 @@ export const api = {
     lab_emulator_adb_port?: number;
     lab_emulator_serial?: string;
     lab_emulator_boot_timeout_sec?: number;
+    lab_session_ttl_min?: number;
+    lab_mem_limit?: string;
+    lab_cpu_limit?: string;
+    lab_pids_limit?: number;
+    lab_stream_url?: string;
+    grading_job_timeout_sec?: number;
+    mentor_rate_limit_per_hour?: number;
   }) => request<InstanceConfig>("/admin/settings", { method: "PATCH", body: patch }),
   adminSwitchToHosted: (email: string, display_name: string, password: string) =>
     request<InstanceConfig>("/admin/settings/switch-to-hosted", {

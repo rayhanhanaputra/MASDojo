@@ -139,6 +139,15 @@ function InstanceSettings() {
   const [emuPort, setEmuPort] = useState(5037);
   const [emuTimeout, setEmuTimeout] = useState(180);
   const [poolInit, setPoolInit] = useState(false);
+  // Limits & tuning form (prefilled from cfg once loaded)
+  const [ttlMin, setTtlMin] = useState(60);
+  const [memLimit, setMemLimit] = useState("512m");
+  const [cpuLimit, setCpuLimit] = useState("1.5");
+  const [pidsLimit, setPidsLimit] = useState(256);
+  const [streamUrl, setStreamUrl] = useState("");
+  const [gradeTimeout, setGradeTimeout] = useState(420);
+  const [mentorRate, setMentorRate] = useState(30);
+  const [tuneInit, setTuneInit] = useState(false);
 
   function load() {
     api
@@ -151,6 +160,16 @@ function InstanceSettings() {
           setEmuPort(c.lab_emulator_adb_port);
           setEmuTimeout(c.lab_emulator_boot_timeout_sec);
           setPoolInit(true);
+        }
+        if (!tuneInit) {
+          setTtlMin(c.lab_session_ttl_min);
+          setMemLimit(c.lab_mem_limit);
+          setCpuLimit(c.lab_cpu_limit);
+          setPidsLimit(c.lab_pids_limit);
+          setStreamUrl(c.lab_stream_url);
+          setGradeTimeout(c.grading_job_timeout_sec);
+          setMentorRate(c.mentor_rate_limit_per_hour);
+          setTuneInit(true);
         }
       })
       .catch((e) => setError(e.message));
@@ -362,6 +381,65 @@ function InstanceSettings() {
           <button className="btn-primary btn-sm" disabled={busy || !key.trim()}>
             Save
           </button>
+        </form>
+      </div>
+
+      <div className="space-y-3 rounded-lg border border-ink-400 bg-ink-900/50 px-4 py-3">
+        <div>
+          <p className="text-sm text-zinc-100">Limits &amp; tuning</p>
+          <p className="font-mono text-xs text-zinc-500">
+            session lifetime, per-session resource caps, grading timeout, mentor rate — applied
+            live, no redeploy
+          </p>
+        </div>
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            act(
+              () =>
+                api.adminUpdateSettings({
+                  lab_session_ttl_min: ttlMin,
+                  lab_mem_limit: memLimit.trim() || "512m",
+                  lab_cpu_limit: cpuLimit.trim() || "1.5",
+                  lab_pids_limit: pidsLimit,
+                  lab_stream_url: streamUrl.trim(),
+                  grading_job_timeout_sec: gradeTimeout,
+                  mentor_rate_limit_per_hour: mentorRate,
+                }),
+              "Limits updated.",
+            );
+          }}
+        >
+          <div className="w-28">
+            <label className="label" htmlFor="tune-ttl">Session (min)</label>
+            <input id="tune-ttl" className="input font-mono" type="number" min={1} max={1440} value={ttlMin} onChange={(e) => setTtlMin(Number(e.target.value))} />
+          </div>
+          <div className="w-24">
+            <label className="label" htmlFor="tune-mem">Memory</label>
+            <input id="tune-mem" className="input font-mono" placeholder="512m" value={memLimit} onChange={(e) => setMemLimit(e.target.value)} />
+          </div>
+          <div className="w-20">
+            <label className="label" htmlFor="tune-cpu">CPUs</label>
+            <input id="tune-cpu" className="input font-mono" placeholder="1.5" value={cpuLimit} onChange={(e) => setCpuLimit(e.target.value)} />
+          </div>
+          <div className="w-20">
+            <label className="label" htmlFor="tune-pids">PIDs</label>
+            <input id="tune-pids" className="input font-mono" type="number" min={16} max={8192} value={pidsLimit} onChange={(e) => setPidsLimit(Number(e.target.value))} />
+          </div>
+          <div className="w-28">
+            <label className="label" htmlFor="tune-grade">Grade (s)</label>
+            <input id="tune-grade" className="input font-mono" type="number" min={30} max={3600} value={gradeTimeout} onChange={(e) => setGradeTimeout(Number(e.target.value))} />
+          </div>
+          <div className="w-28">
+            <label className="label" htmlFor="tune-mentor">Mentor/hr</label>
+            <input id="tune-mentor" className="input font-mono" type="number" min={1} max={100000} value={mentorRate} onChange={(e) => setMentorRate(Number(e.target.value))} />
+          </div>
+          <div className="min-w-[16rem] flex-1">
+            <label className="label" htmlFor="tune-stream">Visual stream URL (optional, %(serial)s)</label>
+            <input id="tune-stream" className="input font-mono" placeholder="https://stream.example/%(serial)s" value={streamUrl} onChange={(e) => setStreamUrl(e.target.value)} />
+          </div>
+          <button className="btn-primary btn-sm" disabled={busy}>Save</button>
         </form>
       </div>
 
