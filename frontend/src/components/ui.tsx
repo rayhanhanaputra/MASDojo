@@ -279,6 +279,45 @@ export function ErrorText({ children }: { children: ReactNode }) {
   );
 }
 
+// Minimal, safe inline markdown for AI/mentor + hint text: **bold** and `code`,
+// with line breaks preserved by CSS. The mentor emits these constantly, so
+// rendering raw (literal ** and backticks) looks broken. Builds React nodes
+// directly — no dangerouslySetInnerHTML, so there is no injection surface.
+function parseInline(text: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*\n]+\*)/g).map((p, i) => {
+    if (p.startsWith("**") && p.endsWith("**") && p.length > 4) {
+      return (
+        <strong key={i} className="font-semibold text-zinc-100">
+          {p.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (p.startsWith("`") && p.endsWith("`") && p.length > 2) {
+      return (
+        <code key={i} className="rounded bg-ink-800 px-1 py-0.5 font-mono text-[0.85em] text-phosphor">
+          {p.slice(1, -1)}
+        </code>
+      );
+    }
+    if (p.startsWith("*") && p.endsWith("*") && p.length > 2) {
+      return (
+        <em key={i} className="text-zinc-100">
+          {p.slice(1, -1)}
+        </em>
+      );
+    }
+    return p;
+  });
+}
+
+export function RichText({ text, className = "" }: { text: string; className?: string }) {
+  return (
+    <p className={`whitespace-pre-wrap text-sm leading-relaxed text-zinc-200 ${className}`}>
+      {parseInline(text)}
+    </p>
+  );
+}
+
 // Shimmering placeholder block. Compose several to sketch a page's shape while
 // it loads, so the layout doesn't jump when the data lands.
 export function Skeleton({ className = "" }: { className?: string }) {

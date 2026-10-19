@@ -22,6 +22,9 @@ import { AiAttemptPanel } from "../components/AiAttemptPanel";
 import { LabTerminal } from "../components/LabTerminal";
 
 const TERMINAL = new Set(["passed", "failed", "error"]);
+// A submission still non-terminal after this long means nothing is grading it —
+// almost always the emulator runner being offline. Stop the endless spinner.
+const STALL_MS = 90_000;
 
 export function TaskPage() {
   const { taskId = "" } = useParams();
@@ -30,6 +33,9 @@ export function TaskPage() {
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [history, setHistory] = useState<Submission[]>([]);
   const [labOpen, setLabOpen] = useState(false);
+  // "stalled" = grading never reached a verdict (runner likely offline); "lost"
+  // = the poll itself errored. Either way we stop the spinner and tell the user.
+  const [gradeIssue, setGradeIssue] = useState<"stalled" | "lost" | null>(null);
   const pollRef = useRef<number | null>(null);
 
   const refreshHistory = useCallback(() => {
@@ -48,6 +54,8 @@ export function TaskPage() {
 
   function pollSubmission(id: number) {
     if (pollRef.current) window.clearInterval(pollRef.current);
+    setGradeIssue(null);
+    const startedAt = Date.now();
     pollRef.current = window.setInterval(async () => {
       try {
         const s = await api.getSubmission(id);
@@ -56,10 +64,16 @@ export function TaskPage() {
           window.clearInterval(pollRef.current!);
           pollRef.current = null;
           refreshHistory();
+        } else if (Date.now() - startedAt > STALL_MS) {
+          window.clearInterval(pollRef.current!);
+          pollRef.current = null;
+          setGradeIssue("stalled");
         }
       } catch {
+        // A failed poll used to stop silently, freezing the spinner. Surface it.
         window.clearInterval(pollRef.current!);
         pollRef.current = null;
+        setGradeIssue("lost");
       }
     }, 1500);
   }
@@ -194,7 +208,7 @@ export function TaskPage() {
             <SubmitForm task={task} onSubmit={onSubmit} />
           </Panel>
 
-          <GradePanel submission={submission} taskId={taskId} graderImplemented={task.grader_status === "implemented"} />
+          <GradePanel submission={submission} taskId={taskId} graderImplemented={task.grader_status === "implemented"} issue={gradeIssue} onResume={() => submission && pollSubmission(submission.id)} />
 
           {history.length > 0 && (
             <Panel>

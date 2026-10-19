@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api } from "../api/endpoints";
-import { clearToken, getToken, setToken } from "../api/client";
+import { ApiError, clearToken, getToken, setToken } from "../api/client";
 import type { UserPublic } from "../api/types";
 
 interface AuthState {
@@ -28,9 +28,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
         return;
       }
-      api.me().then((u) => !cancelled && setUser(u)).catch(() => clearToken()).finally(
-        () => !cancelled && setLoading(false),
-      );
+      api
+        .me()
+        .then((u) => !cancelled && setUser(u))
+        .catch((e) => {
+          // Only discard the token when the server actively rejects it (401).
+          // A network error / server-down must NOT wipe a still-valid session —
+          // otherwise a transient outage silently logs the user out for good.
+          if (e instanceof ApiError && e.status === 401) clearToken();
+        })
+        .finally(() => !cancelled && setLoading(false));
     };
     api
       .config()

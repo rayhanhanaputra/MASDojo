@@ -2,7 +2,7 @@ import { useState } from "react";
 import { api } from "../api/endpoints";
 import { ApiError } from "../api/client";
 import type { HintResponse, TaskDetail } from "../api/types";
-import { MentorMark, Panel } from "./ui";
+import { MentorMark, Panel, RichText } from "./ui";
 
 interface RevealedHint extends HintResponse {
   key: string;
@@ -161,7 +161,7 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
                 )}
                 {h.is_solution && <span className="chip-flag">solution</span>}
               </div>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-200">{h.content}</p>
+              <RichText text={h.content} />
             </div>
           );
         })}
@@ -191,7 +191,7 @@ export function HintPanel({ task }: { task: TaskDetail; passed: boolean }) {
         </button>
         {explanation && (
           <div className="animate-rise mt-2 rounded-lg border border-signal-violet/30 bg-signal-violet/[0.04] px-3 py-2.5">
-            <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-200">{explanation}</p>
+            <RichText text={explanation} />
           </div>
         )}
       </div>

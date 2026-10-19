@@ -5,6 +5,9 @@ import type { Submission } from "../api/types";
 import { Spinner } from "./ui";
 
 const TERMINAL = new Set(["passed", "failed", "error"]);
+// If a submission is still non-terminal after this long, the runner is almost
+// certainly offline — stop polling and tell the learner instead of spinning.
+const STALL_MS = 90_000;
 
 // AI-as-adversary: let the AI propose a solution, then let the real grader judge
 // it. On seeded / device-dependent tasks the model can't know the answer, so it
@@ -32,6 +35,7 @@ export function AiAttemptPanel({ taskId }: { taskId: string }) {
       setField(a.field);
       setNote(a.note);
       if (poll.current) window.clearInterval(poll.current);
+      const startedAt = Date.now();
       poll.current = window.setInterval(async () => {
         try {
           const s = await api.getSubmission(a.submission_id);
@@ -40,11 +44,23 @@ export function AiAttemptPanel({ taskId }: { taskId: string }) {
             window.clearInterval(poll.current!);
             poll.current = null;
             setBusy(false);
+          } else if (Date.now() - startedAt > STALL_MS) {
+            // The job is accepted but nothing is grading it — almost always the
+            // lab runner/emulator being offline. Stop the endless spinner, say
+            // so, and re-enable the button so the learner can retry.
+            window.clearInterval(poll.current!);
+            poll.current = null;
+            setBusy(false);
+            setErr(
+              "The AI's answer was submitted but grading hasn't started — the lab runner may be offline. " +
+                "Check Admin → System, then try again.",
+            );
           }
         } catch {
           window.clearInterval(poll.current!);
           poll.current = null;
           setBusy(false);
+          setErr("Lost contact with the grader while checking the AI's answer. Try again.");
         }
       }, 1500);
     } catch (e) {

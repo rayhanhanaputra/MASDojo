@@ -2,7 +2,7 @@ import { useState } from "react";
 import { api } from "../api/endpoints";
 import { ApiError } from "../api/client";
 import type { EvidenceItem, Submission } from "../api/types";
-import { MentorMark, Panel, Spinner } from "./ui";
+import { MentorMark, Panel, RichText, Spinner } from "./ui";
 import { GradingConsole } from "./GradingConsole";
 
 // Live grading verdict, with per-check evidence and an optional post-task
@@ -11,10 +11,14 @@ export function GradePanel({
   submission,
   taskId,
   graderImplemented,
+  issue = null,
+  onResume,
 }: {
   submission: Submission | null;
   taskId: string;
   graderImplemented: boolean;
+  issue?: "stalled" | "lost" | null;
+  onResume?: () => void;
 }) {
   if (!submission) return null;
   const running = submission.status === "queued" || submission.status === "running";
@@ -52,7 +56,7 @@ export function GradePanel({
 
       <GradingConsole submissionId={submission.id} />
 
-      {running && (
+      {running && !issue && (
         <div className="flex items-center gap-3 rounded-lg border border-signal-cyan/20 bg-signal-cyan/5 px-3 py-2.5">
           <Spinner
             label={
@@ -61,6 +65,21 @@ export function GradePanel({
                 : "running on the emulator, live steps above"
             }
           />
+        </div>
+      )}
+
+      {running && issue && (
+        <div className="space-y-2 rounded-lg border border-signal-amber/30 bg-signal-amber/[0.06] px-3 py-2.5">
+          <p className="font-mono text-xs leading-relaxed text-signal-amber">
+            {issue === "stalled"
+              ? "Grading hasn't started — the emulator runner looks offline, so your submission is still queued. It will grade once a runner is back; you can keep this page and check Submission history later."
+              : "Lost contact with the grader while checking your submission."}
+          </p>
+          {onResume && (
+            <button className="btn-ghost btn-sm" onClick={onResume}>
+              Check again
+            </button>
+          )}
         </div>
       )}
 
@@ -248,7 +267,7 @@ function ReviewBlock({ taskId }: { taskId: string }) {
           <div className="mb-2">
             <MentorMark>remediation review</MentorMark>
           </div>
-          <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-200">{review}</p>
+          <RichText text={review} />
         </div>
       )}
     </div>
