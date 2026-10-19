@@ -14,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 from loguru import logger
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -98,14 +99,23 @@ def create(db: Session, user: User, task_id: str) -> LabSession:
     One active session per user keeps device allocation simple; switching tasks
     ends the old session and starts a fresh one.
     """
-    active = get_active(db, user)
-    if active is not None:
-        if active.task_id == task_id:
-            return active
-        active.status = "ended"
-        active.ended_at = _now()
+    # End EVERY active session for this user (not just the latest) so a race or
+    # past bug can't leave extras behind; reuse the one on the same task.
+    actives = list(
+        db.scalars(
+            select(LabSession).where(LabSession.user_id == user.id, LabSession.status == "active")
+        )
+    )
+    for a in actives:
+        if a.task_id == task_id and _expire_if_stale(db, a) is not None:
+            return a
+    for a in actives:
+        a.status = "ended"
+        a.ended_at = _now()
+    if actives:
         db.commit()
-        docker_lab.remove_session_container(active.id)
+        for a in actives:
+            docker_lab.remove_session_container(a.id)
 
     s = LabSession(
         user_id=user.id,
@@ -115,7 +125,16 @@ def create(db: Session, user: User, task_id: str) -> LabSession:
         expires_at=_now() + timedelta(minutes=settings.lab_session_ttl_min),
     )
     db.add(s)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Lost a concurrent create race (unique active-per-user index); return
+        # whoever won.
+        db.rollback()
+        won = get_active(db, user)
+        if won is not None:
+            return won
+        raise
     db.refresh(s)
     logger.info(
         "lab session {} started for user {} on task {} (device={})",

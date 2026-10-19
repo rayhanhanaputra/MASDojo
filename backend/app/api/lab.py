@@ -141,17 +141,15 @@ def _resolve_command(sess, solo: bool) -> list[str] | None:
     fine for a single operator. Returns None when no safe shell is available, so
     a learner is never dropped into the secret-bearing backend container."""
     if not solo:
-        # A hosted session reaches a device only if an admin opted in AND one is
-        # bound; otherwise the container is network-isolated (static analysis).
-        device_socket = None
-        serial = sess.device_serial if settings.lab_allow_device_hosted else None
-        if serial:
-            device_socket = f"tcp:host.docker.internal:{settings.lab_adb_port}"
-        name = docker_lab.ensure_session_container(sess.id, device_socket)
+        # Hosted sessions are always network-isolated (static analysis only). A
+        # live device would mean --network bridge, which exposes the host's
+        # other services (DB/Redis/backend) and shares one adb server across all
+        # learners. Safe per-learner device access needs a per-session device
+        # pool; until that exists, hosted never wires a device/network.
+        name = docker_lab.ensure_session_container(sess.id, device_adb_socket=None)
         if not name:
             return None
-        inner = _inner_command(serial)
-        bootstrap = f"cd /work && exec {inner}"
+        bootstrap = f"cd /work && exec {_inner_command(None)}"
         return ["docker", "exec", "-i", name, "bash", "-lc", bootstrap]
 
     # Solo: single trusted operator on their own machine.

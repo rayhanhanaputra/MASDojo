@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, Index, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -19,6 +19,18 @@ from app.db.base import Base, TimestampMixin
 
 class LabSession(Base, TimestampMixin):
     __tablename__ = "lab_sessions"
+
+    # Enforce the one-active-session-per-user invariant at the DB level so a
+    # race between concurrent /lab/sessions requests can't create two.
+    __table_args__ = (
+        Index(
+            "uq_lab_active_per_user",
+            "user_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+            sqlite_where=text("status = 'active'"),
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(

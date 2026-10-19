@@ -47,6 +47,9 @@ _COLUMN_PATCHES = (
     "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_enabled BOOLEAN NOT NULL DEFAULT TRUE",
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS source VARCHAR(12) NOT NULL DEFAULT 'package'",
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS expected_override JSON",
+    # One active lab session per user (defence against a create race).
+    "CREATE UNIQUE INDEX IF NOT EXISTS uq_lab_active_per_user "
+    "ON lab_sessions (user_id) WHERE status = 'active'",
 )
 
 
@@ -60,9 +63,14 @@ def init_db() -> None:
     # columns already exist from create_all above and that syntax is invalid, so
     # skip them there — keeping a local SQLite self-host working out of the box.
     if engine.dialect.name != "sqlite":
-        with engine.begin() as conn:
-            for stmt in _COLUMN_PATCHES:
-                conn.execute(text(stmt))
+        # Each patch in its own transaction + best-effort, so one failure (e.g.
+        # a unique index blocked by pre-existing rows) never aborts the rest.
+        for stmt in _COLUMN_PATCHES:
+            try:
+                with engine.begin() as conn:
+                    conn.execute(text(stmt))
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("schema patch skipped: {} ({})", stmt[:60], exc)
     logger.info("database ready")
 
 

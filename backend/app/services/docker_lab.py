@@ -40,6 +40,32 @@ def _run(args: list[str], timeout: int = _DOCKER_TIMEOUT) -> subprocess.Complete
         return None
 
 
+_UNSAFE_REPO_DIRS = {
+    "/",
+    "/root",
+    "/etc",
+    "/home",
+    "/var",
+    "/usr",
+    "/bin",
+    "/boot",
+    "/sys",
+    "/proc",
+}
+
+
+def _safe_host_repo_dir(path: str) -> bool:
+    """Only mount the committed targets from a plausible repo dir: an absolute
+    path that isn't a sensitive system root. Guards against a misconfigured
+    HOST_REPO_DIR exposing host files (even read-only) to every learner."""
+    if not path or not path.startswith("/"):
+        return False
+    normalized = "/" + path.strip("/")
+    if normalized in _UNSAFE_REPO_DIRS:
+        return False
+    return True
+
+
 def is_running(name: str) -> bool:
     out = _run(["docker", "inspect", "-f", "{{.State.Running}}", name], timeout=5)
     return bool(out and out.returncode == 0 and out.stdout.strip() == "true")
@@ -102,9 +128,10 @@ def ensure_session_container(session_id: int, device_adb_socket: str | None = No
     # interprets -v source paths host-side, not inside the backend container),
     # so we use the host repo dir (passed in via HOST_REPO_DIR) and the task
     # store's docker volume name.
-    if settings.host_repo_dir:
-        args += ["-v", f"{settings.host_repo_dir}/apps/vaultbank:/targets/app:ro"]
-        args += ["-v", f"{settings.host_repo_dir}/tasks:/targets/tasks:ro"]
+    if _safe_host_repo_dir(settings.host_repo_dir):
+        base = settings.host_repo_dir.rstrip("/")
+        args += ["-v", f"{base}/apps/vaultbank:/targets/app:ro"]
+        args += ["-v", f"{base}/tasks:/targets/tasks:ro"]
     if settings.lab_task_store_volume:
         args += ["-v", f"{settings.lab_task_store_volume}:/targets/task-store:ro"]
     if device_adb_socket:
