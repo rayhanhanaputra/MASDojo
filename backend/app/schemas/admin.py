@@ -49,6 +49,10 @@ class InstanceConfigView(BaseModel):
     registration_open: bool
     lab_enabled: bool
     lab_allow_device_hosted: bool
+    lab_emulator_image: str
+    lab_emulator_adb_port: int
+    lab_emulator_serial: str
+    lab_emulator_boot_timeout_sec: int
     ai_fallback_configured: bool
     ai_fallback_provider: AiProvider | None = None
     ai_fallback_masked: str | None = None
@@ -63,6 +67,10 @@ class InstanceConfigUpdate(BaseModel):
     registration_open: bool | None = None
     lab_enabled: bool | None = None
     lab_allow_device_hosted: bool | None = None
+    lab_emulator_image: str | None = Field(default=None, max_length=255)
+    lab_emulator_adb_port: int | None = Field(default=None, ge=1, le=65535)
+    lab_emulator_serial: str | None = Field(default=None, max_length=64)
+    lab_emulator_boot_timeout_sec: int | None = Field(default=None, ge=10, le=1800)
 
 
 class SwitchToHosted(BaseModel):

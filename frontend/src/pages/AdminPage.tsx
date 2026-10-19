@@ -133,9 +133,27 @@ function InstanceSettings() {
   const [adminEmail, setAdminEmail] = useState("");
   const [adminName, setAdminName] = useState("");
   const [adminPass, setAdminPass] = useState("");
+  // Device pool form (prefilled from cfg once loaded)
+  const [emuImage, setEmuImage] = useState("");
+  const [emuSerial, setEmuSerial] = useState("");
+  const [emuPort, setEmuPort] = useState(5037);
+  const [emuTimeout, setEmuTimeout] = useState(180);
+  const [poolInit, setPoolInit] = useState(false);
 
   function load() {
-    api.adminGetSettings().then(setCfg).catch((e) => setError(e.message));
+    api
+      .adminGetSettings()
+      .then((c) => {
+        setCfg(c);
+        if (!poolInit) {
+          setEmuImage(c.lab_emulator_image);
+          setEmuSerial(c.lab_emulator_serial);
+          setEmuPort(c.lab_emulator_adb_port);
+          setEmuTimeout(c.lab_emulator_boot_timeout_sec);
+          setPoolInit(true);
+        }
+      })
+      .catch((e) => setError(e.message));
   }
   useEffect(load, []);
 
@@ -250,6 +268,57 @@ function InstanceSettings() {
           >
             {cfg.lab_allow_device_hosted ? "Disallow" : "Allow"}
           </button>
+        </div>
+      )}
+
+      {!cfg.solo_mode && cfg.lab_allow_device_hosted && (
+        <div className="space-y-3 rounded-lg border border-ink-400 bg-ink-900/50 px-4 py-3">
+          <div>
+            <p className="text-sm text-zinc-100">Device pool (KVM)</p>
+            <p className="font-mono text-xs text-zinc-500">
+              {cfg.lab_emulator_image
+                ? `image: ${cfg.lab_emulator_image}`
+                : "no emulator image set: sessions stay static until you configure one"}
+            </p>
+          </div>
+          <form
+            className="flex flex-wrap items-end gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              act(
+                () =>
+                  api.adminUpdateSettings({
+                    lab_emulator_image: emuImage.trim(),
+                    lab_emulator_serial: emuSerial.trim() || "emulator-5554",
+                    lab_emulator_adb_port: emuPort,
+                    lab_emulator_boot_timeout_sec: emuTimeout,
+                  }),
+                "Device pool updated.",
+              );
+            }}
+          >
+            <div className="min-w-[16rem] flex-1">
+              <label className="label" htmlFor="emu-image">Emulator image (empty = pool off)</label>
+              <input id="emu-image" className="input font-mono" placeholder="budtmo/docker-android:emulator_14.0" value={emuImage} onChange={(e) => setEmuImage(e.target.value)} />
+            </div>
+            <div className="w-36">
+              <label className="label" htmlFor="emu-serial">Serial</label>
+              <input id="emu-serial" className="input font-mono" value={emuSerial} onChange={(e) => setEmuSerial(e.target.value)} />
+            </div>
+            <div className="w-24">
+              <label className="label" htmlFor="emu-port">adb port</label>
+              <input id="emu-port" className="input font-mono" type="number" min={1} max={65535} value={emuPort} onChange={(e) => setEmuPort(Number(e.target.value))} />
+            </div>
+            <div className="w-28">
+              <label className="label" htmlFor="emu-timeout">boot (s)</label>
+              <input id="emu-timeout" className="input font-mono" type="number" min={10} max={1800} value={emuTimeout} onChange={(e) => setEmuTimeout(Number(e.target.value))} />
+            </div>
+            <button className="btn-primary btn-sm" disabled={busy}>Save</button>
+          </form>
+          <p className="font-mono text-2xs text-zinc-600">
+            Needs a KVM host (/dev/kvm). The image must run an adb server on the port above. Each
+            session boots its own emulator on a private network.
+          </p>
         </div>
       )}
 

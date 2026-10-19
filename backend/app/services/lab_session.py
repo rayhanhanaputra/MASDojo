@@ -182,6 +182,7 @@ def reap_orphans(db: Session) -> None:
     after a backend restart)."""
     active = {s.id for s in db.scalars(select(LabSession).where(LabSession.status == "active"))}
     docker_lab.reap_orphans(active)
+    device_pool.reap_orphans(active)
 
 
 def end(db: Session, user: User) -> bool:

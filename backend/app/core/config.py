@@ -84,14 +84,10 @@ class Settings(BaseSettings):
     # host-side). Set HOST_REPO_DIR=${PWD} and the volume name in compose.
     host_repo_dir: str = ""
     lab_task_store_volume: str = "masdojo_task-store"
-    # RESERVED (not yet honoured): hosted session containers are always
-    # network-isolated (static analysis only). Wiring a real device would need a
-    # per-session device pool so learners don't share one adb server / reach the
-    # host's other services over the bridge network. The interactive device is a
-    # solo-mode feature until that pool exists.
-    lab_allow_device_hosted: bool = False
-    # adb server port a device-bound session container would connect to (future).
-    lab_adb_port: int = 5037
+    # The device-pool settings (allow-device, emulator image / adb port / serial
+    # / boot timeout) are admin-configurable at runtime, not env - they live on
+    # the instance config in the DB so an operator can set them from Admin ->
+    # Instance settings without a redeploy.
 
     # Runner-related (read here so the backend can surface limits in the API)
     grading_job_timeout_sec: int = 420

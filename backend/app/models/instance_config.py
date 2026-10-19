@@ -9,7 +9,7 @@ live here. The AI fallback key is stored encrypted, never returned raw.
 
 from __future__ import annotations
 
-from sqlalchemy import Boolean, String
+from sqlalchemy import Boolean, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, TimestampMixin
@@ -35,6 +35,16 @@ class InstanceConfig(Base, TimestampMixin):
     # enabling it is safe: a session simply gets no device (static analysis),
     # because the pool allocates nothing. Never falls back to an exposed bridge.
     lab_allow_device_hosted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # KVM device pool (admin-configurable, no redeploy). The per-session
+    # emulator container image; EMPTY = pool disabled (allocate() returns None,
+    # so a device-enabled session safely stays static). The image must run an
+    # adb server on lab_emulator_adb_port reachable over the per-session network.
+    lab_emulator_image: Mapped[str] = mapped_column(String(255), nullable=False, default="")
+    lab_emulator_adb_port: Mapped[int] = mapped_column(Integer, nullable=False, default=5037)
+    lab_emulator_serial: Mapped[str] = mapped_column(
+        String(64), nullable=False, default="emulator-5554"
+    )
+    lab_emulator_boot_timeout_sec: Mapped[int] = mapped_column(Integer, nullable=False, default=180)
 
     # Install-level AI mentor fallback, used when a user has no personal key.
     # provider is "anthropic" | "openai"; key is encrypted at rest.

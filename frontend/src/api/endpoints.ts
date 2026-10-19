@@ -129,6 +129,10 @@ export const api = {
     registration_open?: boolean;
     lab_enabled?: boolean;
     lab_allow_device_hosted?: boolean;
+    lab_emulator_image?: string;
+    lab_emulator_adb_port?: number;
+    lab_emulator_serial?: string;
+    lab_emulator_boot_timeout_sec?: number;
   }) => request<InstanceConfig>("/admin/settings", { method: "PATCH", body: patch }),
   adminSwitchToHosted: (email: string, display_name: string, password: string) =>
     request<InstanceConfig>("/admin/settings/switch-to-hosted", {

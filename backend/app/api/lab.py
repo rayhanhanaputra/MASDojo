@@ -144,7 +144,7 @@ def _resolve_command(sess, solo: bool, db: Session) -> tuple[list[str] | None, s
     if not solo:
         network, adb_socket, serial, notice = "none", None, None, None
         if instance_config.lab_allow_device_hosted(db):
-            binding = device_pool.allocate(sess.id, sess.user_id)
+            binding = device_pool.allocate(sess.id, sess.user_id, db)
             if binding is not None:
                 network, adb_socket, serial = binding.network, binding.adb_socket, binding.serial
             else:

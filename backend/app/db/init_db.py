@@ -47,6 +47,14 @@ _COLUMN_PATCHES = (
     "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_enabled BOOLEAN NOT NULL DEFAULT TRUE",
     "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_allow_device_hosted "
     "BOOLEAN NOT NULL DEFAULT FALSE",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_emulator_image "
+    "VARCHAR(255) NOT NULL DEFAULT ''",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_emulator_adb_port "
+    "INTEGER NOT NULL DEFAULT 5037",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_emulator_serial "
+    "VARCHAR(64) NOT NULL DEFAULT 'emulator-5554'",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_emulator_boot_timeout_sec "
+    "INTEGER NOT NULL DEFAULT 180",
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS source VARCHAR(12) NOT NULL DEFAULT 'package'",
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS expected_override JSON",
     # One active lab session per user (defence against a create race).
