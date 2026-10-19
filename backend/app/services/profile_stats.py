@@ -20,6 +20,18 @@ from app.models.user import User
 from app.schemas.stats import DomainMastery, ModuleProgress, ProfileStats, TaskStat
 
 
+def _module_key(module: str) -> tuple[int, int, str]:
+    """Sort key putting modules in curriculum (numeric) order, not text order.
+
+    Module labels are numeric strings ("0".."11"); a plain string sort would put
+    module 10 and 11 between 1 and 2. Order numerically, falling back to text for
+    any non-numeric label so a custom module never crashes the sort."""
+    try:
+        return (0, int(module), "")
+    except (TypeError, ValueError):
+        return (1, 0, module)
+
+
 def _min_dt(a, b):
     if a is None:
         return b
@@ -37,7 +49,11 @@ def _max_dt(a, b):
 
 
 def compute(db: Session, user: User) -> ProfileStats:
+    # Canonical curriculum order: by module (numerically) then order_index. Every
+    # per-domain / per-module / per-task rollup below inherits this order (dicts
+    # preserve insertion order), so nothing is ever shown alphabetically.
     tasks = list(db.scalars(select(Task)).all())
+    tasks.sort(key=lambda t: (_module_key(t.module), t.order_index, t.id))
     progress_by_id = {
         p.task_id: p for p in db.scalars(select(Progress).where(Progress.user_id == user.id)).all()
     }
@@ -97,7 +113,7 @@ def compute(db: Session, user: User) -> ProfileStats:
         )
 
     domains: list[DomainMastery] = []
-    for domain, dts in sorted(by_domain.items()):
+    for domain, dts in by_domain.items():
         scores = [
             progress_by_id[t.id].best_score
             for t in dts
@@ -126,12 +142,12 @@ def compute(db: Session, user: User) -> ProfileStats:
                 1 for t in mts if t.id in progress_by_id and progress_by_id[t.id].passed
             ),
         )
-        for module, mts in sorted(by_module.items(), key=lambda kv: kv[0])
+        for module, mts in by_module.items()
     ]
 
     total_tasks = len(tasks)
-    # Keep the per-task list in curriculum order (module, then order_index).
-    task_stats.sort(key=lambda s: (s.module, s.task_id))
+    # task_stats is already in curriculum order: it was built by iterating the
+    # pre-sorted `tasks` list, so no re-sort is needed here.
 
     return ProfileStats(
         display_name=user.display_name,
