@@ -15,12 +15,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         nano vim less bash ca-certificates curl unzip file xxd \
         binutils python3 python3-pip git \
+        android-tools-adb \
     && rm -rf /var/lib/apt/lists/*
 
-# Android platform-tools (adb) for driving a device/emulator.
-RUN curl -fsSL https://dl.google.com/android/repository/platform-tools-latest-linux.zip -o /tmp/pt.zip \
-    && unzip -q /tmp/pt.zip -d /opt && rm /tmp/pt.zip \
-    && ln -s /opt/platform-tools/adb /usr/local/bin/adb
+# Note: `adb` comes from the distro's android-tools-adb (arch-native, so it works
+# on arm64) rather than Google's platform-tools zip, which is x86_64-only. Set
+# ADB_SERVER_SOCKET (compose) to point at the host's adb server to drive a device.
 
 # jadx (decompiler).
 RUN curl -fsSL "https://github.com/skylot/jadx/releases/download/v${JADX_VERSION}/jadx-${JADX_VERSION}.zip" -o /tmp/jadx.zip \

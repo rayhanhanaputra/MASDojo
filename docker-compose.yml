@@ -150,6 +150,13 @@ services:
       dockerfile: infra/Dockerfile.lab
     profiles: ["lab"]
     # Deliberately NO env_file: this container must not see backend secrets.
+    # Point adb at the host's adb server so the terminal can drive the host's
+    # emulator. On a KVM runner, set this to the runner's adb instead. Start the
+    # host server on all interfaces first: `adb -a -P 5037 nodaemon server`.
+    environment:
+      ADB_SERVER_SOCKET: tcp:host.docker.internal:5037
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: ["sleep", "infinity"]
     volumes:
       # Sibling mounts under /targets (not /targets itself, which would make the

@@ -94,3 +94,21 @@ Two gotchas seen on Apple Silicon:
 The visual emulator view is free here: the native emulator already shows a
 window. The in-browser "device screen" tab (`LAB_STREAM_URL`, see
 `lab-visual.md`) is for headless hosted runners.
+
+### adb / frida in the browser lab terminal (against the native emulator)
+
+The isolated lab container (`--profile lab`) ships an arch-native `adb` and
+`frida`. To let them drive the Mac's native emulator, expose the host's adb
+server on all interfaces once, then the container reaches it via
+`ADB_SERVER_SOCKET` (already set in compose to `host.docker.internal:5037`):
+
+```bash
+adb kill-server
+adb -a -P 5037 nodaemon server &   # listen on all interfaces so the container can connect
+docker compose --profile lab up -d --build lab
+```
+
+Then in the in-browser terminal: `adb devices`, `adb -s emulator-5554 shell`,
+`frida-ps -D emulator-5554`, etc. all work against the live rooted device.
+(Google's platform-tools `adb` is x86_64-only, so the image uses the distro's
+`android-tools-adb` to run on arm64.)
