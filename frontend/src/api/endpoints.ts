@@ -141,6 +141,8 @@ export const api = {
     grading_job_timeout_sec?: number;
     mentor_rate_limit_per_hour?: number;
   }) => request<InstanceConfig>("/admin/settings", { method: "PATCH", body: patch }),
+  adminResetTuning: () =>
+    request<InstanceConfig>("/admin/settings/reset-tuning", { method: "POST" }),
   adminSwitchToHosted: (email: string, display_name: string, password: string) =>
     request<InstanceConfig>("/admin/settings/switch-to-hosted", {
       method: "POST",

@@ -130,6 +130,17 @@ def update_settings(
     return _config_view(cfg)
 
 
+@router.post("/settings/reset-tuning", response_model=InstanceConfigView)
+def reset_tuning(
+    db: Session = Depends(get_db),
+    _admin: User = Depends(require_role("admin")),
+) -> InstanceConfigView:
+    """Restore the runtime-tuning limits/caps to their shipped defaults.
+
+    Leaves mode, registration, lab toggles, device pool and AI fallback alone."""
+    return _config_view(instance_config.reset_tuning(db))
+
+
 @router.post("/settings/switch-to-hosted", response_model=InstanceConfigView)
 def switch_to_hosted(
     body: SwitchToHosted,

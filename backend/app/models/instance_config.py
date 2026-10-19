@@ -16,6 +16,20 @@ from app.db.base import Base, TimestampMixin
 
 SINGLETON_ID = 1
 
+# The runtime-tuning fields an admin can edit (and reset) from the Instance
+# settings panel. Their default values live on the column definitions below —
+# that is the single source of truth; `reset_tuning` reads the defaults back
+# out of these columns rather than duplicating the numbers anywhere.
+TUNING_FIELDS = (
+    "lab_session_ttl_min",
+    "lab_mem_limit",
+    "lab_cpu_limit",
+    "lab_pids_limit",
+    "lab_stream_url",
+    "grading_job_timeout_sec",
+    "mentor_rate_limit_per_hour",
+)
+
 
 class InstanceConfig(Base, TimestampMixin):
     __tablename__ = "instance_config"

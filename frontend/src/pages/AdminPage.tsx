@@ -149,6 +149,16 @@ function InstanceSettings() {
   const [mentorRate, setMentorRate] = useState(30);
   const [tuneInit, setTuneInit] = useState(false);
 
+  function applyTuning(c: InstanceConfig) {
+    setTtlMin(c.lab_session_ttl_min);
+    setMemLimit(c.lab_mem_limit);
+    setCpuLimit(c.lab_cpu_limit);
+    setPidsLimit(c.lab_pids_limit);
+    setStreamUrl(c.lab_stream_url);
+    setGradeTimeout(c.grading_job_timeout_sec);
+    setMentorRate(c.mentor_rate_limit_per_hour);
+  }
+
   function load() {
     api
       .adminGetSettings()
@@ -162,13 +172,7 @@ function InstanceSettings() {
           setPoolInit(true);
         }
         if (!tuneInit) {
-          setTtlMin(c.lab_session_ttl_min);
-          setMemLimit(c.lab_mem_limit);
-          setCpuLimit(c.lab_cpu_limit);
-          setPidsLimit(c.lab_pids_limit);
-          setStreamUrl(c.lab_stream_url);
-          setGradeTimeout(c.grading_job_timeout_sec);
-          setMentorRate(c.mentor_rate_limit_per_hour);
+          applyTuning(c);
           setTuneInit(true);
         }
       })
@@ -185,6 +189,24 @@ function InstanceSettings() {
       setOk(okMsg);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Action failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Reset only the tuning limits to their shipped defaults, then re-sync the
+  // form inputs to the values the server returns.
+  async function resetTuning() {
+    setError("");
+    setOk("");
+    setBusy(true);
+    try {
+      const c = await api.adminResetTuning();
+      setCfg(c);
+      applyTuning(c);
+      setOk("Limits reset to defaults.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Reset failed");
     } finally {
       setBusy(false);
     }
@@ -439,7 +461,12 @@ function InstanceSettings() {
             <label className="label" htmlFor="tune-stream">Visual stream URL (optional, %(serial)s)</label>
             <input id="tune-stream" className="input font-mono" placeholder="https://stream.example/%(serial)s" value={streamUrl} onChange={(e) => setStreamUrl(e.target.value)} />
           </div>
-          <button className="btn-primary btn-sm" disabled={busy}>Save</button>
+          <div className="flex items-end gap-2">
+            <button className="btn-primary btn-sm" disabled={busy}>Save</button>
+            <button type="button" className="btn-ghost btn-sm" disabled={busy} onClick={resetTuning}>
+              Reset to defaults
+            </button>
+          </div>
         </form>
       </div>
 

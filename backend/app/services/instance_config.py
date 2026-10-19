@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.crypto import decrypt_secret, encrypt_secret, mask_key
-from app.models.instance_config import SINGLETON_ID, InstanceConfig
+from app.models.instance_config import SINGLETON_ID, TUNING_FIELDS, InstanceConfig
 from app.services.ai.factory import make_provider
 from app.services.ai.provider import AIProvider
 
@@ -48,6 +48,24 @@ def get_config(db: Session) -> InstanceConfig:
     db.commit()
     db.refresh(cfg)
     logger.info("seeded instance_config (solo_mode={})", cfg.solo_mode)
+    return cfg
+
+
+def reset_tuning(db: Session) -> InstanceConfig:
+    """Reset only the runtime-tuning fields to their column defaults.
+
+    Reads each default straight off the column definition (the single source of
+    truth), so there is no duplicated list of numbers to drift. Operating mode,
+    registration, lab toggles, the device pool and the AI fallback are left
+    untouched — this just restores the limits/caps to their shipped values."""
+    cfg = get_config(db)
+    columns = InstanceConfig.__table__.columns
+    for field in TUNING_FIELDS:
+        default = columns[field].default
+        setattr(cfg, field, default.arg if default is not None else None)
+    db.commit()
+    db.refresh(cfg)
+    logger.info("reset runtime tuning to column defaults")
     return cfg
 
 
