@@ -487,10 +487,18 @@ function InstanceSettings() {
             className="space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
-              act(
-                () => api.adminSwitchToHosted(adminEmail.trim(), adminName.trim(), adminPass),
-                "Switched to hosted. Reload, then log in with your new admin account.",
-              ).then(() => setShowHostedForm(false));
+              setError("");
+              setBusy(true);
+              // On success, hard-navigate to the login screen: the mode change
+              // only takes effect on a fresh bootstrap (re-reads /config), and
+              // this session has no token for the now-hosted instance.
+              api
+                .adminSwitchToHosted(adminEmail.trim(), adminName.trim(), adminPass)
+                .then(() => window.location.assign("/login"))
+                .catch((err) => {
+                  setError(err instanceof Error ? err.message : "Switch failed");
+                  setBusy(false);
+                });
             }}
           >
             <div>
@@ -528,11 +536,19 @@ function InstanceSettings() {
             <button
               className="btn-primary btn-sm"
               disabled={busy}
-              onClick={() =>
-                act(() => api.adminSwitchToSolo(), "Switched to solo. Reload to apply.").then(() =>
-                  setShowSoloConfirm(false),
-                )
-              }
+              onClick={() => {
+                setError("");
+                setBusy(true);
+                // Reload into the curriculum: solo mode re-bootstraps with the
+                // single local profile (no login) on a fresh page load.
+                api
+                  .adminSwitchToSolo()
+                  .then(() => window.location.assign("/"))
+                  .catch((err) => {
+                    setError(err instanceof Error ? err.message : "Switch failed");
+                    setBusy(false);
+                  });
+              }}
             >
               Switch to solo
             </button>
