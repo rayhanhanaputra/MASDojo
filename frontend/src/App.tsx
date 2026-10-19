@@ -21,6 +21,15 @@ function RequireRole({ min, children }: { min: "instructor" | "admin"; children:
   return rank >= ROLE_RANK[min] ? <>{children}</> : <Navigate to="/" replace />;
 }
 
+/** Staff-only pages that make no sense for a single local profile (authoring
+ * tasks would expose answers; the student roster has no other learners). In solo
+ * mode they're hidden from the nav and redirect away if reached by URL. */
+function StaffOnly({ children }: { children: ReactNode }) {
+  const { soloMode } = useAuth();
+  if (soloMode) return <Navigate to="/" replace />;
+  return <RequireRole min="instructor">{children}</RequireRole>;
+}
+
 function Protected({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) {
@@ -60,17 +69,17 @@ export default function App() {
         <Route
           path="/instructor"
           element={
-            <RequireRole min="instructor">
+            <StaffOnly>
               <InstructorPage />
-            </RequireRole>
+            </StaffOnly>
           }
         />
         <Route
           path="/students"
           element={
-            <RequireRole min="instructor">
+            <StaffOnly>
               <StudentsPage />
-            </RequireRole>
+            </StaffOnly>
           }
         />
         <Route

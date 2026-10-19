@@ -14,14 +14,17 @@ export function Layout() {
   const { user, logout, soloMode } = useAuth();
   const navigate = useNavigate();
 
-  // Role-gated nav. The solo profile is an admin, so staff links also appear in
-  // solo mode — that's how the operator reaches Admin → Instance settings to
-  // switch to hosted mode.
+  // Role-gated nav. The solo profile is auto-admin, but solo is a single learner
+  // working through the curriculum — so the staff tools that would undermine that
+  // are hidden: "Tasks" (authoring, which exposes answers/flags/solutions) and
+  // "Students" (a roster of other learners). Only "Admin" stays, so the operator
+  // can still reach Instance settings (e.g. to switch to hosted mode).
   const rank = user ? RANK[user.role] ?? 0 : 0;
+  const staff = !soloMode && rank >= RANK.instructor;
   const navItems = [
     ...BASE_NAV,
-    ...(rank >= RANK.instructor ? [{ to: "/instructor", label: "Tasks" }] : []),
-    ...(rank >= RANK.instructor ? [{ to: "/students", label: "Students" }] : []),
+    ...(staff ? [{ to: "/instructor", label: "Tasks" }] : []),
+    ...(staff ? [{ to: "/students", label: "Students" }] : []),
     ...(rank >= RANK.admin ? [{ to: "/admin", label: "Admin" }] : []),
   ];
 
