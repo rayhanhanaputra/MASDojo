@@ -115,6 +115,13 @@ class Settings(BaseSettings):
     openai_base_url: str = "https://api.openai.com"
     openai_model: str = "gpt-4o"
     openai_api_key: str = ""
+    # Extra JSON merged into every OpenAI-compatible request body. Default empty
+    # so stock OpenAI is untouched. Use it to tame slow "reasoning"/"thinking"
+    # models behind a gateway that otherwise spend 60-90s generating hidden
+    # reasoning tokens before answering (the mentor appears to hang). For a Qwen
+    # "thinking" model on vLLM/SGLang: OPENAI_EXTRA_BODY={"chat_template_kwargs":
+    # {"enable_thinking":false}}. For OpenAI o-series: {"reasoning_effort":"low"}.
+    openai_extra_body: str = ""
 
     @property
     def mentor_fallback(self) -> tuple[str, str] | None:
