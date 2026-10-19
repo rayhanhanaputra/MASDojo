@@ -44,11 +44,14 @@ services:
     environment:
       POSTGRES_HOST: db
       REDIS_HOST: redis
-      # Name of the isolated lab container to exec the terminal into. The lab
-      # runs under the `lab` profile; when it isn't up the terminal falls back
-      # to a placeholder shell in solo mode only (never in hosted, to avoid
-      # exposing backend secrets).
+      # Name of the shared lab container (SOLO mode). In hosted mode each
+      # session gets its own ephemeral hardened container instead.
       LAB_CONTAINER: masdojo-lab-1
+      # Host-side repo path + task-store volume name, so per-session `docker run`
+      # can mount the committed targets (the daemon resolves -v sources on the
+      # host, not inside this container).
+      HOST_REPO_DIR: ${PWD}
+      LAB_TASK_STORE_VOLUME: masdojo_task-store
     depends_on:
       db:
         condition: service_healthy

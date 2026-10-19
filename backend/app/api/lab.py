@@ -29,7 +29,7 @@ from app.core.security import decode_access_token
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.lab import LabSessionCreate, LabSessionView
-from app.services import instance_config, lab_session
+from app.services import docker_lab, instance_config, lab_session
 
 router = APIRouter(prefix="/lab", tags=["lab"])
 
@@ -122,31 +122,45 @@ def _lab_container_running() -> bool:
     return out.returncode == 0 and out.stdout.strip() == "true"
 
 
-def _resolve_command(serial: str | None, user_id: int, solo: bool) -> list[str] | None:
-    """Build the terminal command. Prefer an exec into the isolated lab
-    container (no backend secrets); fall back to a placeholder shell only in
-    solo mode. Returns None when no safe shell is available (hosted + no lab),
-    so we never drop a learner into the secret-bearing backend container."""
+def _inner_command(serial: str | None) -> str:
     inner = settings.lab_shell_command
     if "%(serial)s" in inner:
         # Shell-quote the serial: it originates from the runner heartbeat / DB,
-        # not a trusted literal, so it must not be able to inject shell syntax
-        # into the adb command (e.g. `adb -s %(serial)s shell`).
+        # not a trusted literal, so it must not inject shell syntax into the adb
+        # command (e.g. `adb -s %(serial)s shell`).
         inner = inner % {"serial": shlex.quote(serial or "")}
+    return inner
 
+
+def _resolve_command(sess, solo: bool) -> list[str] | None:
+    """Build the terminal command.
+
+    Hosted: exec into this session's OWN hardened, ephemeral container so
+    learners are isolated from each other; a device/adb is wired only when the
+    operator opted in. Solo: the shared workstation (or a local placeholder) is
+    fine for a single operator. Returns None when no safe shell is available, so
+    a learner is never dropped into the secret-bearing backend container."""
+    if not solo:
+        # A hosted session reaches a device only if an admin opted in AND one is
+        # bound; otherwise the container is network-isolated (static analysis).
+        device_socket = None
+        serial = sess.device_serial if settings.lab_allow_device_hosted else None
+        if serial:
+            device_socket = f"tcp:host.docker.internal:{settings.lab_adb_port}"
+        name = docker_lab.ensure_session_container(sess.id, device_socket)
+        if not name:
+            return None
+        inner = _inner_command(serial)
+        bootstrap = f"cd /work && exec {inner}"
+        return ["docker", "exec", "-i", name, "bash", "-lc", bootstrap]
+
+    # Solo: single trusted operator on their own machine.
+    inner = _inner_command(sess.device_serial)
     if _lab_container_running():
-        # Per-user scratch dir inside the isolated workstation.
-        workdir = f"/work/{user_id}"
+        workdir = f"/work/{sess.user_id}"
         bootstrap = f"mkdir -p {shlex.quote(workdir)} && cd {shlex.quote(workdir)} && exec {inner}"
         return ["docker", "exec", "-i", settings.lab_container, "bash", "-lc", bootstrap]
-
-    if solo:
-        # Single local operator on their own machine: the placeholder shell in
-        # the backend container is acceptable (no other users to protect from).
-        return shlex.split(inner)
-
-    # Hosted with no lab workstation: refuse rather than expose backend secrets.
-    return None
+    return shlex.split(inner)
 
 
 @router.websocket("/terminal")
@@ -169,7 +183,7 @@ async def terminal(
         return
 
     solo = instance_config.effective_solo_mode(db)
-    argv = _resolve_command(sess.device_serial, user.id, solo)
+    argv = _resolve_command(sess, solo)
     if argv is None:
         await ws.accept()
         await ws.send_text(

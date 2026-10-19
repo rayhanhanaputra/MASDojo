@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.lab_session import LabSession
 from app.models.user import User
+from app.services import docker_lab
 from app.services.queue import get_redis
 
 HEARTBEAT_KEY = "masdojo:runner:heartbeat"
@@ -69,6 +70,7 @@ def _expire_if_stale(db: Session, s: LabSession | None) -> LabSession | None:
         s.status = "expired"
         s.ended_at = _now()
         db.commit()
+        docker_lab.remove_session_container(s.id)
         return None
     return s
 
@@ -103,6 +105,7 @@ def create(db: Session, user: User, task_id: str) -> LabSession:
         active.status = "ended"
         active.ended_at = _now()
         db.commit()
+        docker_lab.remove_session_container(active.id)
 
     s = LabSession(
         user_id=user.id,
@@ -133,15 +136,26 @@ def list_active(db: Session) -> list[LabSession]:
         )
     )
     live = []
+    expired_ids = []
     for s in rows:
         exp = s.expires_at if s.expires_at.tzinfo else s.expires_at.replace(tzinfo=timezone.utc)
         if exp <= now:
             s.status = "expired"
             s.ended_at = now
+            expired_ids.append(s.id)
         else:
             live.append(s)
     db.commit()
+    for sid in expired_ids:
+        docker_lab.remove_session_container(sid)
     return live
+
+
+def reap_orphans(db: Session) -> None:
+    """Remove per-session lab containers with no active session (e.g. left over
+    after a backend restart)."""
+    active = {s.id for s in db.scalars(select(LabSession).where(LabSession.status == "active"))}
+    docker_lab.reap_orphans(active)
 
 
 def end(db: Session, user: User) -> bool:
@@ -151,5 +165,6 @@ def end(db: Session, user: User) -> bool:
     s.status = "ended"
     s.ended_at = _now()
     db.commit()
+    docker_lab.remove_session_container(s.id)
     logger.info("lab session {} ended for user {}", s.id, user.id)
     return True

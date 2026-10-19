@@ -39,6 +39,15 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
             ", ".join(settings.insecure_defaults()),
         )
     logger.info("MASDojo backend starting up")
+    # Clean up any per-session lab containers orphaned by a previous run.
+    try:
+        from app.db.session import SessionLocal
+        from app.services import lab_session
+
+        with SessionLocal() as db:
+            lab_session.reap_orphans(db)
+    except Exception as exc:  # noqa: BLE001 - never block startup on cleanup
+        logger.warning("lab orphan reap skipped: {}", exc)
     yield
     logger.info("MASDojo backend shutting down")
 

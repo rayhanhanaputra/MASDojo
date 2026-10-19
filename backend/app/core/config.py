@@ -71,6 +71,25 @@ class Settings(BaseSettings):
     # KVM runner with a live emulator; empty = CLI only. %(serial)s is
     # substituted with the session device serial. Env: LAB_STREAM_URL.
     lab_stream_url: str = ""
+    # ── Per-session isolated lab (hosted mode) ──
+    # In hosted mode each lab session runs in its own ephemeral, hardened
+    # container (built from this image) instead of a shared one, so learners
+    # can't see each other's files/processes. Solo mode keeps the shared path.
+    lab_image: str = "masdojo-lab"
+    lab_mem_limit: str = "512m"
+    lab_cpu_limit: str = "1.5"
+    lab_pids_limit: int = 256
+    # Host path of the repo + the task-store docker volume name, so per-session
+    # `docker run` can mount the committed targets (daemon resolves these
+    # host-side). Set HOST_REPO_DIR=${PWD} and the volume name in compose.
+    host_repo_dir: str = ""
+    lab_task_store_volume: str = "masdojo_task-store"
+    # Safe default: a hosted session container gets NO network/device (static
+    # analysis only). A real device needs a per-session pool (KVM) + an admin
+    # opt-in; until then the interactive device stays a solo-mode feature.
+    lab_allow_device_hosted: bool = False
+    # Host adb server port a device-bound session container connects to.
+    lab_adb_port: int = 5037
 
     # Runner-related (read here so the backend can surface limits in the API)
     grading_job_timeout_sec: int = 420
