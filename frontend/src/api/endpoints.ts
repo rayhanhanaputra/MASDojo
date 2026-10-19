@@ -125,8 +125,11 @@ export const api = {
   adminSystemCheck: () => request<SystemCheckItem[]>("/admin/system"),
   adminLabSessions: () => request<LabSessionAdminView[]>("/admin/lab/sessions"),
   adminGetSettings: () => request<InstanceConfig>("/admin/settings"),
-  adminUpdateSettings: (patch: { registration_open?: boolean; lab_enabled?: boolean }) =>
-    request<InstanceConfig>("/admin/settings", { method: "PATCH", body: patch }),
+  adminUpdateSettings: (patch: {
+    registration_open?: boolean;
+    lab_enabled?: boolean;
+    lab_allow_device_hosted?: boolean;
+  }) => request<InstanceConfig>("/admin/settings", { method: "PATCH", body: patch }),
   adminSwitchToHosted: (email: string, display_name: string, password: string) =>
     request<InstanceConfig>("/admin/settings/switch-to-hosted", {
       method: "POST",

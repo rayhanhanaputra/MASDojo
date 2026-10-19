@@ -30,6 +30,11 @@ class InstanceConfig(Base, TimestampMixin):
     # Whether the interactive lab playground is available. On a KVM deploy this
     # is what lets learners reach the remote emulator's adb/frida shell.
     lab_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # Admin opt-in: allow hosted lab sessions to bind a live device. Only has an
+    # effect once a per-session device pool is provisioned (KVM). Until then,
+    # enabling it is safe: a session simply gets no device (static analysis),
+    # because the pool allocates nothing. Never falls back to an exposed bridge.
+    lab_allow_device_hosted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     # Install-level AI mentor fallback, used when a user has no personal key.
     # provider is "anthropic" | "openai"; key is encrypted at rest.

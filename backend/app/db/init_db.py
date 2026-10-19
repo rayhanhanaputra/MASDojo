@@ -45,6 +45,8 @@ _COLUMN_PATCHES = (
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT TRUE",
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS instructor_edited BOOLEAN NOT NULL DEFAULT FALSE",
     "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_enabled BOOLEAN NOT NULL DEFAULT TRUE",
+    "ALTER TABLE instance_config ADD COLUMN IF NOT EXISTS lab_allow_device_hosted "
+    "BOOLEAN NOT NULL DEFAULT FALSE",
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS source VARCHAR(12) NOT NULL DEFAULT 'package'",
     "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS expected_override JSON",
     # One active lab session per user (defence against a create race).

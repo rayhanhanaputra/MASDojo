@@ -63,6 +63,10 @@ def lab_enabled(db: Session) -> bool:
     return get_config(db).lab_enabled
 
 
+def lab_allow_device_hosted(db: Session) -> bool:
+    return get_config(db).lab_allow_device_hosted
+
+
 def fallback_provider(db: Session) -> AIProvider | None:
     """Build the install-level mentor provider from the DB config, or None.
 

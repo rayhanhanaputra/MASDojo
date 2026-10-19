@@ -20,8 +20,15 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.lab_session import LabSession
 from app.models.user import User
-from app.services import docker_lab
+from app.services import device_pool, docker_lab
 from app.services.queue import get_redis
+
+
+def _teardown(session_id: int) -> None:
+    """Remove a session's container and release any device it held."""
+    docker_lab.remove_session_container(session_id)
+    device_pool.release(session_id)
+
 
 HEARTBEAT_KEY = "masdojo:runner:heartbeat"
 HEARTBEAT_STALE_SEC = 25
@@ -71,7 +78,7 @@ def _expire_if_stale(db: Session, s: LabSession | None) -> LabSession | None:
         s.status = "expired"
         s.ended_at = _now()
         db.commit()
-        docker_lab.remove_session_container(s.id)
+        _teardown(s.id)
         return None
     return s
 
@@ -115,7 +122,7 @@ def create(db: Session, user: User, task_id: str) -> LabSession:
     if actives:
         db.commit()
         for a in actives:
-            docker_lab.remove_session_container(a.id)
+            _teardown(a.id)
 
     s = LabSession(
         user_id=user.id,
@@ -166,7 +173,7 @@ def list_active(db: Session) -> list[LabSession]:
             live.append(s)
     db.commit()
     for sid in expired_ids:
-        docker_lab.remove_session_container(sid)
+        _teardown(sid)
     return live
 
 
@@ -184,6 +191,6 @@ def end(db: Session, user: User) -> bool:
     s.status = "ended"
     s.ended_at = _now()
     db.commit()
-    docker_lab.remove_session_container(s.id)
+    _teardown(s.id)
     logger.info("lab session {} ended for user {}", s.id, user.id)
     return True

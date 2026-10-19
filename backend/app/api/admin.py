@@ -37,6 +37,7 @@ def _config_view(cfg) -> InstanceConfigView:
         solo_mode=cfg.solo_mode,
         registration_open=cfg.registration_open,
         lab_enabled=cfg.lab_enabled,
+        lab_allow_device_hosted=cfg.lab_allow_device_hosted,
         ai_fallback_configured=bool(cfg.ai_fallback_key_encrypted),
         ai_fallback_provider=cfg.ai_fallback_provider,
         ai_fallback_masked=cfg.ai_fallback_masked,

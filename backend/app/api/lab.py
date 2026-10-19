@@ -29,7 +29,7 @@ from app.core.security import decode_access_token
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.lab import LabSessionCreate, LabSessionView
-from app.services import docker_lab, instance_config, lab_session
+from app.services import device_pool, docker_lab, instance_config, lab_session
 
 router = APIRouter(prefix="/lab", tags=["lab"])
 
@@ -132,33 +132,39 @@ def _inner_command(serial: str | None) -> str:
     return inner
 
 
-def _resolve_command(sess, solo: bool) -> list[str] | None:
-    """Build the terminal command.
+def _resolve_command(sess, solo: bool, db: Session) -> tuple[list[str] | None, str | None]:
+    """Build the terminal command and an optional notice to show the learner.
 
-    Hosted: exec into this session's OWN hardened, ephemeral container so
-    learners are isolated from each other; a device/adb is wired only when the
-    operator opted in. Solo: the shared workstation (or a local placeholder) is
-    fine for a single operator. Returns None when no safe shell is available, so
-    a learner is never dropped into the secret-bearing backend container."""
+    Hosted: exec into this session's OWN hardened, ephemeral container. If an
+    admin enabled device access AND the device pool allocates one, the container
+    joins that device's DEDICATED network (never the host bridge); otherwise it
+    stays network-isolated (static analysis) and we note why. Solo: the shared
+    workstation (or a local placeholder) is fine for a single operator. argv is
+    None when no safe shell is available (never the secret-bearing backend)."""
     if not solo:
-        # Hosted sessions are always network-isolated (static analysis only). A
-        # live device would mean --network bridge, which exposes the host's
-        # other services (DB/Redis/backend) and shares one adb server across all
-        # learners. Safe per-learner device access needs a per-session device
-        # pool; until that exists, hosted never wires a device/network.
-        name = docker_lab.ensure_session_container(sess.id, device_adb_socket=None)
+        network, adb_socket, serial, notice = "none", None, None, None
+        if instance_config.lab_allow_device_hosted(db):
+            binding = device_pool.allocate(sess.id, sess.user_id)
+            if binding is not None:
+                network, adb_socket, serial = binding.network, binding.adb_socket, binding.serial
+            else:
+                notice = (
+                    "[lab] device access is enabled but no device is available "
+                    "(the KVM device pool is not provisioned). Static-analysis tools only."
+                )
+        name = docker_lab.ensure_session_container(sess.id, network=network, adb_socket=adb_socket)
         if not name:
-            return None
-        bootstrap = f"cd /work && exec {_inner_command(None)}"
-        return ["docker", "exec", "-i", name, "bash", "-lc", bootstrap]
+            return None, None
+        bootstrap = f"cd /work && exec {_inner_command(serial)}"
+        return ["docker", "exec", "-i", name, "bash", "-lc", bootstrap], notice
 
     # Solo: single trusted operator on their own machine.
     inner = _inner_command(sess.device_serial)
     if _lab_container_running():
         workdir = f"/work/{sess.user_id}"
         bootstrap = f"mkdir -p {shlex.quote(workdir)} && cd {shlex.quote(workdir)} && exec {inner}"
-        return ["docker", "exec", "-i", settings.lab_container, "bash", "-lc", bootstrap]
-    return shlex.split(inner)
+        return ["docker", "exec", "-i", settings.lab_container, "bash", "-lc", bootstrap], None
+    return shlex.split(inner), None
 
 
 @router.websocket("/terminal")
@@ -181,7 +187,7 @@ async def terminal(
         return
 
     solo = instance_config.effective_solo_mode(db)
-    argv = _resolve_command(sess, solo)
+    argv, notice = _resolve_command(sess, solo, db)
     if argv is None:
         await ws.accept()
         await ws.send_text(
@@ -192,6 +198,8 @@ async def terminal(
         return
 
     await ws.accept()
+    if notice:
+        await ws.send_text(f"\r\n{notice}\r\n")
     logger.info(
         "lab terminal opened: session={} user={} device={}",
         sess.id,

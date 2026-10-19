@@ -48,6 +48,7 @@ class InstanceConfigView(BaseModel):
     solo_mode: bool
     registration_open: bool
     lab_enabled: bool
+    lab_allow_device_hosted: bool
     ai_fallback_configured: bool
     ai_fallback_provider: AiProvider | None = None
     ai_fallback_masked: str | None = None
@@ -61,6 +62,7 @@ class InstanceConfigUpdate(BaseModel):
     # switching back to solo through /settings/switch-to-solo.
     registration_open: bool | None = None
     lab_enabled: bool | None = None
+    lab_allow_device_hosted: bool | None = None
 
 
 class SwitchToHosted(BaseModel):

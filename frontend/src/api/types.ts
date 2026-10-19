@@ -41,6 +41,7 @@ export interface InstanceConfig {
   solo_mode: boolean;
   registration_open: boolean;
   lab_enabled: boolean;
+  lab_allow_device_hosted: boolean;
   ai_fallback_configured: boolean;
   ai_fallback_provider: "anthropic" | "openai" | null;
   ai_fallback_masked: string | null;

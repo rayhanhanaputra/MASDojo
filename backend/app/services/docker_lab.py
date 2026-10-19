@@ -71,13 +71,16 @@ def is_running(name: str) -> bool:
     return bool(out and out.returncode == 0 and out.stdout.strip() == "true")
 
 
-def ensure_session_container(session_id: int, device_adb_socket: str | None = None) -> str | None:
+def ensure_session_container(
+    session_id: int, network: str = "none", adb_socket: str | None = None
+) -> str | None:
     """Create (or reuse) the hardened per-session container; return its name.
 
-    `device_adb_socket` wires adb to a device for this session (only passed when
-    an admin has opted into device access and a device is bound); otherwise the
-    container has no network and is static-analysis only. Returns None if the
-    container can't be created (caller degrades gracefully)."""
+    `network` is the docker network the container joins; it defaults to "none"
+    (fully isolated, static analysis). A device-bound session passes the device
+    pool's DEDICATED network name (never the host bridge), plus `adb_socket`
+    pointing only at that device. Returns None if the container can't be created
+    (caller degrades gracefully)."""
     name = session_container_name(session_id)
     if is_running(name):
         return name
@@ -85,7 +88,7 @@ def ensure_session_container(session_id: int, device_adb_socket: str | None = No
     # A fresh container may be left over (stopped) under the same name; clear it.
     _run(["docker", "rm", "-f", name], timeout=10)
 
-    give_network = bool(device_adb_socket)
+    net = network if network else "none"
     args = [
         "docker",
         "run",
@@ -120,9 +123,10 @@ def ensure_session_container(session_id: int, device_adb_socket: str | None = No
         "/tmp:rw,nosuid,nodev,size=1g,uid=1000,gid=1000,mode=1777",
         "--tmpfs",
         "/home/labuser:rw,nosuid,nodev,size=1g,uid=1000,gid=1000,mode=0700",
-        # No network unless a device is bound (static-analysis default).
+        # Network: "none" (static analysis) by default; a device-bound session
+        # joins the pool's dedicated network, NEVER the host bridge.
         "--network",
-        "bridge" if give_network else "none",
+        net,
     ]
     # Target materials, read-only. Paths are resolved on the HOST (the daemon
     # interprets -v source paths host-side, not inside the backend container),
@@ -134,13 +138,10 @@ def ensure_session_container(session_id: int, device_adb_socket: str | None = No
         args += ["-v", f"{base}/tasks:/targets/tasks:ro"]
     if settings.lab_task_store_volume:
         args += ["-v", f"{settings.lab_task_store_volume}:/targets/task-store:ro"]
-    if device_adb_socket:
-        args += [
-            "--env",
-            f"ADB_SERVER_SOCKET={device_adb_socket}",
-            "--add-host",
-            "host.docker.internal:host-gateway",
-        ]
+    if adb_socket:
+        # The pool's adb endpoint reaches ONLY this session's device (it lives on
+        # the dedicated network above); no host-gateway, no shared adb server.
+        args += ["--env", f"ADB_SERVER_SOCKET={adb_socket}"]
     args += [settings.lab_image, "sleep", "infinity"]
 
     out = _run(args, timeout=20)
@@ -151,9 +152,7 @@ def ensure_session_container(session_id: int, device_adb_socket: str | None = No
             (out.stderr.strip() if out else "docker unavailable"),
         )
         return None
-    logger.info(
-        "lab session container up: {} (network={})", name, "bridge" if give_network else "none"
-    )
+    logger.info("lab session container up: {} (network={})", name, net)
     return name
 
 

@@ -225,6 +225,34 @@ function InstanceSettings() {
         </button>
       </div>
 
+      {!cfg.solo_mode && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-ink-400 bg-ink-900/50 px-4 py-3">
+          <div>
+            <p className="text-sm text-zinc-100">Lab device access (hosted)</p>
+            <p className="font-mono text-xs text-zinc-500">
+              {cfg.lab_allow_device_hosted
+                ? "allowed: sessions get a live device when the KVM pool provides one (else static)"
+                : "off: sessions are static analysis only (isolated, no device)"}
+            </p>
+          </div>
+          <button
+            className="btn-ghost btn-sm"
+            disabled={busy}
+            onClick={() =>
+              act(
+                () =>
+                  api.adminUpdateSettings({
+                    lab_allow_device_hosted: !cfg.lab_allow_device_hosted,
+                  }),
+                "Lab device access updated.",
+              )
+            }
+          >
+            {cfg.lab_allow_device_hosted ? "Disallow" : "Allow"}
+          </button>
+        </div>
+      )}
+
       <div className="space-y-3 rounded-lg border border-ink-400 bg-ink-900/50 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div>
