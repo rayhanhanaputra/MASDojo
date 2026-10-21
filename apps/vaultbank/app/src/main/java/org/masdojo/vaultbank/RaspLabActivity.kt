@@ -60,6 +60,24 @@ class RaspLabActivity : AppCompatActivity() {
             reason = "MASDOJO_DENIED_ATT: attestation verdict failed",
             unlock = "MASDOJO_UNLOCK_ATT", flag = Flags.reveal(BuildConfig.ATTEST_FLAG),
         )
+        gate(
+            lines, "Premium feature gate",
+            clean = FeatureGate.isUnlocked(),
+            reason = "MASDOJO_DENIED_FEATURE: premium feature locked (client-side gate)",
+            unlock = "MASDOJO_UNLOCK_FEATURE", flag = Flags.reveal(BuildConfig.FEATURE_FLAG),
+        )
+        gate(
+            lines, "Certificate-pinning gate",
+            clean = ApiConfig.pinnedConnectionTrusted(this),
+            reason = "MASDOJO_DENIED_PIN: certificate pin rejected the connection",
+            unlock = "MASDOJO_UNLOCK_PIN", flag = Flags.reveal(BuildConfig.PIN_FLAG),
+        )
+        gate(
+            lines, "App-integrity (signature) gate",
+            clean = IntegrityChecker.isValidSignature(this),
+            reason = "MASDOJO_DENIED_INTEGRITY: signature mismatch (tampered/unsigned build)",
+            unlock = "MASDOJO_UNLOCK_INTEGRITY", flag = Flags.reveal(BuildConfig.INTEGRITY_FLAG),
+        )
     }
 
     private fun gate(root: LinearLayout, title: String, clean: Boolean, reason: String, unlock: String, flag: String) {

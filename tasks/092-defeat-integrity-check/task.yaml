@@ -9,16 +9,20 @@ mastg_refs:
 - MASTG-TECH-0049
 difficulty: 5
 prereqs:
-- 012-patch-rebuild-resign
 - 009-root-detection-bypass
+- 041-hook-method-runtime-flag
 objective: >
-  You've patched VaultBank's app, but a signature/integrity check refuses to run
-  the tampered build. Defeat the check - flip the branch or hook it - to reach the
-  guarded path, and recover the reward it returns. The app keeps that reward
-  XOR-obfuscated in the binary, so reconstruct it from the smali.
-success_type: flag
+  Before unlocking a reward, VaultBank verifies its own signing certificate
+  against a hardcoded digest - on the training build (and any re-signed/tampered
+  build) that check fails, so the reward stays locked. The whole integrity
+  verdict is one in-process boolean: write a Frida hook that forces
+  IntegrityChecker.isValidSignature() to return true, so the guarded reward is
+  revealed. The runner confirms the check was locked at baseline and unlocked by
+  your hook.
+success_type: frida_assert
 submission_schema:
-  flag: string
+  script: string
 time_estimate_min: 45
 is_reference: false
 grader_status: implemented
+app_package: "org.masdojo.vaultbank"

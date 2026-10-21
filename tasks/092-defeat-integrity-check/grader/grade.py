@@ -1,10 +1,5 @@
-"""Seeded payload-detection grader — the answer is derived (deobfuscated /
-reconstructed) from the per-learner challenge, never copied from it verbatim.
-"""
-from __future__ import annotations
-
-from runner.graders import grade_seeded_recovered
+from runner.graders import grade_frida_behavioral
 
 
 def grade(ctx):
-    return grade_seeded_recovered(ctx)
+    return grade_frida_behavioral(ctx)

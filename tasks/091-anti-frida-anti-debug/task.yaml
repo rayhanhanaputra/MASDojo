@@ -19,3 +19,4 @@ submission_schema:
 time_estimate_min: 45
 is_reference: false
 grader_status: implemented
+app_package: "org.masdojo.vaultbank"

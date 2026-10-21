@@ -45,10 +45,23 @@ class AdbClient:
         """Run a shell command, returning True on exit code 0."""
         return self._run(["shell", command], timeout=timeout).returncode == 0
 
-    def install(self, apk_path: Path, timeout: int = 180) -> None:
+    def install(self, apk_path: Path, timeout: int = 180, package: str | None = None) -> None:
         proc = self._run(["install", "-r", "-g", str(apk_path)], timeout=timeout)
-        if proc.returncode != 0 or "Success" not in proc.stdout:
-            raise AdbError(f"apk install failed: {proc.stdout.strip()} {proc.stderr.strip()}")
+        out = f"{proc.stdout} {proc.stderr}"
+        if proc.returncode == 0 and "Success" in proc.stdout:
+            return
+        # In attach mode there's no clean snapshot, so a previously-installed
+        # build (signed with a different key, e.g. a re-authored/rebuilt APK)
+        # blocks `install -r` with INSTALL_FAILED_UPDATE_INCOMPATIBLE. Uninstall
+        # the stale package and retry once so grading stays reliable.
+        if package and (
+            "INSTALL_FAILED_UPDATE_INCOMPATIBLE" in out or "signatures do not match" in out
+        ):
+            self._run(["uninstall", package])
+            proc = self._run(["install", "-r", "-g", str(apk_path)], timeout=timeout)
+            if proc.returncode == 0 and "Success" in proc.stdout:
+                return
+        raise AdbError(f"apk install failed: {proc.stdout.strip()} {proc.stderr.strip()}")
 
     def uninstall(self, package: str) -> None:
         self._run(["uninstall", package])

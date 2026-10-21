@@ -12,11 +12,17 @@ difficulty: 4
 prereqs:
 - 041-hook-method-runtime-flag
 - 005-intercept-api-call
-objective: The app pins its server certificate, so your proxy can't read the protected
-  traffic. Defeat the pinning with Frida, then intercept the now-readable request.
+objective: >
+  VaultBank pins its server certificate and refuses to proceed when the presented
+  certificate doesn't match the pin (as happens behind any intercepting proxy).
+  The pin is enforced by OkHttp's CertificatePinner.check(). Write a Frida hook
+  that neutralises CertificatePinner.check so it no longer throws - defeating the
+  pinning - and the protected feature unlocks. The runner confirms the pin
+  rejected the connection at baseline and accepted it only after your hook.
 success_type: frida_assert
 submission_schema:
   script: string
 time_estimate_min: 40
 is_reference: false
 grader_status: implemented
+app_package: "org.masdojo.vaultbank"

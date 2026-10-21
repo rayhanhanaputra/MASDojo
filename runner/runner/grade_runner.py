@@ -162,7 +162,7 @@ class GradeRunner:
         emit("restoring clean AVD snapshot", phase="device")
         self._emulator.restore_snapshot()
         emit(f"adb install {apk.name}", phase="device")
-        adb.install(apk)
+        adb.install(apk, package=meta.get("app_package"))
 
         if success_type == "network_assert":
             return self._grade_network(module, meta, package_dir, submission, adb, emit)

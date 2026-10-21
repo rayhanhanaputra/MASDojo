@@ -58,7 +58,8 @@ build_one() {
     # installs it and grades behaviorally (baseline-locked -> hook -> unlock).
     # *.apk is gitignored, so this is how those targets are (re)produced.
     for t in 091-anti-frida-anti-debug 093-emulator-detection-bypass \
-             094-anti-debug-tracerpid 096-play-integrity-bypass; do
+             094-anti-debug-tracerpid 096-play-integrity-bypass \
+             042-flip-boolean-gate 061-bypass-ssl-pinning 092-defeat-integrity-check; do
       if [[ -d "${REPO_ROOT}/tasks/${t}" ]]; then
         mkdir -p "${REPO_ROOT}/tasks/${t}/app"
         cp "${apk}" "${REPO_ROOT}/tasks/${t}/app/target.apk"

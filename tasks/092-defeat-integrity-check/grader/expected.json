@@ -1,0 +1,19 @@
+{
+  "flag": "FLAG{s1gn4tur3_ch3ck_d3f34t3d}",
+  "unlock_marker": "MASDOJO_UNLOCK_INTEGRITY",
+  "denied_marker": "MASDOJO_DENIED_INTEGRITY",
+  "logcat_tag": "VaultBank",
+  "frida": {
+    "package": "org.masdojo.vaultbank",
+    "class": "org.masdojo.vaultbank.IntegrityChecker",
+    "method": "isValidSignature",
+    "must_contain": [
+      "implementation"
+    ],
+    "unlock_marker": "MASDOJO_UNLOCK_INTEGRITY",
+    "denied_marker": "MASDOJO_DENIED_INTEGRITY",
+    "launch_uri": "vaultbank://rasplab",
+    "returns": "true"
+  },
+  "note": "Behavioral grader: the gate runs in RaspLabActivity (vaultbank://rasplab). Baseline logs MASDOJO_DENIED_INTEGRITY; the learner's hook of org.masdojo.vaultbank.IntegrityChecker.isValidSignature() must produce MASDOJO_UNLOCK_INTEGRITY:<flag>. Dry-run falls back to static validation."
+}

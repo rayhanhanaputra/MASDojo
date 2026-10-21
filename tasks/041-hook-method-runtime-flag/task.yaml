@@ -10,8 +10,12 @@ mastg_refs:
 difficulty: 3
 prereqs:
 - 000-apk-anatomy-recon
-objective: Write a Frida hook that reads a value computed at runtime and never shown
-  in the UI. The runner verifies your hook observed the value.
+objective: >
+  VaultBank's dashboard computes a reward token at runtime but never renders it
+  (only its length is logged). Decompile MASDojo.apk, find the method that
+  computes it (DashboardActivity.computeReward), and write a Frida hook that wraps
+  it and send()s its return value back - that is the only way to read the value.
+  The grader checks your hook targets the right method and reports what it saw.
 success_type: frida_assert
 submission_schema:
   script: string

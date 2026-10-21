@@ -1,5 +1,7 @@
 package org.masdojo.vaultbank
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Log
 import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
@@ -7,6 +9,8 @@ import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.security.cert.Certificate
+import java.security.cert.CertificateFactory
 
 /**
  * Networking + embedded secrets.
@@ -73,5 +77,38 @@ object ApiConfig {
             .add("api.vaultbank.example", "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
             .build()
         return OkHttpClient.Builder().certificatePinner(pinner).build()
+    }
+
+    /**
+     * VULNERABILITY (MASVS-NETWORK-2, task 061): runs the client-side certificate
+     * pin as an in-process check. The configured pin is a placeholder that the
+     * presented certificate can never match, so `CertificatePinner.check()` throws
+     * and the "connection" is refused (gate denies). Hooking
+     * `okhttp3.CertificatePinner.check` with Frida so it no longer throws defeats
+     * the pinning entirely — the app then trusts any certificate (e.g. a proxy's),
+     * which is the whole point of an SSL-pinning bypass.
+     *
+     * Returns true only if the pin check passes (i.e. was bypassed).
+     */
+    fun pinnedConnectionTrusted(ctx: Context): Boolean {
+        return try {
+            @Suppress("DEPRECATION", "PackageManagerGetSignatures")
+            val sigs = ctx.packageManager
+                .getPackageInfo(ctx.packageName, PackageManager.GET_SIGNATURES)
+                .signatures ?: return false
+            val cf = CertificateFactory.getInstance("X.509")
+            val chain: List<Certificate> =
+                sigs.map { cf.generateCertificate(it.toByteArray().inputStream()) }
+            val pinner = CertificatePinner.Builder()
+                .add("api.vaultbank.example", "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
+                .build()
+            // Throws CertificatePinner.check failure unless the pin matches (it
+            // won't) — or unless a Frida hook neutralises check().
+            pinner.check("api.vaultbank.example", chain)
+            true
+        } catch (e: Exception) {
+            Log.w(TAG, "pin check rejected the connection: ${e.javaClass.simpleName}")
+            false
+        }
     }
 }

@@ -1,7 +1,19 @@
 {
+  "flag": "FLAG{f34tur3_g4t3_fl1pp3d}",
+  "unlock_marker": "MASDOJO_UNLOCK_FEATURE",
+  "denied_marker": "MASDOJO_DENIED_FEATURE",
+  "logcat_tag": "VaultBank",
   "frida": {
-    "class": "org.masdojo.gatelab.FeatureGate",
+    "package": "org.masdojo.vaultbank",
+    "class": "org.masdojo.vaultbank.FeatureGate",
     "method": "isUnlocked",
+    "must_contain": [
+      "implementation"
+    ],
+    "unlock_marker": "MASDOJO_UNLOCK_FEATURE",
+    "denied_marker": "MASDOJO_DENIED_FEATURE",
+    "launch_uri": "vaultbank://rasplab",
     "returns": "true"
-  }
+  },
+  "note": "Behavioral grader: the gate runs in RaspLabActivity (vaultbank://rasplab). Baseline logs MASDOJO_DENIED_FEATURE; the learner's hook of org.masdojo.vaultbank.FeatureGate.isUnlocked() must produce MASDOJO_UNLOCK_FEATURE:<flag>. Dry-run falls back to static validation."
 }

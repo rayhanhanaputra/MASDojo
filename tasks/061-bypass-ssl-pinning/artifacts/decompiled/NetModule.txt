@@ -1,4 +1,15 @@
-package org.masdojo.pinned;
-// OkHttp client pins the server cert:
-new CertificatePinner.Builder().add(host, "sha256/AAAA...").build();
-// okhttp3.CertificatePinner.check(host, chain) throws on mismatch
+// jadx output (excerpt) — org.masdojo.vaultbank.ApiConfig
+// The pin is enforced purely client-side by okhttp3.CertificatePinner.check().
+
+    public final boolean pinnedConnectionTrusted(Context ctx) {
+        try {
+            ... // build the presented certificate chain
+            CertificatePinner pinner = new CertificatePinner.Builder()
+                .add("api.vaultbank.example", "sha256/AAAA...AAA=")   // placeholder pin
+                .build();
+            pinner.check("api.vaultbank.example", chain);  // THROWS unless bypassed
+            return true;
+        } catch (Exception e) {
+            return false;   // pin rejected -> gate stays locked
+        }
+    }

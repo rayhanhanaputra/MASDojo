@@ -11,8 +11,12 @@ mastg_refs:
 difficulty: 2
 prereqs:
 - 011-hidden-endpoint-smali
-objective: Modify the smali to unlock a disabled feature, repack the APK with apktool,
-  resign it, install it, and capture the flag the unlocked feature reveals.
+objective: >
+  VaultBank's premium ledger is gated by a single client-side boolean
+  (DashboardActivity.isPremiumUser, always false). Decompile MASDojo.apk to smali,
+  flip that method so it returns true, repack with apktool, re-sign, install the
+  patched build, open the premium ledger, and submit the flag it reveals. (A debug
+  re-sign is fine - the point is that a client-side gate can't protect anything.)
 success_type: flag
 submission_schema:
   flag: string

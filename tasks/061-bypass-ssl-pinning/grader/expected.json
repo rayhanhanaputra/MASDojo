@@ -1,9 +1,18 @@
 {
+  "flag": "FLAG{ssl_p1nn1ng_d3f34t3d}",
+  "unlock_marker": "MASDOJO_UNLOCK_PIN",
+  "denied_marker": "MASDOJO_DENIED_PIN",
+  "logcat_tag": "VaultBank",
   "frida": {
+    "package": "org.masdojo.vaultbank",
     "class": "okhttp3.CertificatePinner",
     "method": "check",
     "must_contain": [
-      "Java.perform"
-    ]
-  }
+      "implementation"
+    ],
+    "unlock_marker": "MASDOJO_UNLOCK_PIN",
+    "denied_marker": "MASDOJO_DENIED_PIN",
+    "launch_uri": "vaultbank://rasplab"
+  },
+  "note": "Behavioral grader: the gate runs in RaspLabActivity (vaultbank://rasplab). Baseline logs MASDOJO_DENIED_PIN; the learner's hook of okhttp3.CertificatePinner.check() must produce MASDOJO_UNLOCK_PIN:<flag>. Dry-run falls back to static validation."
 }

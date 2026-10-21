@@ -1,0 +1,15 @@
+// jadx output (excerpt) — org.masdojo.vaultbank.DashboardActivity
+// A reward is computed at runtime but only its LENGTH is logged; the value
+// itself is never rendered. Hook computeReward() to read the return value.
+
+    protected void onCreate(Bundle savedInstanceState) {
+        ...
+        // "reward token issued (length=NN)"  — value never printed
+        Log.d(this.tag, "reward token issued (length=" + computeReward().length() + ")");
+        ...
+    }
+
+    /* VULNERABILITY (task 041): flag computed at runtime, never rendered. */
+    private final String computeReward() {
+        return Flags.reveal(BuildConfig.REWARD_FLAG);
+    }

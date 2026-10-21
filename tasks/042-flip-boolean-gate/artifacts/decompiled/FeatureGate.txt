@@ -1,4 +1,11 @@
-package org.masdojo.gatelab;
-class FeatureGate {
-    boolean isUnlocked() { return false; }  // gates the hidden screen
+// jadx output (excerpt) — org.masdojo.vaultbank.FeatureGate
+// The entire premium-feature entitlement is this one boolean.
+
+public final class FeatureGate {
+    public static final FeatureGate INSTANCE;
+
+    /* The whole premium gate is this single flippable boolean. */
+    public final boolean isUnlocked() {
+        return false;
+    }
 }

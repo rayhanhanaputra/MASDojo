@@ -10,11 +10,15 @@ mastg_refs:
 difficulty: 3
 prereqs:
 - 041-hook-method-runtime-flag
-objective: A boolean check gates a hidden screen. Hook it to return true and unlock
-  the UI; the runner verifies the gate was flipped.
+objective: >
+  VaultBank's premium feature is gated by a single client-side boolean,
+  FeatureGate.isUnlocked(), which always returns false. Write a Frida hook that
+  forces it to return true so the gated reward unlocks. The runner confirms the
+  gate was locked at baseline and unlocked only after your hook.
 success_type: frida_assert
 submission_schema:
   script: string
 time_estimate_min: 35
 is_reference: false
 grader_status: implemented
+app_package: "org.masdojo.vaultbank"

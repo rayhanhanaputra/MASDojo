@@ -52,6 +52,12 @@ android {
         buildConfigField("String", "TAMPER_FLAG", "\"1c161b1d216e342e6b053c286b3e6e053932693931053e693c696e2e693e27\"")
         // Confused-deputy grant (task 084): FLAG{c0nfus3d_d3puty_pr1v_r3d3l3g4t3d}
         buildConfigField("String", "GRANT_FLAG", "\"1c161b1d21396a343c2f29693e053e692a2f2e23052a286b2c0528693e6936693d6e2e693e27\"")
+        // Premium FEATURE gate (task 042): FLAG{f34tur3_g4t3_fl1pp3d}
+        buildConfigField("String", "FEATURE_FLAG", "\"1c161b1d213c696e2e2f2869053d6e2e69053c366b2a2a693e27\"")
+        // Certificate-pinning gate (task 061): FLAG{ssl_p1nn1ng_d3f34t3d}
+        buildConfigField("String", "PIN_FLAG", "\"1c161b1d21292936052a6b34346b343d053e693c696e2e693e27\"")
+        // App-integrity/signature gate (task 092): FLAG{s1gn4tur3_ch3ck_d3f34t3d}
+        buildConfigField("String", "INTEGRITY_FLAG", "\"1c161b1d21296b3d346e2e2f2869053932693931053e693c696e2e693e27\"")
     }
 
     buildFeatures {
