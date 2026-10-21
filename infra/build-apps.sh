@@ -53,6 +53,18 @@ build_one() {
     # The all-in-one target is published under its own name for download.
     cp "${apk}" "${REPO_ROOT}/${dest}/MASDojo.apk"
     echo "    -> ${dest}/MASDojo.apk"
+    # VaultBank also backs the on-device Frida tasks (its RASP gates in
+    # RaspLabActivity): copy it in as each one's target.apk so the runner
+    # installs it and grades behaviorally (baseline-locked -> hook -> unlock).
+    # *.apk is gitignored, so this is how those targets are (re)produced.
+    for t in 091-anti-frida-anti-debug 093-emulator-detection-bypass \
+             094-anti-debug-tracerpid 096-play-integrity-bypass; do
+      if [[ -d "${REPO_ROOT}/tasks/${t}" ]]; then
+        mkdir -p "${REPO_ROOT}/tasks/${t}/app"
+        cp "${apk}" "${REPO_ROOT}/tasks/${t}/app/target.apk"
+        echo "    -> tasks/${t}/app/target.apk"
+      fi
+    done
   else
     mkdir -p "${REPO_ROOT}/${dest}/app"
     cp "${apk}" "${REPO_ROOT}/${dest}/app/target.apk"

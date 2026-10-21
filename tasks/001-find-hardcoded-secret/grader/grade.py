@@ -8,11 +8,18 @@ target APK, so a lucky guess of the format alone can't pass.
 
 from __future__ import annotations
 
+import zipfile
+
 from runner.grader_api import Check, GradeResult, GradingContext, constant_time_equals
 
 
 def _present_in_apk(ctx: GradingContext, secret: str) -> bool | None:
     """Best-effort check that the secret really lives in the APK.
+
+    An APK is a ZIP: its classes.dex (where a BuildConfig string constant lands)
+    is stored DEFLATED, so the key never appears as contiguous bytes in the raw
+    file — scanning `apk.read_bytes()` directly always missed it and failed every
+    correct answer. Decompress each entry and scan the inflated bytes instead.
 
     Returns True/False when we can inspect the APK, or None when we can't (e.g.
     dry-run with no artifact), so the caller can skip the check gracefully.
@@ -20,11 +27,18 @@ def _present_in_apk(ctx: GradingContext, secret: str) -> bool | None:
     apk = ctx.artifacts.apk_path
     if not apk.is_file():
         return None
+    needle = secret.encode()
     try:
-        data = apk.read_bytes()
-    except OSError:
+        with zipfile.ZipFile(apk) as zf:
+            for name in zf.namelist():
+                try:
+                    if needle in zf.read(name):
+                        return True
+                except (OSError, zipfile.BadZipFile, RuntimeError):
+                    continue
+        return False
+    except (OSError, zipfile.BadZipFile):
         return None
-    return secret.encode() in data
 
 
 def grade(ctx: GradingContext) -> GradeResult:

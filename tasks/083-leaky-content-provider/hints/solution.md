@@ -2,4 +2,4 @@
 ```python
 import base64; print(base64.b64decode(VALUE).decode())
 ```
-Submit the decoded `FLAG{...}`. (Live: `adb shell content query --uri content://com.vaultbank.provider/secrets`.) Seeded per learner.
+Submit the decoded `FLAG{...}`. (The `content query` an attacker app would run against this exported provider is illustrative of the leak; you decode the value from the provided `provider_dump.txt`, not from a live query.) Seeded per learner.

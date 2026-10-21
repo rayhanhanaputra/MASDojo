@@ -1,9 +1,19 @@
 {
+  "flag": "FLAG{tr4c3rp1d_4nt1d3bug_byp4ss3d}",
+  "unlock_marker": "MASDOJO_UNLOCK_DBG",
+  "denied_marker": "MASDOJO_DENIED_DBG",
+  "logcat_tag": "VaultBank",
   "frida": {
+    "package": "org.masdojo.vaultbank",
     "class": "org.masdojo.vaultbank.DebugDetector",
     "method": "isBeingTraced",
     "returns": "false",
-    "must_contain": ["implementation"]
+    "must_contain": [
+      "implementation"
+    ],
+    "unlock_marker": "MASDOJO_UNLOCK_DBG",
+    "denied_marker": "MASDOJO_DENIED_DBG",
+    "launch_uri": "vaultbank://rasplab"
   },
-  "note": "frida_assert: dry-run statically validates that the script hooks DebugDetector.isBeingTraced() (the TracerPid reader) and forces it to return false. On a KVM host, launch .RaspLabActivity and confirm MASDOJO_UNLOCK_DBG:<DEBUG_FLAG> appears only after the hook (baseline logs MASDOJO_DENIED_DBG)."
+  "note": "Behavioral grader: the RASP gate runs in RaspLabActivity (launched via vaultbank://rasplab). Baseline (no hook) logs MASDOJO_DENIED_DBG; the learner's hook forcing DebugDetector.isBeingTraced() to false must produce MASDOJO_UNLOCK_DBG:<flag>. Dry-run falls back to static validation of the hook."
 }

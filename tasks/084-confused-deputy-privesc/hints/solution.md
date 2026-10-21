@@ -6,8 +6,9 @@ KEY = 0x..           # GRANT_KEY from YOUR decompiled GrantReceiver
 print(bytes(b ^ KEY for b in bytes.fromhex(ENC)).decode())
 ```
 
-On a device you could instead read it live from the ordered-broadcast result or
-logcat (`MASDOJO_UNLOCK:<grant>`) after sending the broadcast. Submit the
-`FLAG{c0nfus3d_d3puty_...}`. The value is seeded per learner, so it can't be
-shared. The fix: guard the receiver with a signature-level permission and verify
-the caller - or don't export a privilege-granting action at all.
+Reconstruct the grant from the `ENC` / `GRANT_KEY` in *your own* seeded
+`decompiled/GrantReceiver.java` and submit the `FLAG{c0nfus3d_d3puty_...}`. The
+value is seeded per learner, so it can't be shared - recover it statically from
+your artifact rather than from a device. The fix: guard the receiver with a
+signature-level permission and verify the caller - or don't export a
+privilege-granting action at all.

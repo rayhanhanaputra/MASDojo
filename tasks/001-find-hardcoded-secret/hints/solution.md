@@ -1,13 +1,14 @@
 **Full solution.**
 
-1. Decompile the APK:
+1. Decompile the APK you downloaded from the skill map:
    ```bash
-   jadx -d securenotes_src tasks/001-find-hardcoded-secret/app/target.apk
+   jadx -d vaultbank_src MASDojo.apk
    ```
-2. The app embeds its API key two ways - as a `BuildConfig` field and as a
-   constant in `ApiClient`. Both contain the same value:
+2. The app embeds its API key two ways - as a `BuildConfig` field (`API_KEY`) and
+   as the `apiKey` constant read in `ApiConfig` (used to build the `Bearer`
+   header). Both contain the same value:
    ```
-   grep -rn "msd_live_sk_" securenotes_src/
+   grep -rn "msd_live_sk_" vaultbank_src/
    ```
 3. The recovered key is:
    ```

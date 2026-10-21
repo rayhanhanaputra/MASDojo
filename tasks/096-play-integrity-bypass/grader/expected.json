@@ -1,9 +1,19 @@
 {
+  "flag": "FLAG{4tt3st4t10n_stub_f0rg3d}",
+  "unlock_marker": "MASDOJO_UNLOCK_ATT",
+  "denied_marker": "MASDOJO_DENIED_ATT",
+  "logcat_tag": "VaultBank",
   "frida": {
+    "package": "org.masdojo.vaultbank",
     "class": "org.masdojo.vaultbank.PlayIntegrityStub",
     "method": "attestationPassed",
     "returns": "true",
-    "must_contain": ["implementation"]
+    "must_contain": [
+      "implementation"
+    ],
+    "unlock_marker": "MASDOJO_UNLOCK_ATT",
+    "denied_marker": "MASDOJO_DENIED_ATT",
+    "launch_uri": "vaultbank://rasplab"
   },
-  "note": "frida_assert: dry-run statically validates that the script hooks PlayIntegrityStub.attestationPassed() and forces it to return true (this gate unlocks on a PASSING verdict). On a KVM host, launch .RaspLabActivity and confirm MASDOJO_UNLOCK_ATT:<ATTEST_FLAG> appears only after the hook (baseline logs MASDOJO_DENIED_ATT). The attestation is a local training stub — no network call."
+  "note": "Behavioral grader: the RASP gate runs in RaspLabActivity (launched via vaultbank://rasplab). Baseline (no hook) logs MASDOJO_DENIED_ATT; the learner's hook forcing PlayIntegrityStub.attestationPassed() to true must produce MASDOJO_UNLOCK_ATT:<flag>. Dry-run falls back to static validation of the hook."
 }

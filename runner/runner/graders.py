@@ -36,6 +36,7 @@ def _tail(text: str, lines: int = 40) -> str:
     kept = [ln for ln in text.splitlines() if ln.strip()]
     return "\n".join(kept[-lines:])
 
+
 # Submission fields we accept, in priority order, for a comparison grader.
 _SUBMIT_FIELDS = ("flag", "value", "secret")
 
@@ -81,7 +82,9 @@ def grade_comparison(
 
 def grade_flag(ctx: GradingContext) -> GradeResult:
     """Grade a `flag` task against `flag` (or `value`) in expected.json."""
-    return grade_comparison(ctx, expected_fields=("flag", "value"), check_name="flag matches expected")
+    return grade_comparison(
+        ctx, expected_fields=("flag", "value"), check_name="flag matches expected"
+    )
 
 
 def grade_static(ctx: GradingContext) -> GradeResult:
@@ -112,7 +115,9 @@ def grade_recovered(ctx: GradingContext) -> GradeResult:
         return GradeResult(
             passed=False,
             evidence="Task misconfigured: no expected value in grader/expected.json.",
-            checks=[Check("configured", False, "grader/expected.json is missing the expected value")],
+            checks=[
+                Check("configured", False, "grader/expected.json is missing the expected value")
+            ],
         )
 
     matches = constant_time_equals(submitted, expected)
@@ -138,9 +143,11 @@ def grade_recovered(ctx: GradingContext) -> GradeResult:
     passed = all(c.passed for c in checks)
     return GradeResult.from_checks(
         checks,
-        "Technique applied: the recovered value is correct."
-        if passed
-        else "The submitted value is not the correct answer for this task.",
+        (
+            "Technique applied: the recovered value is correct."
+            if passed
+            else "The submitted value is not the correct answer for this task."
+        ),
     )
 
 
@@ -185,15 +192,21 @@ def grade_seeded_recovered(ctx: GradingContext) -> GradeResult:
     for rel in spec.get("present_in", []) or []:
         present = expected in str(files.get(rel, ""))
         checks.append(
-            Check(f"value genuinely present in {rel}", present,
-                  f"found in {rel}" if present else f"not found in {rel}"))
+            Check(
+                f"value genuinely present in {rel}",
+                present,
+                f"found in {rel}" if present else f"not found in {rel}",
+            )
+        )
 
     passed = all(c.passed for c in checks)
     return GradeResult.from_checks(
         checks,
-        "Technique applied: you recovered your target's own secret."
-        if passed
-        else "That is not the secret embedded in your seeded artifact — extract it from your files.",
+        (
+            "Technique applied: you recovered your target's own secret."
+            if passed
+            else "That is not the secret embedded in your seeded artifact — extract it from your files."
+        ),
         evidence_items=[
             EvidenceItem(
                 "seeded target",
@@ -220,7 +233,7 @@ def grade_frida_script(ctx: GradingContext) -> GradeResult:
                    "package": "...", "unlock_marker": "MASDOJO_UNLOCK",
                    "denied_marker": "MASDOJO_DENIED", "flag": "FLAG{...}"}}
     """
-    spec = (ctx.artifacts.expected().get("frida") or {})
+    spec = ctx.artifacts.expected().get("frida") or {}
     script = str(ctx.submission.get("script", "")).strip()
 
     if not script:
@@ -244,17 +257,32 @@ def _grade_frida_static(spec: dict, script: str) -> GradeResult:
 
     if cls:
         hit = cls in script
-        checks.append(Check(f"hooks the target class {cls}", hit,
-                            "class referenced" if hit else "target class not hooked"))
+        checks.append(
+            Check(
+                f"hooks the target class {cls}",
+                hit,
+                "class referenced" if hit else "target class not hooked",
+            )
+        )
     if method:
         # accept `.<method>.implementation` (allowing overload().implementation)
         hit = f".{method}" in script and "implementation" in script
-        checks.append(Check(f"overrides {method}()", hit,
-                            "implementation override present" if hit else "method not overridden"))
+        checks.append(
+            Check(
+                f"overrides {method}()",
+                hit,
+                "implementation override present" if hit else "method not overridden",
+            )
+        )
     if returns is not None:
         hit = f"return {returns}" in script.replace(";", " ")
-        checks.append(Check(f"forces the return value to {returns}", hit,
-                            "correct return" if hit else f"does not return {returns}"))
+        checks.append(
+            Check(
+                f"forces the return value to {returns}",
+                hit,
+                "correct return" if hit else f"does not return {returns}",
+            )
+        )
     for needle in spec.get("must_contain", []) or []:
         hit = needle in script
         checks.append(Check(f"uses `{needle}`", hit, "present" if hit else "missing"))
@@ -271,10 +299,12 @@ def _grade_frida_static(spec: dict, script: str) -> GradeResult:
     )
     return GradeResult.from_checks(
         checks,
-        "Frida script statically validated — it hooks the right method and enforces the "
-        "required behaviour. (Run on a KVM host for full live verification.)"
-        if passed
-        else "The Frida script does not correctly implement the required hook.",
+        (
+            "Frida script statically validated — it hooks the right method and enforces the "
+            "required behaviour. (Run on a KVM host for full live verification.)"
+            if passed
+            else "The Frida script does not correctly implement the required hook."
+        ),
         evidence_items=[note],
     )
 
@@ -286,10 +316,15 @@ def _grade_frida_live(ctx: GradingContext, spec: dict, script: str) -> GradeResu
     denied_marker = spec.get("denied_marker", "")
     flag = spec.get("flag", "")
 
+    launch_uri = spec.get("launch_uri")
     ctx.emit("clearing logcat and injecting the submitted script", phase="frida")
     ctx.adb.clear_logcat()
     session, _pid = ctx.frida.spawn_and_inject(package, script)
     try:
+        if launch_uri:
+            # The hooked gate lives in a non-launcher activity (e.g. RaspLab);
+            # drive to it via its deep link so the gate runs under the live hook.
+            ctx.adb.shell(f'am start -a android.intent.action.VIEW -d "{launch_uri}"')
         session.wait(6)
         logcat = ctx.adb.logcat_dump()
     finally:
@@ -297,16 +332,30 @@ def _grade_frida_live(ctx: GradingContext, spec: dict, script: str) -> GradeResu
 
     unlocked = unlock_marker in logcat
     denied = bool(denied_marker) and denied_marker in logcat
-    checks = [Check("hook flipped the guarded behaviour", unlocked and not denied,
-                   "unlock marker observed" if unlocked else "the guard was not bypassed")]
+    checks = [
+        Check(
+            "hook flipped the guarded behaviour",
+            unlocked and not denied,
+            "unlock marker observed" if unlocked else "the guard was not bypassed",
+        )
+    ]
     if flag:
         got = any(unlock_marker in ln and flag in ln for ln in logcat.splitlines())
-        checks.append(Check("expected flag revealed", got,
-                            "flag recovered" if got else "expected flag not observed"))
+        checks.append(
+            Check(
+                "expected flag revealed",
+                got,
+                "flag recovered" if got else "expected flag not observed",
+            )
+        )
     passed = all(c.passed for c in checks)
     return GradeResult.from_checks(
         checks,
-        "Bypass verified live on the emulator." if passed else "The bypass did not take effect on the device.",
+        (
+            "Bypass verified live on the emulator."
+            if passed
+            else "The bypass did not take effect on the device."
+        ),
     )
 
 
@@ -350,7 +399,11 @@ def grade_frida_behavioral(ctx: GradingContext) -> GradeResult:
             checks=[Check("script provided", False, "submission did not include a script")],
         )
 
-    live = type(ctx.frida).__name__ != "_NullDevice" and spec.get("package") and spec.get("unlock_marker")
+    live = (
+        type(ctx.frida).__name__ != "_NullDevice"
+        and spec.get("package")
+        and spec.get("unlock_marker")
+    )
     if not live:
         return _grade_frida_static(spec, script)
     return _grade_frida_delta(ctx, spec, expected, script)
@@ -362,11 +415,18 @@ def _grade_frida_delta(ctx: GradingContext, spec: dict, expected: dict, script: 
     denied = spec.get("denied_marker", "")
     flag = spec.get("flag") or expected.get("flag", "")
 
+    launch_uri = spec.get("launch_uri")
+
     def _run(source: str, note: str) -> tuple[str, list]:
         ctx.emit(note, phase="frida")
         ctx.adb.clear_logcat()
         session, _pid = ctx.frida.spawn_and_inject(package, source)
         try:
+            if launch_uri:
+                # Gate lives in a non-launcher activity (e.g. RaspLab); drive to
+                # it via its deep link so the gate runs under the hook (or not, at
+                # baseline). Same navigation for both runs keeps the delta fair.
+                ctx.adb.shell(f'am start -a android.intent.action.VIEW -d "{launch_uri}"')
             session.wait(6)
             log = ctx.adb.logcat_dump()
             payloads = session.payloads() if hasattr(session, "payloads") else []
@@ -374,7 +434,9 @@ def _grade_frida_delta(ctx: GradingContext, spec: dict, expected: dict, script: 
             session.unload()
         return log, payloads
 
-    baseline_log, _ = _run(_NOOP_SCRIPT, "baseline run — launching the app unmodified to confirm it gates")
+    baseline_log, _ = _run(
+        _NOOP_SCRIPT, "baseline run — launching the app unmodified to confirm it gates"
+    )
     hooked_log, frida_msgs = _run(script, "injecting your Frida script and re-running")
 
     baseline_gated = (denied in baseline_log if denied else True) and unlock not in baseline_log
@@ -385,16 +447,20 @@ def _grade_frida_delta(ctx: GradingContext, spec: dict, expected: dict, script: 
         Check(
             "target genuinely gates on this device (baseline locked)",
             baseline_gated,
-            "the app denied access before your hook — the guard is real"
-            if baseline_gated
-            else "the app did not gate at baseline, so a pass cannot be attributed to your hook",
+            (
+                "the app denied access before your hook — the guard is real"
+                if baseline_gated
+                else "the app did not gate at baseline, so a pass cannot be attributed to your hook"
+            ),
         ),
         Check(
             "your hook flipped the guard at runtime (locked → unlocked)",
             hooked_unlocked,
-            "the unlock marker appeared only after your hook was injected"
-            if hooked_unlocked
-            else "the guard was not bypassed by your hook",
+            (
+                "the unlock marker appeared only after your hook was injected"
+                if hooked_unlocked
+                else "the guard was not bypassed by your hook"
+            ),
         ),
     ]
     if flag:
@@ -415,7 +481,11 @@ def _grade_frida_delta(ctx: GradingContext, spec: dict, expected: dict, script: 
     items = [
         EvidenceItem("baseline logcat (no hook)", "log", _tail(baseline_log) or "(empty)"),
         EvidenceItem("logcat after your hook", "log", _tail(hooked_log) or "(empty)"),
-        EvidenceItem("frida send() messages", "trace", json.dumps(frida_msgs, indent=2) if frida_msgs else "(none)"),
+        EvidenceItem(
+            "frida send() messages",
+            "trace",
+            json.dumps(frida_msgs, indent=2) if frida_msgs else "(none)",
+        ),
         EvidenceItem("timeline", "timeline", timeline),
     ]
     evidence = (

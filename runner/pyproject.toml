@@ -18,8 +18,11 @@ dependencies = [
 # (flag/static_assert) does not import them, so they stay optional and the
 # dry-run image installs the base package alone.
 device = [
-    "frida>=16.4",
-    "frida-tools>=12.4",
+    # Pin below 17: Frida 17 removed the built-in `Java`/`ObjC` globals (moved to
+    # separate bridge modules), which breaks every curriculum script using the
+    # classic `Java.perform(...)` API. The whole lab targets the 16.x API.
+    "frida>=16.4,<17",
+    "frida-tools>=12.4,<13",
     "mitmproxy>=10.3",
 ]
 dev = [

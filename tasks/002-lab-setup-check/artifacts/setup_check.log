@@ -1,0 +1,13 @@
+MASDojo lab doctor — environment readiness check
+==================================================
+[check] adb server ................. ok   (emulator-5554   device)
+[check] frida-server ............... ok   (17.x listening on 127.0.0.1:27042)
+[check] jadx / apktool on PATH ..... ok
+[check] proxy route ................ ok   (mitmproxy CA trusted; 10.0.2.2:8080 reachable)
+[check] target install ............. ok   (org.masdojo.vaultbank installed)
+
+All checks green. Your lab is ready.
+
+readiness token (base64): TUFTRE9KT3tsNGJfcjM0ZHl9
+
+(decode the token above and submit the decoded value to confirm your setup.)

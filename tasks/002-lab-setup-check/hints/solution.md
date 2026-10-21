@@ -1,5 +1,8 @@
-**Full solution.** Once adb/frida/proxy are green, decode the readiness token:
+**Full solution.** The `setup_check.log` artifact ends with a base64 readiness
+token once all checks are green. Decode it:
+
 ```bash
-echo 'TUFTRE9Ke2w0Yl9yMzRkeX0=' | base64 -d   # -> MASDOJO{l4b_r34dy}
+echo 'TUFTRE9KT3tsNGJfcjM0ZHl9' | base64 -d   # -> MASDOJO{l4b_r34dy}
 ```
+
 Submit `MASDOJO{l4b_r34dy}`.

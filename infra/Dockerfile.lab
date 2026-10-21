@@ -32,8 +32,10 @@ RUN curl -fsSL "https://github.com/iBotPeaches/Apktool/releases/download/v${APKT
     && printf '#!/bin/sh\nexec java -jar /opt/apktool.jar "$@"\n' > /usr/local/bin/apktool \
     && chmod +x /usr/local/bin/apktool
 
-# Frida CLI tooling (frida, frida-ps, frida-trace, ...).
-RUN pip3 install --no-cache-dir frida-tools
+# Frida CLI tooling (frida, frida-ps, frida-trace, ...). Pinned below 17: Frida
+# 17 dropped the built-in `Java` global, breaking classic `Java.perform(...)`
+# scripts — the API every lab task is written against.
+RUN pip3 install --no-cache-dir "frida<17" "frida-tools<13"
 
 # Unprivileged user; /work is the learner's scratch space (per-user subdir made
 # by the terminal bridge on connect).

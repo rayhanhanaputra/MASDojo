@@ -1,9 +1,19 @@
 {
+  "flag": "FLAG{3mul4t0r_ch3ck_d3f34t3d}",
+  "unlock_marker": "MASDOJO_UNLOCK_EMU",
+  "denied_marker": "MASDOJO_DENIED_EMU",
+  "logcat_tag": "VaultBank",
   "frida": {
+    "package": "org.masdojo.vaultbank",
     "class": "org.masdojo.vaultbank.EmulatorDetector",
     "method": "isEmulator",
     "returns": "false",
-    "must_contain": ["implementation"]
+    "must_contain": [
+      "implementation"
+    ],
+    "unlock_marker": "MASDOJO_UNLOCK_EMU",
+    "denied_marker": "MASDOJO_DENIED_EMU",
+    "launch_uri": "vaultbank://rasplab"
   },
-  "note": "frida_assert: dry-run statically validates that the script hooks EmulatorDetector.isEmulator() and forces it to return false. On a KVM host, launch .RaspLabActivity and confirm MASDOJO_UNLOCK_EMU:<EMU_FLAG> appears only after the hook (baseline logs MASDOJO_DENIED_EMU)."
+  "note": "Behavioral grader: the RASP gate runs in RaspLabActivity (launched via vaultbank://rasplab). Baseline (no hook) logs MASDOJO_DENIED_EMU; the learner's hook forcing EmulatorDetector.isEmulator() to false must produce MASDOJO_UNLOCK_EMU:<flag>. Dry-run falls back to static validation of the hook."
 }

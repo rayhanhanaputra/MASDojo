@@ -11,12 +11,14 @@ difficulty: 3
 prereqs:
 - 081-exported-component-deeplink
 objective: >
-  VaultBank ships a "privilege helper" broadcast receiver that mints an elevation
-  grant - but it is exported with no permission and never checks who called it, so
-  any app (or `adb shell am broadcast`) can invoke the protected action and obtain
-  an effect it shouldn't. Confirm the component is reachable by a low-privileged
-  caller and recover the elevation grant it hands out; the app obfuscates the
-  grant in code rather than returning it in the clear, so reconstruct it.
+  You're given a decompiled "privilege helper" broadcast receiver that mints an
+  elevation grant - and the manifest entry for it. From the provided
+  AndroidManifest.xml and decompiled/GrantReceiver.java, show it is exported with
+  no permission and never checks who called it, so any app (or a shell broadcast)
+  could invoke the protected action and obtain an effect it shouldn't - then
+  recover the elevation grant it hands out. The code obfuscates the grant rather
+  than returning it in the clear, so reconstruct it statically by replaying the
+  receiver's own decode on your seeded values.
 success_type: flag
 submission_schema:
   flag: string

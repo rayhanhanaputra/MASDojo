@@ -12,10 +12,10 @@ difficulty: 3
 prereqs:
 - 005-intercept-api-call
 objective: >
-  Assessing VaultBank's network traffic, you've captured its startup requests.
-  Most ride HTTPS, but one endpoint is served over plain HTTP - and it carries a
-  credential. Spot the cleartext request among the encrypted ones, extract the
-  credential, and decode it.
+  You're handed a capture of VaultBank's startup traffic (`capture.txt`) to
+  triage. Most of the requests ride HTTPS, but one endpoint is served over plain
+  HTTP - and it carries a credential. Spot the cleartext request among the
+  encrypted ones, extract the credential, and decode it.
 
 success_type: network_assert
 submission_schema:

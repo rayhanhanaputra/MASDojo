@@ -18,5 +18,5 @@ submission_schema:
 time_estimate_min: 20
 is_reference: true
 grader_status: "implemented"
-app_package: "org.masdojo.securenotes"
+app_package: "org.masdojo.vaultbank"
 launch_activity: ".MainActivity"

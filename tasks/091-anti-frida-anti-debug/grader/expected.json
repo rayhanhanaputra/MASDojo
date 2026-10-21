@@ -1,9 +1,19 @@
 {
+  "flag": "FLAG{4nt1_fr1d4_ch3ck_d3f34t3d}",
+  "unlock_marker": "MASDOJO_UNLOCK_TAMPER",
+  "denied_marker": "MASDOJO_DENIED_TAMPER",
+  "logcat_tag": "VaultBank",
   "frida": {
+    "package": "org.masdojo.vaultbank",
     "class": "org.masdojo.vaultbank.AntiTamper",
     "method": "isInstrumented",
     "returns": "false",
-    "must_contain": ["implementation"]
+    "must_contain": [
+      "implementation"
+    ],
+    "unlock_marker": "MASDOJO_UNLOCK_TAMPER",
+    "denied_marker": "MASDOJO_DENIED_TAMPER",
+    "launch_uri": "vaultbank://rasplab"
   },
-  "note": "frida_assert: dry-run statically validates that the script hooks AntiTamper.isInstrumented() (the anti-Frida check that scans /proc/self/maps, the frida-server binary, and the default control port) and forces it to return false. On a KVM host, launch .RaspLabActivity and confirm MASDOJO_UNLOCK_TAMPER:<TAMPER_FLAG> appears only after the hook (baseline logs MASDOJO_DENIED_TAMPER)."
+  "note": "Behavioral grader: the RASP gate runs in RaspLabActivity (launched via vaultbank://rasplab). Baseline (no hook) logs MASDOJO_DENIED_TAMPER; the learner's hook forcing AntiTamper.isInstrumented() to false must produce MASDOJO_UNLOCK_TAMPER:<flag>. Dry-run falls back to static validation of the hook."
 }

@@ -11,11 +11,12 @@ difficulty: 4
 prereqs:
 - 000-apk-anatomy-recon
 objective: >
-  VaultBank has a screen that should only appear after login. On this engagement
-  you notice an activity is exported with a deep link and no caller check - so it
-  can be launched directly, skipping auth. Confirm it's reachable and recover the
-  value that screen reveals; the app obfuscates it in code rather than storing it
-  in the clear, so you'll reconstruct it from the decompiled activity.
+  You're given a decompiled screen that should only appear after login. From the
+  provided AndroidManifest.xml excerpt and decompiled activity, show the activity
+  is exported with a deep link and no caller check - so it could be launched
+  directly, skipping auth - and recover the value that screen reveals. The code
+  obfuscates it rather than storing it in the clear, so you'll reconstruct it
+  statically from the decompiled activity.
 success_type: flag
 submission_schema:
   flag: string

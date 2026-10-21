@@ -6,8 +6,8 @@ behaviour?).
 """
 from __future__ import annotations
 
-from runner.graders import grade_frida_script
+from runner.graders import grade_frida_behavioral
 
 
 def grade(ctx):
-    return grade_frida_script(ctx)
+    return grade_frida_behavioral(ctx)
