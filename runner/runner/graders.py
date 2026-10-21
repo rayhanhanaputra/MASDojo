@@ -17,6 +17,7 @@ task's expected values.
 from __future__ import annotations
 
 import json
+import time
 
 from runner.grader_api import (
     Check,
@@ -500,3 +501,52 @@ def _grade_frida_delta(ctx: GradingContext, spec: dict, expected: dict, script: 
         )
     )
     return GradeResult.from_checks(checks, evidence, evidence_items=items)
+
+
+def grade_patch_assert(ctx: GradingContext) -> GradeResult:
+    """Grade a learner-submitted PATCHED, re-signed APK (task 012).
+
+    The runner has already installed the submitted APK; here we launch its gated
+    activity and assert the premium marker appears in logcat. The shipped build
+    never logs it (the gate boolean is false); only a build where the learner
+    actually flipped the gate (smali patch -> apktool rebuild -> re-sign) reveals
+    the reward at runtime. Dry-run (no device) can't run an APK, so it says so.
+
+    expected.json: {"flag": "FLAG{...}", "package": "...",
+                    "unlock_marker": "MASDOJO_PREMIUM",
+                    "launch_activity": ".DashboardActivity"}
+    """
+    spec = ctx.artifacts.expected()
+    marker = spec.get("unlock_marker", "MASDOJO_PREMIUM")
+    flag = spec.get("flag", "")
+    pkg = spec.get("package", "org.masdojo.vaultbank")
+    activity = spec.get("launch_activity", ".DashboardActivity")
+
+    if type(ctx.adb).__name__ == "_NullDevice":
+        return GradeResult(
+            passed=False,
+            evidence="This task verifies your patched build by running it, which needs the emulator runner.",
+            checks=[Check("device available", False, "no device in this grading mode (dry-run)")],
+        )
+
+    ctx.emit("launching your patched build to check the premium path", phase="device")
+    ctx.adb.clear_logcat()
+    ctx.adb.shell(f"am start -n {pkg}/{activity}")
+    time.sleep(4)
+    log = ctx.adb.logcat_dump()
+    unlocked = any(marker in ln and (not flag or flag in ln) for ln in log.splitlines())
+    checks = [
+        Check(
+            "patched build unlocks the premium path at runtime",
+            unlocked,
+            "the premium reward appeared on launch — your patch works"
+            if unlocked
+            else "the premium path stayed locked — the shipped gate is still in place",
+        )
+    ]
+    return GradeResult.from_checks(
+        checks,
+        "Patch verified: your re-signed build runs with the premium gate flipped."
+        if unlocked
+        else "Not verified: your APK installed but did not reveal the premium reward on launch.",
+    )

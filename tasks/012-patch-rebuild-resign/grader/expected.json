@@ -1,3 +1,7 @@
 {
-  "flag": "FLAG{pr3m1um_g4t3_fl1pp3d}"
+  "flag": "FLAG{pr3m1um_g4t3_fl1pp3d}",
+  "package": "org.masdojo.vaultbank",
+  "unlock_marker": "MASDOJO_PREMIUM",
+  "launch_activity": ".DashboardActivity",
+  "note": "patch_assert: the runner installs the learner's uploaded APK, launches DashboardActivity, and requires MASDOJO_PREMIUM:<flag> in logcat. The shipped build never logs it (isPremiumUser()==false); only a build where the gate was patched to true does."
 }

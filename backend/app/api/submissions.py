@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import time
 from collections.abc import Iterator
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
 from loguru import logger
 from sqlalchemy import select
@@ -41,7 +42,11 @@ _REQUIRED_FIELD = {
     "static_assert": "value",
     "frida_assert": "script",
     "network_assert": None,  # interaction observed live; payload optional
+    "patch_assert": None,  # submitted as an uploaded APK, not a JSON payload
 }
+
+# Max size for an uploaded patched APK (the training target is a few MB).
+_MAX_APK_BYTES = 64 * 1024 * 1024
 
 
 def _validate_payload(success_type: str, payload: dict) -> None:
@@ -60,6 +65,56 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _enqueue_submission(
+    db: Session, user: User, task: Task, payload: dict, apk_b64: str | None = None
+) -> Submission:
+    """Create a queued submission, bump the user's attempt counters, and enqueue
+    the grading job (optionally carrying an uploaded APK). Shared by the JSON and
+    APK-upload submit paths."""
+    submission = Submission(
+        user_id=user.id,
+        task_id=task.id,
+        success_type=task.success_type,
+        payload=payload,
+        status=STATUS_QUEUED,
+    )
+    db.add(submission)
+
+    progress = db.scalar(
+        select(Progress).where(Progress.user_id == user.id, Progress.task_id == task.id)
+    )
+    now = _now()
+    if progress is None:
+        db.add(
+            Progress(
+                user_id=user.id,
+                task_id=task.id,
+                domain=task.domain,
+                difficulty=task.difficulty,
+                attempts=1,
+                first_attempt_at=now,
+                last_attempt_at=now,
+            )
+        )
+    else:
+        progress.attempts += 1
+        progress.last_attempt_at = now
+        if progress.first_attempt_at is None:
+            progress.first_attempt_at = now
+
+    db.flush()  # assign submission.id
+    submission.job_id = enqueue_grading_job(
+        submission.id,
+        task.id,
+        task.package_path,
+        instance_config.get_config(db).grading_job_timeout_sec,
+        apk_b64=apk_b64,
+    )
+    db.commit()
+    db.refresh(submission)
+    return submission
+
+
 @router.post("/{task_id}", response_model=SubmissionPublic, status_code=status.HTTP_202_ACCEPTED)
 def submit(
     task_id: str,
@@ -76,50 +131,57 @@ def submit(
             "This task's grader is not implemented yet (scaffolded task).",
         )
 
-    _validate_payload(task.success_type, body.payload)
-
-    submission = Submission(
-        user_id=user.id,
-        task_id=task_id,
-        success_type=task.success_type,
-        payload=body.payload,
-        status=STATUS_QUEUED,
-    )
-    db.add(submission)
-
-    # Update attempt counters on progress.
-    progress = db.scalar(
-        select(Progress).where(Progress.user_id == user.id, Progress.task_id == task_id)
-    )
-    now = _now()
-    if progress is None:
-        progress = Progress(
-            user_id=user.id,
-            task_id=task_id,
-            domain=task.domain,
-            difficulty=task.difficulty,
-            attempts=1,
-            first_attempt_at=now,
-            last_attempt_at=now,
+    if task.success_type == "patch_assert":
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            f"This task is graded from an uploaded APK — POST your patched, re-signed "
+            f"build to /submissions/{task_id}/apk.",
         )
-        db.add(progress)
-    else:
-        progress.attempts += 1
-        progress.last_attempt_at = now
-        if progress.first_attempt_at is None:
-            progress.first_attempt_at = now
-
-    db.flush()  # assign submission.id
-    job_id = enqueue_grading_job(
-        submission.id,
-        task_id,
-        task.package_path,
-        instance_config.get_config(db).grading_job_timeout_sec,
-    )
-    submission.job_id = job_id
-    db.commit()
-    db.refresh(submission)
+    _validate_payload(task.success_type, body.payload)
+    submission = _enqueue_submission(db, user, task, body.payload)
     logger.info("user {} submitted task {} (submission {})", user.id, task_id, submission.id)
+    return submission
+
+
+@router.post(
+    "/{task_id}/apk", response_model=SubmissionPublic, status_code=status.HTTP_202_ACCEPTED
+)
+async def submit_apk(
+    task_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> Submission:
+    """Submit a patched, re-signed APK for a `patch_assert` task (e.g. 012).
+
+    The runner installs the uploaded build and verifies it unlocks the gated path
+    at runtime — proof the learner actually performed the patch/rebuild/resign,
+    not just recovered a value statically."""
+    task = db.get(Task, task_id)
+    if not task:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Task not found")
+    if task.grader_status != "implemented":
+        raise HTTPException(status.HTTP_409_CONFLICT, "This task's grader is not implemented yet.")
+    if task.success_type != "patch_assert":
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "This task does not accept an APK submission."
+        )
+    data = await file.read()
+    if len(data) > _MAX_APK_BYTES:
+        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "APK is too large.")
+    if data[:2] != b"PK":
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "That doesn't look like an APK (not a ZIP archive).",
+        )
+    submission = _enqueue_submission(
+        db,
+        user,
+        task,
+        {"filename": file.filename or "patched.apk", "size": len(data)},
+        apk_b64=base64.b64encode(data).decode(),
+    )
+    logger.info("user {} uploaded APK for task {} (submission {})", user.id, task_id, submission.id)
     return submission
 
 

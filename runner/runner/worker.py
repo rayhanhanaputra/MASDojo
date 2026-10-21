@@ -14,9 +14,12 @@ the next.
 
 from __future__ import annotations
 
+import base64
 import json
+import os
 import signal as _signal
 import sys
+import tempfile
 import time
 from pathlib import Path
 from typing import Any
@@ -114,6 +117,7 @@ class Worker:
         events = EventPublisher(submission_id)
         events.emit(f"job picked up for {task_id}", phase="queue")
         self._results.mark_running(submission_id)
+        apk_tmp: str | None = None
         try:
             submission, user_id = self._fetch_submission(submission_id)
             seed = derive_seed(user_id, task_id) if user_id is not None else ""
@@ -125,6 +129,16 @@ class Worker:
             store_dir = config.task_store_root / task_id
             store_apk = store_dir / "app" / "target.apk"
             apk_override = store_apk if store_apk.is_file() else None
+            # A patch task submits its own (patched, re-signed) APK via the job as
+            # base64 (so it reaches the runner regardless of where its filesystem
+            # sits relative to the backend's docker volumes). Decode it to a temp
+            # file and grade THAT build instead of the committed target.
+            submitted_b64 = job.get("apk_b64")
+            if submitted_b64:
+                fd, apk_tmp = tempfile.mkstemp(suffix=".apk", prefix=f"masdojo-sub{submission_id}-")
+                with os.fdopen(fd, "wb") as fh:
+                    fh.write(base64.b64decode(submitted_b64))
+                apk_override = Path(apk_tmp)
             expected_override = tmeta.get("expected_override") if tmeta else None
             if tmeta and tmeta.get("source") == "authored":
                 package_dir = store_dir
@@ -161,6 +175,9 @@ class Worker:
             self._results.record_error(submission_id, f"{type(exc).__name__}: {exc}")
             events.emit(f"{type(exc).__name__}: {exc}", level="error", phase="error")
             events.done("error")
+        finally:
+            if apk_tmp:
+                Path(apk_tmp).unlink(missing_ok=True)
 
     def _task_meta(self, task_id: str) -> dict[str, Any] | None:
         """Task source/success_type/answer-key override from the DB, or None.

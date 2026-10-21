@@ -84,6 +84,12 @@ export function TaskPage() {
     pollSubmission(created.id);
   }
 
+  async function onSubmitApk(file: File) {
+    const created = await api.submitApk(taskId, file);
+    setSubmission(created);
+    pollSubmission(created.id);
+  }
+
   if (error) return <ErrorText>{error}</ErrorText>;
   if (!task) return <TaskSkeleton />;
 
@@ -205,7 +211,7 @@ export function TaskPage() {
                 emulator grader
               </span>
             </div>
-            <SubmitForm task={task} onSubmit={onSubmit} />
+            <SubmitForm task={task} onSubmit={onSubmit} onSubmitApk={onSubmitApk} />
           </Panel>
 
           <GradePanel submission={submission} taskId={taskId} graderImplemented={task.grader_status === "implemented"} issue={gradeIssue} onResume={() => submission && pollSubmission(submission.id)} />

@@ -127,7 +127,12 @@ export interface TokenResponse {
   token_type: string;
 }
 
-export type SuccessType = "flag" | "static_assert" | "frida_assert" | "network_assert";
+export type SuccessType =
+  | "flag"
+  | "static_assert"
+  | "frida_assert"
+  | "network_assert"
+  | "patch_assert";
 export type NodeState = "locked" | "available" | "passed";
 
 export interface TaskSummary {

@@ -25,7 +25,9 @@ TASKS = REPO / "tasks"
 # 005 (network_assert) needs a live capture; covered separately in
 # test_reference_graders.py with a faithful NetworkCapture fake. 009 now grades
 # in dry-run too (static fallback of the behavioral Frida grader).
-LIVE_ONLY = {"005-intercept-api-call"}
+# 012 (patch_assert) is graded by running the learner's uploaded APK, which can
+# only be verified on a device, not in dry-run.
+LIVE_ONLY = {"005-intercept-api-call", "012-patch-rebuild-resign"}
 
 
 def _implemented():

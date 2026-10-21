@@ -118,6 +118,13 @@ export const GRADER_META: Record<
     text: "text-signal-cyan",
     describe: "mitmproxy capture",
   },
+  patch_assert: {
+    label: "patch",
+    glyph: "✎",
+    chip: "chip-frida",
+    text: "text-signal-violet",
+    describe: "patched APK is run",
+  },
 };
 
 export function GraderBadge({ type }: { type: SuccessType }) {

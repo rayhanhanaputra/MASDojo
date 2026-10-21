@@ -142,7 +142,9 @@ class GradeRunner:
         # device — so a host/attach-mode runner never tries to install a
         # nonexistent APK.
         apk = apk_override if apk_override is not None else package_dir / "app" / "target.apk"
-        device_task = success_type in {"frida_assert", "network_assert"} and apk.is_file()
+        device_task = (
+            success_type in {"frida_assert", "network_assert", "patch_assert"} and apk.is_file()
+        )
 
         if not live or not device_task:
             if not live:

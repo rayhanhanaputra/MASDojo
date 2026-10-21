@@ -50,6 +50,14 @@ class DashboardActivity : AppCompatActivity() {
         // A reward is computed but never shown — only a runtime hook sees it.
         Log.d(tag, "reward token issued (length=${computeReward().length})")
 
+        // task 012: the premium gate is also checked at startup. The shipped
+        // build logs nothing here (isPremiumUser() is false); a learner who
+        // patches isPremiumUser() to true, rebuilds and re-signs reveals the
+        // premium reward on launch — which is how the patch grader verifies it.
+        if (isPremiumUser()) {
+            Log.i(tag, "MASDOJO_PREMIUM:${Flags.reveal(BuildConfig.PREMIUM_FLAG)}")
+        }
+
         premiumBtn.setOnClickListener {
             if (isPremiumUser()) {
                 status.text = "Premium ledger unlocked.\n${Flags.reveal(BuildConfig.PREMIUM_FLAG)}"

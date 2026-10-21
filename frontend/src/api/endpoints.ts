@@ -66,6 +66,11 @@ export const api = {
   // submissions
   submit: (taskId: string, payload: Record<string, unknown>) =>
     request<Submission>(`/submissions/${taskId}`, { method: "POST", body: { payload } }),
+  submitApk: (taskId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return uploadForm<Submission>(`/submissions/${encodeURIComponent(taskId)}/apk`, form);
+  },
   getSubmission: (id: number) => request<Submission>(`/submissions/${id}`),
   listSubmissions: (taskId?: string) =>
     request<Submission[]>(`/submissions${taskId ? `?task_id=${taskId}` : ""}`),

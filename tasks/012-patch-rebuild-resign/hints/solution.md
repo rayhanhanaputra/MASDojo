@@ -1,15 +1,18 @@
-**Full solution.** Decompile, flip the premium boolean, repack, re-sign, install:
+**Full solution.** Decompile, flip the premium boolean, repack, re-sign, and
+upload the patched build:
 
 ```bash
 apktool d MASDojo.apk -o vb
 # In vb/smali*/org/masdojo/vaultbank/DashboardActivity.smali, isPremiumUser():
 #   const/4 v0, 0x0   ->   const/4 v0, 0x1
 apktool b vb -o vb-patched.apk
-apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android vb-patched.apk
-adb install -r vb-patched.apk
+zipalign -f 4 vb-patched.apk vb-aligned.apk
+apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android vb-aligned.apk
 ```
 
-Open the app, sign in, tap **Open premium ledger**. The flag is:
+Upload `vb-aligned.apk`. The runner installs it, launches the dashboard, and sees
+the premium path unlock (`MASDOJO_PREMIUM:FLAG{pr3m1um_g4t3_fl1pp3d}`) — which the
+shipped build never logs. The reward it reveals is:
 
 ```
 FLAG{pr3m1um_g4t3_fl1pp3d}

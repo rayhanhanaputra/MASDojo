@@ -1,5 +1,5 @@
-from runner.graders import grade_flag
+from runner.graders import grade_patch_assert
 
 
 def grade(ctx):
-    return grade_flag(ctx)
+    return grade_patch_assert(ctx)

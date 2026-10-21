@@ -79,7 +79,7 @@ def test_submit_validates_payload_and_enqueues(client: TestClient, auth_headers,
 
     enqueued = {}
 
-    def fake_enqueue(submission_id, task_id, package_path, timeout_sec):
+    def fake_enqueue(submission_id, task_id, package_path, timeout_sec, apk_b64=None):
         enqueued["submission_id"] = submission_id
         return "job-xyz"
 

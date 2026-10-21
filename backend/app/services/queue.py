@@ -27,9 +27,16 @@ def get_redis() -> redis.Redis:
 
 
 def enqueue_grading_job(
-    submission_id: int, task_id: str, package_path: str, timeout_sec: int
+    submission_id: int,
+    task_id: str,
+    package_path: str,
+    timeout_sec: int,
+    apk_b64: str | None = None,
 ) -> str:
-    """Push a grading job and return its id."""
+    """Push a grading job and return its id.
+
+    `apk_b64` carries a learner-submitted APK (patch tasks) inline, base64-encoded,
+    so it reaches the runner without a shared filesystem."""
     job_id = uuid.uuid4().hex
     job = {
         "job_id": job_id,
@@ -38,6 +45,8 @@ def enqueue_grading_job(
         "package_path": package_path,
         "timeout_sec": timeout_sec,
     }
+    if apk_b64:
+        job["apk_b64"] = apk_b64
     client = get_redis()
     client.rpush(settings.grading_queue, json.dumps(job))
     logger.info("enqueued grading job {} for submission {}", job_id, submission_id)
